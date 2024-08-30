@@ -1,0 +1,9 @@
+#Docker
+https://www.freecodecamp.org/news/the-docker-handbook/
+https://dev.to/codexam/docker-tutorial-5f7b
+https://www.geeksforgeeks.org/docker-instruction-commands/
+
+#kubernetes
+https://www.freecodecamp.org/news/the-kubernetes-handbook/
+https://kubernetes.io/docs/tutorials/kubernetes-basics/
+https://geekflare.com/learn-kubernetes/
