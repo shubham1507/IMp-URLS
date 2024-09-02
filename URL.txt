@@ -8,3 +8,7 @@ https://www.freecodecamp.org/news/the-kubernetes-handbook/
 https://kubernetes.io/docs/tutorials/kubernetes-basics/
 https://geekflare.com/learn-kubernetes/
 https://www.udemy.com/course/kubernetes-certified-administrator/?ranMID=39197&ranEAID=jf7w44yEft4&ranSiteID=jf7w44yEft4-zsP05N2dPUw2dU_lOx1Izw&LSNPUBID=jf7w44yEft4&utm_source=aff-campaign&utm_medium=udemyads
+
+
+#python
+https://www.geeksforgeeks.org/python-exercises-practice-questions-and-solutions/#python-list-exercises
