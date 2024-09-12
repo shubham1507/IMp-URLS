@@ -12,3 +12,6 @@ https://www.udemy.com/course/kubernetes-certified-administrator/?ranMID=39197&ra
 
 #python
 https://www.geeksforgeeks.org/python-exercises-practice-questions-and-solutions/#python-list-exercises
+
+#terraform with Azure
+https://hexaware.udemy.com/course/terraform-on-azure-services/
