@@ -15,3 +15,6 @@ https://www.geeksforgeeks.org/python-exercises-practice-questions-and-solutions/
 
 #terraform with Azure
 https://hexaware.udemy.com/course/terraform-on-azure-services/
+
+
+https://gist.github.com/dmancloud/0abf6ad0cb16e1bce2e907f457c8fce9
