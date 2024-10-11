@@ -23,3 +23,4 @@ https://medium.com/@theopendle/github-jenkins-sonarqube-integration-for-java-mav
 
 #airflow
 https://theaisummer.com/apache-airflow-tutorial/
+https://www.youtube.com/watch?v=p0vZedMl93c
