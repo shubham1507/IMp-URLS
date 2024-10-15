@@ -19,6 +19,10 @@ https://hexaware.udemy.com/course/terraform-on-azure-services/
 
 https://gist.github.com/dmancloud/0abf6ad0cb16e1bce2e907f457c8fce9
 
+#bash_cheatsheet
+
+https://devhints.io/bash
+
 https://medium.com/@theopendle/github-jenkins-sonarqube-integration-for-java-maven-2-4-creating-the-jenkins-job-b6d34b54f732
 
 #airflow
