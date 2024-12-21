@@ -28,3 +28,8 @@ https://medium.com/@theopendle/github-jenkins-sonarqube-integration-for-java-mav
 #airflow
 https://theaisummer.com/apache-airflow-tutorial/
 https://www.youtube.com/watch?v=p0vZedMl93c
+
+#75 data science project 
+
+
+https://thecleverprogrammer.com/2024/12/20/75-data-science-projects-with-python/
