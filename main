@@ -1,0 +1,10 @@
+- name: Fail if no hosts matched
+  fail:
+    msg: "No hosts matched. The provided hostname '{{ hostname }}' is incorrect or does not exist."
+  when: ansible_play_hosts == []
+
+
+if (ansibleOutput.contains("skipping: no hosts matched") || ansibleOutput.contains("PLAY RECAP *") && !ansibleOutput.contains("ok=")) {
+    println "Error! Ansible playbook output indicates failure due to no hosts matched."
+    error("Ansible execution failed: No hosts matched.")
+}
