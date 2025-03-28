@@ -8,3 +8,6 @@ The terraform script should print below part as a part of OUTPUT section
 3.PRI_SUB_NW_ADDR_2
 4.PUB_SUB_NW_ADDR_1
 5.PUB_SUB_NW_ADDR_1
+
+git log --before="2025-03-19T12:56:00" --pretty=format:"%h %cd" --date=iso
+
