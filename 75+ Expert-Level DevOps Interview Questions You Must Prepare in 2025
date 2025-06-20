@@ -1,0 +1,81 @@
+How do you design a highly available architecture in AWS across multiple regions?
+Explain how Auto Scaling and Load Balancer work together
+What are the different types of Load Balancers in AWS and when would you use each?
+How do you implement a secure and scalable CI/CD pipeline using AWS services?
+How do you manage secrets in AWS for production systems?
+What are best practices for IAM role design in a multi-account architecture?
+How would you troubleshoot latency issues in an EC2-based web application?
+Explain VPC peering vs Transit Gateway. Which would you prefer and why?
+How would you implement centralized logging and monitoring in AWS?
+What is your strategy for handling blue/green or canary deployments in AWS?
+🔷 Azure
+Compare Azure App Services and Azure Kubernetes Services. When to use what?
+How would you implement secure connectivity between on-premises and Azure cloud?
+Explain how to use Azure DevOps pipelines to deploy to multiple environments.
+How would you use Azure Key Vault in your CI/CD pipeline?
+Explain Azure Resource Manager (ARM) vs Bicep templates.
+Describe your approach for setting up and managing Azure policies and governance.
+How do you implement high availability and disaster recovery in Azure?
+What are Azure Blueprints and how do they help in governance?
+Describe your experience with Azure Monitor and Log Analytics.
+Explain the concept of Managed Identity and how you’ve used it.
+🐳 Docker
+How do you design a secure and optimized Docker image for production workloads?
+What are the differences between ENTRYPOINT and CMD in Docker? How do you use them together?
+Explain Docker multi-stage builds and how they help reduce image size.
+How do you manage secrets and environment-specific configs in Docker containers?
+What’s your approach to managing container logs and monitoring in large-scale Dockerized environments?
+Have you implemented a container lifecycle management strategy? Explain how.
+What are the performance considerations when running Docker on different OS platforms?
+How do you debug a container that keeps exiting or fails health checks?
+How do you manage Docker networks and volume strategies in a production cluster?
+Explain the difference between Docker Swarm and Kubernetes — why would you choose one over the other?
+How do you handle Docker image versioning and rollback strategies?
+What is your strategy for vulnerability scanning and patching Docker images?
+Explain the role of Docker Compose in development workflows. How do you scale it for production (if at all)?
+How do you integrate Docker with Jenkins pipelines? Share an example of build → test → deploy flow.
+🧩 Jenkins
+How do you design a scalable Jenkins architecture for enterprise-grade CI/CD?
+Explain how Jenkins integrates with GitOps workflows and Kubernetes.
+What are Jenkins Shared Libraries and how do they help in pipeline reusability?
+How would you implement multi-branch pipelines in Jenkins for a microservices setup?
+Describe a strategy for implementing approvals, manual triggers, and rollback in Jenkins pipelines.
+What are some best practices for securing a Jenkins environment?
+How do you handle credential management in Jenkins across teams and jobs?
+Have you integrated Jenkins with Terraform, Docker, or Ansible? Explain a scenario.
+How do you implement dynamic agent provisioning using Kubernetes and Jenkins?
+Explain how you troubleshoot a Jenkins build stuck in the queue.
+What monitoring tools or plugins do you use to observe Jenkins health and pipeline metrics?
+Compare scripted pipelines vs declarative pipelines. When do you prefer one over the other?
+What are the pros and cons of using Jenkins vs GitHub Actions/Azure DevOps/GitLab CI?
+How do you handle parallelism and pipeline optimization in Jenkins?
+Describe a CI/CD strategy you’ve implemented using Jenkins for zero-downtime deployments.
+☸️ Kubernetes
+How would you design a production-ready Kubernetes cluster with HA and monitoring?
+Explain your strategy for managing secrets in Kubernetes.
+What tools do you use for Kubernetes observability and why?
+How do you manage cluster autoscaling and pod autoscaling?
+What’s the difference between a DaemonSet, Deployment, StatefulSet, and Job?
+Explain how you handle rolling updates and rollbacks in Kubernetes.
+How do you secure your Kubernetes cluster against external threats?
+What are common causes of CrashLoopBackOff and how do you troubleshoot it?
+Describe your strategy for multi-tenant Kubernetes cluster management.
+What is your experience with service mesh (e.g., Istio/Linkerd) in Kubernetes?
+🌍 Terraform
+What is your Terraform code structure for managing multiple environments (dev/prod)?
+How do you manage Terraform state securely in a team setup?
+How do you use workspaces in Terraform and what are their limitations?
+Explain the difference between depends_on, count, and for_each in Terraform.
+What are modules in Terraform and how do you create reusable ones?
+How do you perform drift detection in Terraform-managed infrastructure?
+How do you handle secret values in Terraform configurations?
+Explain how you integrate Terraform with CI/CD pipelines.
+What is the purpose of terraform import and when do you use it?
+Have you used Terraform Cloud or Terraform Enterprise? Explain your experience.
+DevOps Architecture & Real-Life Scenarios
+Describe an end-to-end CI/CD pipeline you’ve built using cloud-native tools.
+How do you design a scalable and secure containerized microservice application?
+Tell me about a major production incident you resolved — root cause and lessons learned.
+How do you ensure compliance and governance in cloud environments?
+Explain your approach to cost optimization in a cloud environment.
+What’s your process for evaluating and implementing new DevOps tools?
