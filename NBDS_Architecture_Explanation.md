@@ -1,71 +1,79 @@
 
-# NBDS Architecture Summary (Human-Understandable Version)
+# Final Human-Understandable Summary of NBDS Architecture
 
-The system architecture connects our **on-premises credit processing system (Rapport)** with a **cloud-based decision engine (NBDS in AWS)** and **external reporting tools** (like Snowflake and SnapLogic). It ensures real-time credit decisions and supports downstream reporting with secure, protocol-based data flows.
-
----
-
-## 🟩 1. User Request Flow: From Rapport to NBDS
-
-- The user or a system triggers a **credit application** from the **Rapport Web UI**.
-- This request flows through the **App Server (Rapport)** and is forwarded directly to the **NBDS Webservice (EC2 instance in AWS)**.
-- The connection is secured via **HTTPS** and acts as an **API call** carrying application details (e.g., lease amount, customer info).
+## 🔷 What Is This About?
+We're discussing how credit adjudication requests (like lease approvals) flow securely across our **on-prem system (Rapport)**, **cloud decision engine (NBDS on AWS)**, and **external systems** for booking and reporting — such as **OLFM**, **Snowflake**, and **SnapLogic**.
 
 ---
 
-## 🧠 2. NBDS Processing Logic
+## 🟦 1. Rapport (On-Premises) Starts the Process
 
-Once the NBDS EC2 receives the request:
-- It retrieves secure credentials from **AWS Secrets Manager** (via HTTPS).
-- It connects to an internal **Aurora DB** over **TCP** to fetch or store credit decision history.
-- It runs **business logic** to evaluate the application (based on credit score, delinquency, etc.).
-- After processing, it sends the **decision response** back to the Rapport App Server over **HTTPS**.
-
-✅ This forms a **two-way REST API loop** between Rapport and NBDS.
+- A user (usually GFS or CPQ system) initiates a **credit application** via the **Rapport web portal**.
+- The request travels from:
+  - **Web Server → App Server**
+  - Then via **HTTPS → Middleware** (our central integration layer)
+- Middleware routes the request to the cloud for processing.
 
 ---
 
-## ☁️ 3. File & Reporting Output Flow
+## ☁️ 2. Middleware Forwards Request to NBDS in AWS
 
-After the decision:
-- NBDS generates **reports or GL extract files** and stores them in **an AWS S3 bucket** using **HTTPS PUT**.
-- These files are available for **scheduled pickup** or automated downstream syncs.
-
----
-
-## 📊 4. Reporting to Snowflake
-
-- The data stored in S3 is routed to **Snowflake**, a cloud-based data warehouse.
-- This transfer occurs over **secure HTTPS or JDBC protocols**.
-- This enables business users to generate **Power BI reports** and monitor KPIs in real-time.
+- Middleware sends the request to **NBDS Webservice (an EC2 instance in AWS)** over **HTTPS**.
+- NBDS is responsible for evaluating:
+  - Customer credit history
+  - Business logic like score checks, delinquency, TCS codes, etc.
 
 ---
 
-## 🔄 5. SnapLogic Integration for Streaming Data
+## 🧠 3. NBDS Processing
 
-- Separate from NBDS, systems like **InfoLease** push **Kafka streams** into **SnapLogic**.
-- **SnapLogic** transforms and loads that data into **Snowflake** over **HTTPS**.
-- This supports consolidated and up-to-date business intelligence.
+- NBDS pulls secure credentials from **AWS Secrets Manager**.
+- It reads/writes to the **Aurora DB** using **TCP**, where credit data is stored.
+- Once decision logic runs, the **approval/rejection decision** is sent back to **Middleware**, which then replies to **Rapport**.
 
----
-
-## 🔐 6. All Connections Are Secure
-
-| Connection                     | Protocol         |
-|-------------------------------|------------------|
-| Rapport Web → App Server      | HTTPS            |
-| App Server → NBDS EC2         | HTTPS (API)      |
-| NBDS EC2 → App Server         | HTTPS (Response) |
-| NBDS EC2 → Aurora DB          | TCP              |
-| NBDS EC2 → S3 Bucket          | HTTPS PUT        |
-| NBDS EC2 → Secrets Manager    | HTTPS            |
-| S3 → Snowflake                | HTTPS / JDBC     |
-| SnapLogic → Snowflake         | HTTPS            |
-
-All services communicate using **industry-standard encryption protocols** to maintain confidentiality and security.
+✅ This forms a **two-way secured communication** through Middleware using **REST APIs over HTTPS**.
 
 ---
 
-## ✅ Summary Statement for Your Manager
+## 📂 4. NBDS Generates Files for OLFM
 
-> "Our architecture allows credit decisions to flow securely from the Rapport on-prem system to NBDS in AWS using REST APIs. NBDS processes the logic, interacts with its own database and secrets manager, and returns results back to Rapport. It also generates reports into S3, which then feed into Snowflake for analytics. The entire setup is securely connected over HTTPS, TCP, and JDBC, ensuring performance, traceability, and compliance."
+- After making a decision, NBDS stores **output files** (GL extracts, deal reports) into an **S3 bucket** using **HTTPS PUT**.
+- **Middleware picks up these files** using scheduled jobs.
+- Then it sends this data securely to **OLFM**, which books the lease deal with financial systems.
+
+---
+
+## 📊 5. Reporting in Snowflake
+
+- NBDS or Middleware also sends decision data to **Snowflake** via **HTTPS or JDBC**.
+- Snowflake is used by **Power BI** and other tools to create dashboards and reports for business visibility.
+
+---
+
+## 🔄 6. InfoLease & SnapLogic Integration
+
+- **InfoLease** (an external vendor system) publishes **Kafka streams** containing real-time transactional data.
+- These streams are picked up by **SnapLogic**, which transforms the data.
+- SnapLogic then **pushes the data into Snowflake** via **HTTPS**, enabling unified analytics with NBDS data.
+
+---
+
+## 🔐 7. All Connections Are Secure
+
+| Source                   | Destination              | Protocol         |
+|--------------------------|--------------------------|------------------|
+| Rapport App Server       | Middleware               | HTTPS            |
+| Middleware               | NBDS EC2                 | HTTPS (REST API) |
+| NBDS EC2                 | Aurora DB                | TCP              |
+| NBDS EC2                 | S3 Bucket                | HTTPS PUT        |
+| NBDS EC2                 | AWS Secrets Manager      | HTTPS            |
+| Middleware               | OLFM                     | HTTPS            |
+| Middleware/S3            | Snowflake                | HTTPS / JDBC     |
+| InfoLease (Kafka)        | SnapLogic                | Kafka            |
+| SnapLogic                | Snowflake                | HTTPS            |
+
+---
+
+## 🧾 Final Summary for Your Manager
+
+> “This system securely processes lease credit applications from Rapport through Middleware to NBDS in AWS. NBDS evaluates the application using business rules, interacts with its own DB and secrets, and sends back decisions. It generates reports for OLFM to book deals, and also pushes data to Snowflake for analytics. SnapLogic brings in real-time Kafka streams from InfoLease to enhance reporting. Every step is securely integrated using HTTPS, TCP, and Kafka.”
