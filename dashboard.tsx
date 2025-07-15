@@ -23,7 +23,8 @@ import {
   List,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Grid
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -108,11 +109,17 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const renderProjectForm = () => (
-    <Box>
-      <Typography variant="h5" gutterBottom>Domain Project Form</Typography>
+  const sectionWrapper = (title: string, children: React.ReactNode) => (
+    <Paper elevation={2} sx={{ p: 3, maxWidth: 700, mx: 'auto' }}>
+      <Typography variant="h5" gutterBottom>{title}</Typography>
+      {children}
+    </Paper>
+  );
+
+  const renderProjectForm = () => sectionWrapper('Domain Project Form', (
+    <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <TextField label="QC ID" value={qcId} onChange={(e) => setQcId(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))} placeholder="Enter QC ID" />
+        <TextField label="QC ID" value={qcId} onChange={(e) => setQcId(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))} placeholder="Enter QC ID" fullWidth />
         <Button variant="outlined" onClick={checkQCID} disabled={checkLoading}>{checkLoading ? <CircularProgress size={20} /> : 'Check'}</Button>
       </Box>
       {checkAlert && <Alert severity={checkAlert.type} sx={{ mb: 2 }}>{checkAlert.message}</Alert>}
@@ -132,24 +139,22 @@ const Dashboard: React.FC = () => {
         {submitLoading ? <CircularProgress size={24} /> : 'Submit'}
       </Button>
       {submitAlert && <Alert severity={submitAlert.type} sx={{ mt: 2 }}>{submitAlert.message}</Alert>}
-    </Box>
-  );
+    </>
+  ));
 
-  const renderAddUserForm = () => (
-    <Box>
-      <Typography variant="h5" gutterBottom>Add User</Typography>
+  const renderAddUserForm = () => sectionWrapper('Add User', (
+    <>
       <FormControlLabel control={<Switch checked={existingUser} onChange={() => setExistingUser(!existingUser)} />} label="Existing User" sx={{ mb: 2 }} />
       <TextField fullWidth label="Staff ID" value={staffIdInput} onChange={(e) => setStaffIdInput(e.target.value)} sx={{ mb: 2 }} />
       <TextField fullWidth label="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} />
       <TextField fullWidth label="QC User Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} sx={{ mb: 2 }} />
       <TextField fullWidth label="QC ID" value={qcUserId} onChange={(e) => setQcUserId(e.target.value)} sx={{ mb: 2 }} />
       <Button variant="contained" onClick={() => alert('User submitted')}>Submit</Button>
-    </Box>
-  );
+    </>
+  ));
 
-  const renderViewUser = () => (
-    <Box>
-      <Typography variant="h5" gutterBottom>View User</Typography>
+  const renderViewUser = () => sectionWrapper('View User', (
+    <>
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Search Mode</InputLabel>
         <Select value={searchMode} label="Search Mode" onChange={(e) => setSearchMode(e.target.value as 'qcId' | 'staffId')}>
@@ -174,8 +179,8 @@ const Dashboard: React.FC = () => {
           <Typography variant="subtitle1"><strong>Staff ID:</strong> {userDetails.staffId}</Typography>
         </Box>
       )}
-    </Box>
-  );
+    </>
+  ));
 
   const drawer = (
     <Box sx={{ p: 2, height: '100%', bgcolor: '#f4f6f8' }}>
