@@ -1,0 +1,93 @@
+MODULE 1: Advanced Python Programming
+Chapter 1: Core Advanced Python
+Python Internals (memory management, GIL)
+Comprehensions (List/Dict/Set)
+Generators, Decorators, Context Managers
+Lambda, Map, Filter, Reduce
+1. Python Internals
+Memory Management:
+ajdevopssolutions.medium.com
+Chapter 2: Regular Expressions & File Handling
+Regex Syntax & Practice
+Advanced File Handling (CSV, JSON, XML)
+Chapter 3: Collections & Itertools
+defaultdict, Counter, OrderedDict, namedtuple
+itertools: product, permutations, combinations, groupby
+Chapter 4: Concurrency & Parallelism
+Threading vs Multiprocessing
+Python concurrent.futures, Queues, Locks
+Async IO Basics
+Chapter 5: Working with Databases
+SQLite and PostgreSQL with psycopg2/SQLAlchemy
+Performing CRUD with Python ORM
+🔹 MODULE 2: Flask/Django Web Development
+Chapter 6: Building REST APIs in Flask
+Flask App Structure
+RESTful Route Design & Blueprints
+Flask Extensions: SQLAlchemy, Marshmallow
+Chapter 7: Django Overview
+Django MVT architecture
+REST APIs with Django REST Framework
+Comparing Flask vs Django
+🔹 MODULE 3: APIs, SDKs, and Authentication
+Chapter 8: RESTful API Deep Dive
+HTTP Methods: GET, POST, PUT, DELETE
+Status Codes, Headers, Pagination, Versioning
+Designing Secure APIs
+Chapter 9: Integrating SDKs (AWS Boto3, etc.)
+AWS SDK for Python (Boto3)
+Working with S3, EC2, DynamoDB from Python
+Chapter 10: Authentication & Authorization
+JWT Implementation in Flask
+OAuth 2.0 Workflow
+Securing APIs using OAuth2, Flask-JWT-Extended
+🔹 MODULE 4: Testing, Debugging, CI/CD
+Chapter 11: Testing Flask APIs
+Unit Testing with unittest
+API Tests with pytest, requests
+Fixtures, Mocking, Parametrize
+Chapter 12: Debugging and Logging
+Debugging with pdb
+Logging Best Practices
+Structured Logging for APIs
+Chapter 13: Automating Testing with CI/CD
+GitHub Actions: Build-Test Workflow
+Pytest Integration in CI
+Test Reports and Code Coverage
+🔹 MODULE 5: Git, Swagger, API Documentation
+Chapter 14: Git and Collaboration Best Practices
+Git Commands and Setup
+Branching Strategies (Git Flow, Feature Branch)
+PRs, Code Reviews, Conflict Resolution
+Chapter 15: API Documentation
+Swagger/OpenAPI with Flask
+Using Postman for API Testing & Automation
+Generating Documentation Automatically
+🔹 MODULE 6: Containerization & Cloud Deployment
+Chapter 16: Deploying to Cloud (AWS)
+Packaging Flask App
+Deploying with Elastic Beanstalk or EC2
+Environment Variables, IAM Roles
+Chapter 17: Docker & Kubernetes
+Dockerize Flask Application
+Kubernetes Basics: Pods, Deployments, Services
+Helm Chart for Python App
+Chapter 18: Istio for Microservices
+Istio Gateway, VirtualService
+API Access, Circuit Breakers, Rate Limiting
+🔹 MODULE 7: Algorithms, DSA, System Design
+Chapter 19: DSA Refresher
+Arrays, Strings, Hashing, Stacks, Queues
+Trees, Graphs, Sorting & Searching Algorithms
+Chapter 20: System Design Essentials
+Load Balancers, Caching, Queues
+Designing Scalable API Systems
+High Availability & Disaster Recovery Concepts
+🔹 MODULE 8: AWS Solution Architecture
+Chapter 21: AWS Infrastructure Fundamentals
+VPC, Subnets, Security Groups, Route Tables
+EC2, S3, RDS, Lambda, API Gateway
+Chapter 22: Designing Python App Architecture on AWS
+Design a Flask/Django App on AWS
+Using ALB, Auto Scaling, RDS, CloudWatch
+Reference Architectures
