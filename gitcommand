@@ -1,3 +1,2 @@
-git checkout origin/development -- \
-  client/src/views/TestRuns/Components/TestRunReportDrawer/TestRunSearchForm.jsx \
-  client/src/views/Defects/components/DefectsReportDrawer/DefectSearchForm.jsx
+git checkout origin/development -- client/src/views/TestRuns/Components/TestRunReportDrawer/TestRunSearchForm.jsx
+git checkout origin/development -- client/src/views/Defects/components/DefectsReportDrawer/DefectSearchForm.jsx
