@@ -1,0 +1,28 @@
+# 1) Update refs
+git fetch origin
+
+# 2) Show latest 3 commit messages (newest first) on dev-45429656 not in development
+git log --oneline origin/development..origin/dev-45429656 -n 3
+
+# 3) Grab the 3 SHAs (newest first) and then reverse for independent PRs
+$COMMITS = git rev-list origin/development..origin/dev-45429656 --max-count=3
+$C3,$C2,$C1 = $COMMITS  # C3=newest, C1=oldest
+Write-Host "Oldest -> Newest: $C1 $C2 $C3"
+
+# 4) Create three PR branches off development, one commit each
+git checkout -B "pr/$C1" origin/development
+git cherry-pick $C1
+git push -u origin "pr/$C1"
+
+git checkout -B "pr/$C2" origin/development
+git cherry-pick $C2
+git push -u origin "pr/$C2"
+
+git checkout -B "pr/$C3" origin/development
+git cherry-pick $C3
+git push -u origin "pr/$C3"
+
+# 5) Open PRs with GitHub CLI (or use the web UI)
+gh pr create -B development -H "pr/$C1" -t "[$C1] <short title>" -b "<details>"
+gh pr create -B development -H "pr/$C2" -t "[$C2] <short title>" -b "<details>"
+gh pr create -B development -H "pr/$C3" -t "[$C3] <short title>" -b "<details>"
