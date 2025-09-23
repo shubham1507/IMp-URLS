@@ -1,167 +1,71 @@
 import React, { useState } from "react";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
-import Divider from "@mui/material/Divider";
-import Typography from "@mui/material/Typography";
-import FormGroup from "@mui/material/FormGroup";
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormHelperText from "@mui/material/FormHelperText";
-import Checkbox from "@mui/material/Checkbox";
-import TextField from "@mui/material/TextField";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import Switch from "@mui/material/Switch";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import { DataTable } from "@components/core/data-table";
+import { useExperiments } from "@hooks/useExperiments";
 
-// NOTE: these two mirrors your pods version but for deployments:
-import { useChaosOrchestratorQueries } from "@/hooks/usechaosorchestratorqueries";
-import { fetchIKPDeploymentsList } from "@/api/ikp/deployments"; // <— create if not present
+export function ExecuteExperimentsTable({ selectedProject, filters }) {
+  const { data: experiments, isLoading, isError, error, refetch, isFetching } =
+    useExperiments(selectedProject, filters);
 
-export default function IKPDeploymentDeleteParameters({
-  formData,
-  setFormData,
-  onResourcesChange,
-}) {
-  const namespace = formData.parameters?.namespace;
-  const env_id = formData.envId;
+  // local state for "refresh clicked"
+  const [refreshing, setRefreshing] = useState(false);
 
-  // queryKey/fn should mirror pods but with "deployments"
-  const queryKey = ["deployments", env_id, namespace];
-  const queryFn = () => fetchIKPDeploymentsList(env_id, namespace);
-  const queryOptions = { retry: 3, staleTime: 10 * 60 * 1000, refetchOnWindowFocus: false };
-
-  const { data, isLoading, isSuccess, isError, error } =
-    useChaosOrchestratorQueries(queryKey, queryFn, queryOptions);
-
-  // same mapping as pods component, but to deployment names
-  const resourceList = data?.data?.items?.map((item) => item?.name) ?? [];
-
-  // keep selected list inside formData.parameters.resources
-  const resources = formData?.parameters?.resources ?? [];
-
-  const setResources = (next) =>
-    setFormData((prev) => ({
-      ...prev,
-      parameters: { ...prev.parameters, resources: next },
-    }));
-
-  const handleResourceChange = (e) => {
-    const { checked, value } = e.target;
-    const next = checked
-      ? [...new Set([...resources, value])]
-      : resources.filter((n) => n !== value);
-
-    setResources(next);
-    onResourcesChange?.(next); // if your pods component calls this
+  const handleRefresh = async () => {
+    setRefreshing(true);       // start loading state
+    await refetch();           // call API
+    setRefreshing(false);      // stop loading state
   };
 
-  // dry-run, timeout, propagation — same as pods
-  const setParam = (key, value) =>
-    setFormData((prev) => ({
-      ...prev,
-      parameters: { ...prev.parameters, [key]: value },
-    }));
-
-  if (isLoading) {
+  if (isLoading || refreshing || isFetching) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="280px">
-        <CircularProgress size={20} />
-        <Typography sx={{ ml: 1 }}>Loading deployments…</Typography>
+      <Box display="flex" alignItems="center" justifyContent="center" sx={{ mt: 4, mb: 4 }}>
+        <CircularProgress size={20} sx={{ mr: 2 }} />
+        <Typography variant="body2">Loading data...</Typography>
       </Box>
     );
   }
 
   if (isError) {
     return (
-      <Alert severity="error" sx={{ mt: 2 }}>
-        {error?.response?.status === 404
-          ? "No deployments found for the given environment/namespace."
-          : `Error loading deployments: ${error?.message}`}
-      </Alert>
+      <Box sx={{ textAlign: "center", mt: 4 }}>
+        <Typography variant="body2" color="error">
+          {error.message}
+        </Typography>
+      </Box>
     );
   }
 
-  if (isSuccess) {
-    return (
-      <Stack spacing={3} divider={<Divider flexItem />}>
-        <Grid container spacing={3}>
-          <Grid item md={4} xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ pb: 3 }}>
-              Select deployments for deletion
-            </Typography>
-            <FormControl component="fieldset">
-              <FormGroup>
-                {resourceList.map((name, idx) => (
-                  <FormControlLabel
-                    key={idx}
-                    control={
-                      <Checkbox
-                        checked={resources.includes(name)}
-                        onChange={handleResourceChange}
-                        value={name}
-                        name={name}
-                      />
-                    }
-                    label={name}
-                  />
-                ))}
-              </FormGroup>
-              {resources.length === 0 && (
-                <FormHelperText>Select at least one deployment</FormHelperText>
-              )}
-            </FormControl>
-          </Grid>
+  const rows = experiments?.data || [];
 
-          <Grid item md={4} xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ pb: 3 }}>
-              Dry Run
-            </Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData?.parameters?.dryrun ?? false}
-                  onChange={(e) => setParam("dryrun", e.target.checked)}
-                />
-              }
-              label={formData?.parameters?.dryrun ? "enabled" : "disabled"}
-            />
-          </Grid>
+  return (
+    <React.Fragment>
+      {/* 🔄 Refresh button */}
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
+        <Button onClick={handleRefresh} variant="contained" size="small">
+          Refresh
+        </Button>
+      </Box>
 
-          <Grid item md={4} xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ pb: 3 }}>
-              Graceful Deletion Timeout (seconds)
-            </Typography>
-            <TextField
-              type="number"
-              variant="outlined"
-              defaultValue={0}
-              inputProps={{ min: 0 }}
-              value={formData?.parameters?.gracefulDeletionTimeout ?? 0}
-              onChange={(e) => setParam("gracefulDeletionTimeout", Number(e.target.value || 0))}
-            />
-          </Grid>
+      {/* 📝 Table */}
+      <DataTable
+        columns={[
+          { field: "name", name: "Experiment name" },
+          { field: "uid", name: "Experiment UID" },
+          { field: "id", name: "Experiment Id" },
+          { field: "environment", name: "Environment type" },
+          { field: "status", name: "Status" },
+        ]}
+        rows={rows}
+      />
 
-          <Grid item md={4} xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ pb: 3 }}>
-              Propagation policy
-            </Typography>
-            <Select
-              value={formData?.parameters?.propagationpolicy ?? "Background"}
-              onChange={(e) => setParam("propagationpolicy", e.target.value)}
-              sx={{ width: "250px" }}
-            >
-              <MenuItem value="Background">Background</MenuItem>
-              <MenuItem value="Foreground">Foreground</MenuItem>
-              <MenuItem value="Orphan">Orphan</MenuItem>
-            </Select>
-          </Grid>
-        </Grid>
-      </Stack>
-    );
-  }
-
-  return null;
+      {/* No data fallback */}
+      {rows.length === 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography textAlign="center" variant="body2" color="text.secondary">
+            No experiments available.
+          </Typography>
+        </Box>
+      )}
+    </React.Fragment>
+  );
 }
