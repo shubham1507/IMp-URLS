@@ -1,9 +1,14 @@
-// Dynamic label for resources based on action type
-let resourceLabel = "Resources (Only Names)";
-if (rowData?.action === "pod_delete") {
-  resourceLabel = "List of pods to be deleted";
-} else if (rowData?.action === "deployment_delete") {
-  resourceLabel = "List of deployments to be deleted";
-} else if (rowData?.action === "replicaset_delete") {
-  resourceLabel = "List of ReplicaSets to be deleted";
-}
+<Box>
+  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+    {resourceLabel}
+  </Typography>
+  {resArray.length > 0 ? (
+    <ul style={{ margin: "4px 0 0 16px" }}>
+      {resArray.map((r, idx) => (
+        <li key={idx}>{r?.name}</li>
+      ))}
+    </ul>
+  ) : (
+    <Typography variant="body2">N/A</Typography>
+  )}
+</Box>
