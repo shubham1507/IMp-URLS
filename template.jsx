@@ -1,14 +1,15 @@
 // client/src/components/dashboard/settings/access/Access.jsx
-// ---------------------------------------------------------
-// Manage Access (hardcoded demo):
+// ------------------------------------------------------------------
+// Manage Access (hardcoded demo, 3 roles: Admin / Write / Read)
 // - Empty state when no rows
 // - Add People modal:
-//     * Type PSID "45460309" -> shows result card
-//     * After selecting a person: HIDE search
-//       - Left: role options w/ descriptions (Admin / Write / Read)
-//       - Right: selected user pill (sticky), with "View role details" link and X
-//     * "Add {PSID}" adds row to table (insert at TOP)
+//   * Type PSID "45460309" -> shows result card
+//   * After selecting a person: HIDE search
+//     - Left: role options (with descriptions)
+//     - Right: selected user pill (avatar, name, id, "View role details", X)
+//   * "Add {PSID}" inserts row AT TOP with chosen role
 // - Each row has a delete button
+// - Ready for wiring to real APIs later
 
 import React, { useMemo, useState } from "react";
 import {
@@ -42,7 +43,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
 
-// ---- Hardcoded directory (PSID -> user) ----
+// --- Hardcoded "directory" for demo search (PSID -> user) ---
 const DIRECTORY = {
   "45460309": {
     id: "45460309",
@@ -53,7 +54,7 @@ const DIRECTORY = {
   },
 };
 
-// ---- Role descriptions ----
+// --- Role descriptions (3 roles only) ---
 const ROLE_DESCRIPTIONS = {
   Admin:
     "Recommended for people who need full access to the project, including sensitive and destructive actions.",
@@ -62,6 +63,7 @@ const ROLE_DESCRIPTIONS = {
   Read:
     "Recommended for non-code contributors who want to view or discuss your project.",
 };
+const ROLES = ["Admin", "Write", "Read"];
 
 export default function Access() {
   // ---------- Table ----------
@@ -92,11 +94,16 @@ export default function Access() {
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
     setAdding(true);
-    await new Promise((r) => setTimeout(r, 250)); // mock call
+    // simulate request
+    await new Promise((r) => setTimeout(r, 250));
+
     const picked = DIRECTORY[selectedId];
     const newRow = { ...picked, role };
-    setRows((prev) => [newRow, ...prev.filter((r) => r.id !== newRow.id)]); // insert at top
-    // reset
+
+    // insert at TOP and ensure unique
+    setRows((prev) => [newRow, ...prev.filter((r) => r.id !== newRow.id)]);
+
+    // reset modal
     setAdding(false);
     setPsidInput("");
     setSelectedId(null);
@@ -123,7 +130,7 @@ export default function Access() {
       <Card variant="outlined">
         <CardContent>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center" sx={{ mb: 2 }}>
-            <Checkbox disabled />
+            <Checkbox disabled /> {/* Select all placeholder */}
             <TextField
               fullWidth
               placeholder="Find people or a team…"
@@ -222,7 +229,7 @@ export default function Access() {
         <DialogTitle>Add people to repository</DialogTitle>
 
         <DialogContent>
-          {/* A) No selection: show search + result */}
+          {/* A) No selection: search + result card */}
           {!selectedId && (
             <Stack spacing={2} sx={{ pt: 1 }}>
               <TextField
@@ -268,28 +275,26 @@ export default function Access() {
             </Stack>
           )}
 
-          {/* B) Selected: left roles, right selected-user pill */}
+          {/* B) Selected: left roles (3), right selected-user pill */}
           {selectedId && result && (
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              spacing={2}
-              sx={{ pt: 1 }}
-            >
-              {/* Left: roles with descriptions */}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>Choose a role</Typography>
-                <Stack spacing={1.25}>
-                  {["Read", "Write", "Admin"].map((r) => (
+            <Box sx={{ pt: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Choose a role</Typography>
+
+              <Stack direction="row" alignItems="flex-start" spacing={2}>
+                {/* Left: roles with descriptions */}
+                <Stack spacing={1.25} sx={{ flex: 1 }}>
+                  {ROLES.map((r) => (
                     <Stack
                       key={r}
                       direction="row"
-                      alignItems="flex-start"
                       spacing={1.5}
+                      alignItems="flex-start"
                       sx={{
                         p: 1,
                         borderRadius: 1,
                         border: (t) =>
-                          r === role ? `1px solid ${t.palette.primary.main}` : `1px solid ${t.palette.divider}`,
+                          role === r ? `1px solid ${t.palette.primary.main}` : `1px solid ${t.palette.divider}`,
+                        cursor: "pointer",
                       }}
                       onClick={() => setRole(r)}
                     >
@@ -309,27 +314,26 @@ export default function Access() {
                     </Stack>
                   ))}
                 </Stack>
-              </Box>
 
-              {/* Right: selected user pill (sticky like GitHub) */}
-              <Box
-                sx={{
-                  width: { xs: "100%", md: 320 },
-                  position: { md: "sticky" },
-                  top: { md: 8 },
-                  alignSelf: { md: "flex-start" },
-                }}
-              >
-                <Card variant="outlined" sx={{ px: 1.25, py: 0.75, borderRadius: 2 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Avatar sx={{ bgcolor: result.avatarBg, width: 28, height: 28 }}>
+                {/* Right: selected user pill */}
+                <Box sx={{ minWidth: 260 }}>
+                  <Card
+                    variant="outlined"
+                    sx={{ p: 1.25, borderRadius: 2, display: "flex", alignItems: "center" }}
+                  >
+                    <Avatar sx={{ bgcolor: result.avatarBg, width: 28, height: 28, mr: 1 }}>
                       {result.name[0]}
                     </Avatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
                         {result.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">{result.id}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {result.id}
+                      </Typography>
+                      <MuiLink component="button" variant="caption" sx={{ ml: 1 }}>
+                        View role details
+                      </MuiLink>
                     </Box>
                     <IconButton
                       size="small"
@@ -341,15 +345,10 @@ export default function Access() {
                     >
                       <CloseIcon fontSize="small" />
                     </IconButton>
-                  </Stack>
-                </Card>
-                <Box sx={{ textAlign: "right", mt: 0.5 }}>
-                  <MuiLink component="button" type="button" variant="caption">
-                    View role details
-                  </MuiLink>
+                  </Card>
                 </Box>
-              </Box>
-            </Stack>
+              </Stack>
+            </Box>
           )}
         </DialogContent>
 
