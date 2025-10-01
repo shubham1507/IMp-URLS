@@ -5,12 +5,11 @@
 // - Add People modal:
 //     * Type PSID "45460309" -> shows result card
 //     * After selecting a person: HIDE search, show role options w/ descriptions
+//     * Selected user "pill" is shown at the TOP-RIGHT of the modal (like GitHub)
 //     * Roles: Admin / Write / Read
 //     * "Add {PSID}" adds row to table with chosen role
+// - Newly added person appears at TOP of the table
 // - Each row has a delete (remove access) button
-//
-// Notes:
-// - All data is local/hardcoded for now (ready for API wiring later)
 
 import React, { useMemo, useState } from "react";
 import {
@@ -38,6 +37,7 @@ import {
   TableRow,
   Checkbox,
   Tooltip,
+  Link as MuiLink,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
@@ -67,8 +67,8 @@ const ROLE_DESCRIPTIONS = {
 export default function Access() {
   // ---------- Table state ----------
   const [rows, setRows] = useState([]); // empty at start -> shows empty state
-
   const [query, setQuery] = useState("");
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
@@ -106,11 +106,9 @@ export default function Access() {
     const newRow = { ...picked, role };
 
     setRows((prev) => {
-      const exists = prev.some((r) => r.id === newRow.id);
-      if (exists) {
-        return prev.map((r) => (r.id === newRow.id ? newRow : r));
-      }
-      return [...prev, newRow];
+      // top-insert and avoid duplicates
+      const rest = prev.filter((r) => r.id !== newRow.id);
+      return [newRow, ...rest];
     });
 
     // Reset modal state
@@ -254,13 +252,56 @@ export default function Access() {
       </Card>
 
       {/* ---------------- Add People Modal ---------------- */}
-      <Dialog
-        open={addOpen}
-        onClose={() => !adding && setAddOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>Add people to repository</DialogTitle>
+      <Dialog open={addOpen} onClose={() => !adding && setAddOpen(false)} fullWidth maxWidth="md">
+        {/* Title with selected-user pill at TOP-RIGHT */}
+        <DialogTitle sx={{ position: "relative", pr: 28 }}>
+          Add people to repository
+
+          {selectedId && result && (
+            <Box sx={{ position: "absolute", right: 16, top: 12 }}>
+              <Card
+                variant="outlined"
+                sx={{
+                  px: 1.25,
+                  py: 0.75,
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  minWidth: 260,
+                }}
+              >
+                <Avatar sx={{ bgcolor: result.avatarBg, width: 28, height: 28 }}>
+                  {result.name[0]}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                    {result.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {result.id}
+                  </Typography>
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setSelectedId(null);
+                    setRole("Read");
+                    setPsidInput("");
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Card>
+              <Box sx={{ textAlign: "right", mt: 0.5 }}>
+                <MuiLink component="button" type="button" variant="caption">
+                  View role details
+                </MuiLink>
+              </Box>
+            </Box>
+          )}
+        </DialogTitle>
+
         <DialogContent>
           {/* STATE A: No selection yet -> show search + result card */}
           {!selectedId && (
@@ -316,87 +357,49 @@ export default function Access() {
             </Stack>
           )}
 
-          {/* STATE B: Selected -> hide search; show roles w/ descriptions + selected card */}
+          {/* STATE B: Selected -> hide search; show roles w/ descriptions only */}
           {selectedId && result && (
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              spacing={3}
-              sx={{ pt: 1, alignItems: { md: "flex-start" } }}
-            >
-              {/* Roles with descriptions */}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Choose a role
-                </Typography>
+            <Box sx={{ pt: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Choose a role
+              </Typography>
 
-                <Stack spacing={1.5}>
-                  {["Admin", "Write", "Read"].map((r) => (
-                    <Stack
-                      key={r}
-                      direction="row"
-                      alignItems="flex-start"
-                      spacing={1.5}
-                      sx={{
-                        p: 1,
-                        borderRadius: 1,
-                        border: (t) =>
-                          r === role
-                            ? `1px solid ${t.palette.primary.main}`
-                            : `1px solid ${t.palette.divider}`,
-                      }}
-                      onClick={() => setRole(r)}
-                    >
-                      <Radio
-                        checked={role === r}
-                        onChange={() => setRole(r)}
-                        value={r}
-                        size="small"
-                        sx={{ mt: 0.25 }}
-                      />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {r}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {ROLE_DESCRIPTIONS[r]}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Box>
-
-              {/* Selected user card */}
-              <Card variant="outlined" sx={{ width: { xs: "100%", md: 320 } }}>
-                <CardContent sx={{ py: 1.5 }}>
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <Avatar sx={{ bgcolor: result.avatarBg, width: 36, height: 36 }}>
-                      {result.name[0]}
-                    </Avatar>
-                    <Stack sx={{ flex: 1 }}>
+              <Stack spacing={1.5}>
+                {["Read", "Write", "Admin"].map((r) => (
+                  <Stack
+                    key={r}
+                    direction="row"
+                    alignItems="flex-start"
+                    spacing={1.5}
+                    sx={{
+                      p: 1,
+                      borderRadius: 1,
+                      border: (t) =>
+                        r === role
+                          ? `1px solid ${t.palette.primary.main}`
+                          : `1px solid ${t.palette.divider}`,
+                    }}
+                    onClick={() => setRole(r)}
+                  >
+                    <Radio
+                      checked={role === r}
+                      onChange={() => setRole(r)}
+                      value={r}
+                      size="small"
+                      sx={{ mt: 0.25 }}
+                    />
+                    <Box>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {result.name}
+                        {r}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {result.id}
+                        {ROLE_DESCRIPTIONS[r]}
                       </Typography>
-                    </Stack>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setSelectedId(null);
-                        setRole("Read");
-                      }}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
+                    </Box>
                   </Stack>
-                  <Box sx={{ mt: 1 }}>
-                    <Button size="small">View role details</Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Stack>
+                ))}
+              </Stack>
+            </Box>
           )}
         </DialogContent>
 
