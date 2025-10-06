@@ -27,7 +27,10 @@ const roles = [
     groups: [
       {
         heading: "Issue and Pull Request",
-        items: ["Open and comment on an issue", "Open and comment on a pull request"],
+        items: [
+          "Open and comment on an issue",
+          "Open and comment on a pull request",
+        ],
       },
     ],
   },
@@ -98,10 +101,11 @@ const roles = [
 ];
 
 export default function TeamMemberRoles() {
-  const [expanded, setExpanded] = useState<string | false>(false);
+  const [expanded, setExpanded] = useState(false);
 
-  const handle = (panel: string) => (_: any, open: boolean) =>
+  const handle = (panel) => (_, open) => {
     setExpanded(open ? panel : false);
+  };
 
   return (
     <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
@@ -113,7 +117,7 @@ export default function TeamMemberRoles() {
       <Divider sx={{ my: 2 }} />
 
       <Grid container spacing={3} alignItems="flex-start">
-        {/* LEFT RAIL — matches the screenshot */}
+        {/* LEFT SIDE */}
         <Grid item xs={12} md={4} lg={3}>
           <Box
             sx={{
@@ -136,10 +140,10 @@ export default function TeamMemberRoles() {
           </Box>
         </Grid>
 
-        {/* RIGHT COLUMN — card-style accordions */}
+        {/* RIGHT SIDE */}
         <Grid item xs={12} md={8} lg={9}>
           <Stack spacing={1.5}>
-            {roles.map((r, i) => (
+            {roles.map((r) => (
               <Accordion
                 key={r.key}
                 expanded={expanded === r.key}
@@ -198,7 +202,6 @@ export default function TeamMemberRoles() {
                   <Divider />
 
                   <AccordionDetails sx={{ p: 0 }}>
-                    {/* Inner layout to mimic left group title and right items */}
                     {r.groups.map((g) => (
                       <Grid
                         key={g.heading}
