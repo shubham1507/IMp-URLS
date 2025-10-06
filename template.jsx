@@ -1,121 +1,252 @@
 import React, { useState } from "react";
 import {
   Box,
+  Grid,
   Typography,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Card,
-  CardContent,
   Divider,
+  Paper,
+  Stack,
+  Chip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import BuildIcon from "@mui/icons-material/Build";
+import EditIcon from "@mui/icons-material/Edit";
+import TuneIcon from "@mui/icons-material/Tune";
+import SecurityIcon from "@mui/icons-material/Security";
 
 const roles = [
   {
-    name: "Read",
-    description: "Read and clone repositories. Open and comment on issues and pull requests.",
-    permissions: [
-      "Read and clone repositories",
-      "Open and comment on issues",
-      "Open and comment on pull requests",
+    key: "Read",
+    icon: <VisibilityIcon fontSize="small" />,
+    description:
+      "Read and clone repositories. Open and comment on issues and pull requests.",
+    groups: [
+      {
+        heading: "Issue and Pull Request",
+        items: ["Open and comment on an issue", "Open and comment on a pull request"],
+      },
     ],
   },
   {
-    name: "Triage",
+    key: "Triage",
+    icon: <BuildIcon fontSize="small" />,
     description: "Read permissions plus manage issues and pull requests.",
-    permissions: [
-      "Close an issue",
-      "Add or remove a label",
-      "Assign or remove a user",
-      "Remove an assigned user",
+    groups: [
+      {
+        heading: "Issue and Pull Request",
+        items: [
+          "Close an issue",
+          "Add or remove a label",
+          "Assign or remove a user",
+          "Remove an assigned user",
+        ],
+      },
     ],
   },
   {
-    name: "Write",
-    description: "Triage permissions plus read, clone, and push to repositories.",
-    permissions: [
-      "Push commits to branches",
-      "Manage pull requests",
-      "Create or delete branches",
+    key: "Write",
+    icon: <EditIcon fontSize="small" />,
+    description:
+      "Triage permissions plus read, clone, and push to repositories.",
+    groups: [
+      {
+        heading: "Code",
+        items: ["Push to branches", "Create or delete branches"],
+      },
+      {
+        heading: "Pull Requests",
+        items: ["Open, review, and merge pull requests"],
+      },
     ],
   },
   {
-    name: "Maintain",
-    description: "Write permissions plus manage issues, pull requests, and some repository settings.",
-    permissions: [
-      "Manage repository settings (limited)",
-      "Manage issues and pull requests",
-      "Manage teams and collaborators",
+    key: "Maintain",
+    icon: <TuneIcon fontSize="small" />,
+    description:
+      "Write permissions plus manage issues, pull requests, and some repository settings.",
+    groups: [
+      {
+        heading: "Repository",
+        items: [
+          "Manage some repository settings",
+          "Manage teams and collaborators",
+          "Manage issues and pull requests",
+        ],
+      },
     ],
   },
   {
-    name: "Admin",
-    description: "Full access to repositories including sensitive and destructive actions.",
-    permissions: [
-      "Manage repository settings",
-      "Delete repositories",
-      "Manage access and permissions",
-      "Perform all administrative actions",
+    key: "Admin",
+    icon: <SecurityIcon fontSize="small" />,
+    description:
+      "Full access to repositories including sensitive and destructive actions.",
+    groups: [
+      {
+        heading: "Repository",
+        items: [
+          "Manage all repository settings",
+          "Manage access and permissions",
+          "Delete repositories and perform administrative actions",
+        ],
+      },
     ],
   },
 ];
 
 export default function TeamMemberRoles() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState<string | false>(false);
 
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-  };
+  const handle = (panel: string) => (_: any, open: boolean) =>
+    setExpanded(open ? panel : false);
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom fontWeight="bold">
+    <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
+      {/* Page title */}
+      <Typography variant="h4" fontWeight={700} gutterBottom>
         Repository roles
       </Typography>
 
-      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-        Listed below are all the available roles that can be granted to members and teams in this
-        organization. Expand a role to view the details of the permissions included.
-      </Typography>
+      <Divider sx={{ my: 2 }} />
 
-      <Divider sx={{ my: 3 }} />
+      <Grid container spacing={3} alignItems="flex-start">
+        {/* LEFT RAIL — matches the screenshot */}
+        <Grid item xs={12} md={4} lg={3}>
+          <Box
+            sx={{
+              position: { md: "sticky" },
+              top: 88,
+              pr: { md: 3 },
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ mb: 1, color: "text.primary", fontWeight: 700 }}
+            >
+              Pre-defined roles
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Listed below are all the available roles that can be granted to
+              members and teams in this organization. Expand a role to view the
+              details of the permissions included.
+            </Typography>
+          </Box>
+        </Grid>
 
-      <Typography variant="h5" gutterBottom fontWeight="medium">
-        Pre-defined roles
-      </Typography>
+        {/* RIGHT COLUMN — card-style accordions */}
+        <Grid item xs={12} md={8} lg={9}>
+          <Stack spacing={1.5}>
+            {roles.map((r, i) => (
+              <Accordion
+                key={r.key}
+                expanded={expanded === r.key}
+                onChange={handle(r.key)}
+                disableGutters
+                square
+                sx={{
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  "&:before": { display: "none" },
+                  boxShadow: "none",
+                }}
+              >
+                <Paper
+                  elevation={0}
+                  sx={{
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      px: 2,
+                      minHeight: 64,
+                      "& .MuiAccordionSummary-content": {
+                        my: 1.25,
+                      },
+                      "&:hover": { bgcolor: "action.hover" },
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1.25}>
+                      {r.icon}
+                      <Typography variant="subtitle1" fontWeight={700}>
+                        {r.key}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        label="Pre-defined"
+                        sx={{ ml: 1 }}
+                      />
+                    </Stack>
+                    <Box sx={{ flex: 1 }} />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mr: 2 }}
+                    >
+                      {r.description}
+                    </Typography>
+                  </AccordionSummary>
 
-      {roles.map((role, index) => (
-        <Accordion
-          key={index}
-          expanded={expanded === role.name}
-          onChange={handleChange(role.name)}
-          sx={{ mb: 1, borderRadius: 2 }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">{role.name}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Card variant="outlined">
-              <CardContent>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {role.description}
-                </Typography>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Permissions:
-                </Typography>
-                <ul>
-                  {role.permissions.map((perm, i) => (
-                    <li key={i}>
-                      <Typography variant="body2">{perm}</Typography>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+                  <Divider />
+
+                  <AccordionDetails sx={{ p: 0 }}>
+                    {/* Inner layout to mimic left group title and right items */}
+                    {r.groups.map((g) => (
+                      <Grid
+                        key={g.heading}
+                        container
+                        sx={{
+                          borderTop: 0,
+                          "&:not(:last-of-type)": {
+                            borderBottom: 1,
+                            borderColor: "divider",
+                          },
+                        }}
+                      >
+                        <Grid
+                          item
+                          xs={12}
+                          sm={4}
+                          sx={{
+                            px: 2,
+                            py: 2,
+                            bgcolor: "background.default",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                            fontWeight={600}
+                          >
+                            {g.heading}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={8} sx={{ px: 2, py: 2 }}>
+                          <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                            {g.items.map((it) => (
+                              <li key={it}>
+                                <Typography variant="body2">{it}</Typography>
+                              </li>
+                            ))}
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    ))}
+                  </AccordionDetails>
+                </Paper>
+              </Accordion>
+            ))}
+          </Stack>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
