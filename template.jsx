@@ -10,6 +10,7 @@ import {
   Paper,
   Stack,
   Chip,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -98,9 +99,7 @@ export default function TeamMemberRoles() {
   // collapsed by default
   const [expandedKey, setExpandedKey] = useState(null);
 
-  const toggle = (key) => {
-    setExpandedKey((prev) => (prev === key ? null : key));
-  };
+  const toggle = (key) => setExpandedKey((prev) => (prev === key ? null : key));
 
   return (
     <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
@@ -133,7 +132,8 @@ export default function TeamMemberRoles() {
               <Accordion
                 key={r.key}
                 expanded={expandedKey === r.key}
-                onChange={() => toggle(r.key)}
+                // IMPORTANT: ignore default toggle from clicking the summary row
+                onChange={() => {}}
                 disableGutters
                 square
                 sx={{
@@ -153,11 +153,14 @@ export default function TeamMemberRoles() {
                   }}
                 >
                   <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
+                    // prevent summary click from toggling
+                    onClick={(e) => e.preventDefault()}
+                    // we provide our own expand button at the far right
+                    expandIcon={null}
                     sx={{
                       px: 2,
                       minHeight: 64,
-                      "& .MuiAccordionSummary-content": { my: 1.25 },
+                      "& .MuiAccordionSummary-content": { my: 1.25, display: "flex", alignItems: "center" },
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
@@ -173,10 +176,33 @@ export default function TeamMemberRoles() {
                         sx={{ ml: 1 }}
                       />
                     </Stack>
+
                     <Box sx={{ flex: 1 }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mr: 1.5 }}
+                    >
                       {r.description}
                     </Typography>
+
+                    {/* The ONLY clickable control to expand/collapse */}
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      aria-label={expandedKey === r.key ? "Collapse" : "Expand"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggle(r.key);
+                      }}
+                      sx={{
+                        transform: expandedKey === r.key ? "rotate(180deg)" : "none",
+                        transition: "transform 0.2s ease",
+                      }}
+                    >
+                      <ExpandMoreIcon />
+                    </IconButton>
                   </AccordionSummary>
 
                   <Divider />
