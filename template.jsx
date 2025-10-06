@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -96,8 +97,14 @@ const roles = [
 ];
 
 export default function TeamMemberRoles() {
-  // collapsed by default
-  const [expandedKey, setExpandedKey] = useState(null);
+  const [expandedKey, setExpandedKey] = useState(null); // collapsed by default
+  const location = useLocation();
+
+  // Hard-reset collapsed state on first mount and whenever this route changes
+  useEffect(() => {
+    setExpandedKey(null);
+  }, [location.pathname]);
+
   const toggle = (key) => setExpandedKey((prev) => (prev === key ? null : key));
 
   return (
@@ -130,7 +137,7 @@ export default function TeamMemberRoles() {
               <Accordion
                 key={r.key}
                 expanded={expandedKey === r.key}
-                onChange={() => {}}         // block default toggle
+                onChange={() => {}} // block default toggle
                 disableGutters
                 square
                 sx={{
@@ -150,9 +157,8 @@ export default function TeamMemberRoles() {
                   }}
                 >
                   <AccordionSummary
-                    expandIcon={null}        // we use our own icon button
-                    // ignore row click (don’t toggle)
-                    onClick={(e) => e.preventDefault()}
+                    expandIcon={null} // custom button only
+                    onClick={(e) => e.preventDefault()} // row not clickable
                     sx={{
                       px: 2,
                       minHeight: 64,
@@ -161,17 +167,12 @@ export default function TeamMemberRoles() {
                         display: "flex",
                         alignItems: "center",
                         width: "100%",
-                        pointerEvents: "none",      // row is not clickable
+                        pointerEvents: "none",
                       },
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      spacing={1.25}
-                      sx={{ pointerEvents: "none" }}
-                    >
+                    <Stack direction="row" alignItems="center" spacing={1.25}>
                       {r.icon}
                       <Typography variant="subtitle1" fontWeight={700}>
                         {r.key}
@@ -194,7 +195,7 @@ export default function TeamMemberRoles() {
                       {r.description}
                     </Typography>
 
-                    {/* the only clickable control */}
+                    {/* Only clickable control */}
                     <IconButton
                       size="small"
                       edge="end"
@@ -204,7 +205,7 @@ export default function TeamMemberRoles() {
                         toggle(r.key);
                       }}
                       sx={{
-                        pointerEvents: "auto",       // clickable
+                        pointerEvents: "auto",
                         transform: expandedKey === r.key ? "rotate(180deg)" : "none",
                         transition: "transform 0.2s ease",
                       }}
