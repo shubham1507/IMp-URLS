@@ -98,12 +98,10 @@ const roles = [
 export default function TeamMemberRoles() {
   // collapsed by default
   const [expandedKey, setExpandedKey] = useState(null);
-
   const toggle = (key) => setExpandedKey((prev) => (prev === key ? null : key));
 
   return (
     <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
-      {/* Page title */}
       <Typography variant="h4" fontWeight={700} gutterBottom>
         Repository roles
       </Typography>
@@ -132,8 +130,7 @@ export default function TeamMemberRoles() {
               <Accordion
                 key={r.key}
                 expanded={expandedKey === r.key}
-                // IMPORTANT: ignore default toggle from clicking the summary row
-                onChange={() => {}}
+                onChange={() => {}}         // block default toggle
                 disableGutters
                 square
                 sx={{
@@ -153,18 +150,28 @@ export default function TeamMemberRoles() {
                   }}
                 >
                   <AccordionSummary
-                    // prevent summary click from toggling
+                    expandIcon={null}        // we use our own icon button
+                    // ignore row click (don’t toggle)
                     onClick={(e) => e.preventDefault()}
-                    // we provide our own expand button at the far right
-                    expandIcon={null}
                     sx={{
                       px: 2,
                       minHeight: 64,
-                      "& .MuiAccordionSummary-content": { my: 1.25, display: "flex", alignItems: "center" },
+                      "& .MuiAccordionSummary-content": {
+                        my: 1.25,
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        pointerEvents: "none",      // row is not clickable
+                      },
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1.25}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={1.25}
+                      sx={{ pointerEvents: "none" }}
+                    >
                       {r.icon}
                       <Typography variant="subtitle1" fontWeight={700}>
                         {r.key}
@@ -182,12 +189,12 @@ export default function TeamMemberRoles() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ mr: 1.5 }}
+                      sx={{ mr: 1.5, pointerEvents: "none" }}
                     >
                       {r.description}
                     </Typography>
 
-                    {/* The ONLY clickable control to expand/collapse */}
+                    {/* the only clickable control */}
                     <IconButton
                       size="small"
                       edge="end"
@@ -197,6 +204,7 @@ export default function TeamMemberRoles() {
                         toggle(r.key);
                       }}
                       sx={{
+                        pointerEvents: "auto",       // clickable
                         transform: expandedKey === r.key ? "rotate(180deg)" : "none",
                         transition: "transform 0.2s ease",
                       }}
