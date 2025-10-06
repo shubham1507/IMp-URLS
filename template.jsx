@@ -4,14 +4,12 @@ import {
   Box,
   Grid,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Divider,
   Paper,
   Stack,
   Chip,
   IconButton,
+  Collapse,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -100,7 +98,7 @@ export default function TeamMemberRoles() {
   const [expandedKey, setExpandedKey] = useState(null); // collapsed by default
   const location = useLocation();
 
-  // Hard-reset collapsed state on first mount and whenever this route changes
+  // Hard reset whenever this route mounts/changes
   useEffect(() => {
     setExpandedKey(null);
   }, [location.pathname]);
@@ -133,21 +131,11 @@ export default function TeamMemberRoles() {
         {/* RIGHT SIDE */}
         <Grid item xs={12} md={8} lg={9}>
           <Stack spacing={1.5}>
-            {roles.map((r) => (
-              <Accordion
-                key={r.key}
-                expanded={expandedKey === r.key}
-                onChange={() => {}} // block default toggle
-                disableGutters
-                square
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  "&:before": { display: "none" },
-                  boxShadow: "none",
-                }}
-              >
+            {roles.map((r) => {
+              const open = expandedKey === r.key;
+              return (
                 <Paper
+                  key={r.key}
                   elevation={0}
                   sx={{
                     border: 1,
@@ -156,89 +144,61 @@ export default function TeamMemberRoles() {
                     overflow: "hidden",
                   }}
                 >
-                  <AccordionSummary
-                    expandIcon={null} // custom button only
-                    onClick={(e) => e.preventDefault()} // row not clickable
+                  {/* Header row (NOT clickable) */}
+                  <Box
                     sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.25,
                       px: 2,
                       minHeight: 64,
-                      "& .MuiAccordionSummary-content": {
-                        my: 1.25,
-                        display: "flex",
-                        alignItems: "center",
-                        width: "100%",
-                        pointerEvents: "none",
-                      },
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1.25}>
+                    <Stack direction="row" alignItems="center" spacing={1.25} sx={{ pointerEvents: "none" }}>
                       {r.icon}
                       <Typography variant="subtitle1" fontWeight={700}>
                         {r.key}
                       </Typography>
-                      <Chip
-                        size="small"
-                        variant="outlined"
-                        label="Pre-defined"
-                        sx={{ ml: 1 }}
-                      />
+                      <Chip size="small" variant="outlined" label="Pre-defined" />
                     </Stack>
 
                     <Box sx={{ flex: 1 }} />
 
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mr: 1.5, pointerEvents: "none" }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ mr: 1.5, pointerEvents: "none" }}>
                       {r.description}
                     </Typography>
 
-                    {/* Only clickable control */}
+                    {/* The ONLY toggle */}
                     <IconButton
                       size="small"
                       edge="end"
-                      aria-label={expandedKey === r.key ? "Collapse" : "Expand"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggle(r.key);
-                      }}
+                      aria-label={open ? "Collapse" : "Expand"}
+                      onClick={() => toggle(r.key)}
                       sx={{
-                        pointerEvents: "auto",
-                        transform: expandedKey === r.key ? "rotate(180deg)" : "none",
+                        transform: open ? "rotate(180deg)" : "none",
                         transition: "transform 0.2s ease",
                       }}
                     >
                       <ExpandMoreIcon />
                     </IconButton>
-                  </AccordionSummary>
+                  </Box>
 
                   <Divider />
 
-                  <AccordionDetails sx={{ p: 0 }}>
-                    {r.groups.map((g) => (
+                  {/* Body (collapsible) */}
+                  <Collapse in={open} timeout="auto" unmountOnExit>
+                    {r.groups.map((g, idx) => (
                       <Grid
                         key={g.heading}
                         container
                         sx={{
-                          "&:not(:last-of-type)": {
-                            borderBottom: 1,
-                            borderColor: "divider",
-                          },
+                          borderTop: idx === 0 ? "none" : 1,
+                          borderColor: "divider",
                         }}
                       >
-                        <Grid
-                          item
-                          xs={12}
-                          sm={4}
-                          sx={{ px: 2, py: 2, bgcolor: "background.default" }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            color="text.secondary"
-                            fontWeight={600}
-                          >
+                        <Grid item xs={12} sm={4} sx={{ px: 2, py: 2, bgcolor: "background.default" }}>
+                          <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
                             {g.heading}
                           </Typography>
                         </Grid>
@@ -253,10 +213,10 @@ export default function TeamMemberRoles() {
                         </Grid>
                       </Grid>
                     ))}
-                  </AccordionDetails>
+                  </Collapse>
                 </Paper>
-              </Accordion>
-            ))}
+              );
+            })}
           </Stack>
         </Grid>
       </Grid>
