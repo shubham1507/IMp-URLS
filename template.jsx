@@ -56,14 +56,8 @@ const roles = [
     description:
       "Triage permissions plus read, clone, and push to repositories.",
     groups: [
-      {
-        heading: "Code",
-        items: ["Push to branches", "Create or delete branches"],
-      },
-      {
-        heading: "Pull Requests",
-        items: ["Open, review, and merge pull requests"],
-      },
+      { heading: "Code", items: ["Push to branches", "Create or delete branches"] },
+      { heading: "Pull Requests", items: ["Open, review, and merge pull requests"] },
     ],
   },
   {
@@ -101,10 +95,11 @@ const roles = [
 ];
 
 export default function TeamMemberRoles() {
-  const [expanded, setExpanded] = useState(false);
+  // collapsed by default
+  const [expandedKey, setExpandedKey] = useState(null);
 
-  const handle = (panel) => (_, open) => {
-    setExpanded(open ? panel : false);
+  const toggle = (key) => {
+    setExpandedKey((prev) => (prev === key ? null : key));
   };
 
   return (
@@ -119,17 +114,8 @@ export default function TeamMemberRoles() {
       <Grid container spacing={3} alignItems="flex-start">
         {/* LEFT SIDE */}
         <Grid item xs={12} md={4} lg={3}>
-          <Box
-            sx={{
-              position: { md: "sticky" },
-              top: 88,
-              pr: { md: 3 },
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ mb: 1, color: "text.primary", fontWeight: 700 }}
-            >
+          <Box sx={{ position: { md: "sticky" }, top: 88, pr: { md: 3 } }}>
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
               Pre-defined roles
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -146,8 +132,8 @@ export default function TeamMemberRoles() {
             {roles.map((r) => (
               <Accordion
                 key={r.key}
-                expanded={expanded === r.key}
-                onChange={handle(r.key)}
+                expanded={expandedKey === r.key}
+                onChange={() => toggle(r.key)}
                 disableGutters
                 square
                 sx={{
@@ -171,9 +157,7 @@ export default function TeamMemberRoles() {
                     sx={{
                       px: 2,
                       minHeight: 64,
-                      "& .MuiAccordionSummary-content": {
-                        my: 1.25,
-                      },
+                      "& .MuiAccordionSummary-content": { my: 1.25 },
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
@@ -190,11 +174,7 @@ export default function TeamMemberRoles() {
                       />
                     </Stack>
                     <Box sx={{ flex: 1 }} />
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mr: 2 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
                       {r.description}
                     </Typography>
                   </AccordionSummary>
@@ -207,7 +187,6 @@ export default function TeamMemberRoles() {
                         key={g.heading}
                         container
                         sx={{
-                          borderTop: 0,
                           "&:not(:last-of-type)": {
                             borderBottom: 1,
                             borderColor: "divider",
@@ -218,11 +197,7 @@ export default function TeamMemberRoles() {
                           item
                           xs={12}
                           sm={4}
-                          sx={{
-                            px: 2,
-                            py: 2,
-                            bgcolor: "background.default",
-                          }}
+                          sx={{ px: 2, py: 2, bgcolor: "background.default" }}
                         >
                           <Typography
                             variant="subtitle2"
