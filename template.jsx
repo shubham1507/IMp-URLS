@@ -1,4 +1,4 @@
-/ client/src/components/dashboard/settings/access/Access.jsx
+// client/src/components/dashboard/settings/access/Access.jsx
 // ------------------------------------------------------------------
 // Manage Access (3 roles only)
 // • Blue TrashIcon from @phosphor-icons/react
@@ -145,7 +145,7 @@ export default function Access() {
           {rows.length === 0 ? (
             <Box
               sx={{
-                border: (t) => 1px dashed ${t.palette.divider},
+                border: (t) => 1px dashed ${t.palette.divider}, // ✅ fixed
                 borderRadius: 2,
                 p: 6,
                 textAlign: "center",
@@ -204,7 +204,7 @@ export default function Access() {
                       <Chip size="small" label={r.role} />
                     </TableCell>
 
-                    {/* ✅ Trash icon (blue, same as your screenshot) */}
+                    {/* ✅ Blue Trash icon */}
                     <TableCell align="right">
                       <Tooltip title="Remove access">
                         <IconButton onClick={() => handleRemove(r.id)}>
