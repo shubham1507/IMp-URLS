@@ -1,9 +1,9 @@
 // client/src/components/dashboard/settings/access/Access.jsx
 // ------------------------------------------------------------------
 // Manage Access (3 roles only)
-// • Delete icon changed to blue trash can
-// • Selected user pill shown ABOVE "Choose a role" with divider
-// • Fully functional add/remove flow
+// • Blue Trash icon for delete (like your screenshot)
+// • Divider below selected user pill
+// • Selected user pill ABOVE "Choose a role"
 
 import React, { useMemo, useState } from "react";
 import {
@@ -36,7 +36,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // ✅ new delete icon
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // ✅ Blue trash icon
 
 const DIRECTORY = {
   "45460309": {
@@ -203,8 +203,11 @@ export default function Access() {
                     </TableCell>
                     <TableCell align="right">
                       <Tooltip title="Remove access">
-                        <IconButton color="primary" onClick={() => handleRemove(r.id)}>
-                          <DeleteOutlineIcon /> {/* ✅ trash can */}
+                        <IconButton
+                          onClick={() => handleRemove(r.id)}
+                          sx={{ color: "#1976d2" }} // ✅ Blue color for trash
+                        >
+                          <DeleteOutlineIcon />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
