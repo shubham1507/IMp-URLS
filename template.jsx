@@ -1,9 +1,10 @@
-// client/src/components/dashboard/settings/access/Access.jsx
+/ client/src/components/dashboard/settings/access/Access.jsx
 // ------------------------------------------------------------------
 // Manage Access (3 roles only)
-// • Blue Trash icon for delete (like your screenshot)
-// • Divider below selected user pill
-// • Selected user pill ABOVE "Choose a role"
+// • Blue TrashIcon from @phosphor-icons/react
+// • Selected user pill above "Choose a role"
+// • Divider below pill
+// • Clean GitHub-like layout
 
 import React, { useMemo, useState } from "react";
 import {
@@ -36,7 +37,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // ✅ Blue trash icon
+import { Trash as TrashIcon } from "@phosphor-icons/react"; // ✅ using Phosphor Trash icon
 
 const DIRECTORY = {
   "45460309": {
@@ -59,6 +60,14 @@ const ROLES = ["Admin", "Write", "Read"];
 export default function Access() {
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [psidInput, setPsidInput] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [role, setRole] = useState("Read");
+  const [adding, setAdding] = useState(false);
+
+  const result = useMemo(() => DIRECTORY[psidInput.trim()] || null, [psidInput]);
+  const canAdd = Boolean(selectedId) && !adding;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -71,15 +80,6 @@ export default function Access() {
     );
   }, [query, rows]);
 
-  const [addOpen, setAddOpen] = useState(false);
-  const [psidInput, setPsidInput] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
-  const [role, setRole] = useState("Read");
-  const [adding, setAdding] = useState(false);
-
-  const result = useMemo(() => DIRECTORY[psidInput.trim()] || null, [psidInput]);
-  const canAdd = Boolean(selectedId) && !adding;
-
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
     setAdding(true);
@@ -87,7 +87,6 @@ export default function Access() {
 
     const picked = DIRECTORY[selectedId];
     const newRow = { ...picked, role };
-
     setRows((prev) => [newRow, ...prev.filter((r) => r.id !== newRow.id)]);
     setAdding(false);
     setPsidInput("");
@@ -100,6 +99,7 @@ export default function Access() {
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      {/* Header */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Typography variant="h5">Manage access</Typography>
         <Stack direction="row" spacing={1}>
@@ -112,6 +112,7 @@ export default function Access() {
         </Stack>
       </Stack>
 
+      {/* Main card */}
       <Card variant="outlined">
         <CardContent>
           <Stack
@@ -140,10 +141,11 @@ export default function Access() {
 
           <Divider sx={{ mb: 2 }} />
 
+          {/* Table or empty state */}
           {rows.length === 0 ? (
             <Box
               sx={{
-                border: (t) => `1px dashed ${t.palette.divider}`,
+                border: (t) => 1px dashed ${t.palette.divider},
                 borderRadius: 2,
                 p: 6,
                 textAlign: "center",
@@ -201,13 +203,12 @@ export default function Access() {
                     <TableCell>
                       <Chip size="small" label={r.role} />
                     </TableCell>
+
+                    {/* ✅ Trash icon (blue, same as your screenshot) */}
                     <TableCell align="right">
                       <Tooltip title="Remove access">
-                        <IconButton
-                          onClick={() => handleRemove(r.id)}
-                          sx={{ color: "#1976d2" }} // ✅ Blue color for trash
-                        >
-                          <DeleteOutlineIcon />
+                        <IconButton onClick={() => handleRemove(r.id)}>
+                          <TrashIcon color="blue" size={22} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -237,6 +238,7 @@ export default function Access() {
       >
         <DialogTitle>Add people to repository</DialogTitle>
         <DialogContent>
+          {/* Search field */}
           {!selectedId && (
             <Stack spacing={2} sx={{ pt: 1 }}>
               <TextField
@@ -287,9 +289,9 @@ export default function Access() {
             </Stack>
           )}
 
+          {/* Selected user pill above role options */}
           {selectedId && result && (
             <Box sx={{ pt: 1 }}>
-              {/* Selected user pill ABOVE roles */}
               <Card
                 variant="outlined"
                 sx={{
@@ -326,9 +328,9 @@ export default function Access() {
                 </IconButton>
               </Card>
 
-              {/* Divider below user pill */}
               <Divider sx={{ mb: 2 }} />
 
+              {/* Roles */}
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Choose a role
               </Typography>
@@ -344,8 +346,8 @@ export default function Access() {
                       borderRadius: 1,
                       border: (t) =>
                         role === r
-                          ? `1px solid ${t.palette.primary.main}`
-                          : `1px solid ${t.palette.divider}`,
+                          ? 1px solid ${t.palette.primary.main}
+                          : 1px solid ${t.palette.divider},
                       cursor: "pointer",
                     }}
                     onClick={() => setRole(r)}
@@ -371,6 +373,8 @@ export default function Access() {
             </Box>
           )}
         </DialogContent>
+
+        {/* Dialog buttons */}
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
             onClick={() => {
@@ -383,12 +387,8 @@ export default function Access() {
           >
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmitAdd}
-            disabled={!canAdd}
-          >
-            {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to repository"}
+          <Button variant="contained" onClick={handleSubmitAdd} disabled={!canAdd}>
+            {adding ? "Adding…" : selectedId ? Add ${selectedId} : "Add to repository"}
           </Button>
         </DialogActions>
       </Dialog>
