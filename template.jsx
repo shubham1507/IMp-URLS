@@ -1,225 +1,394 @@
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+// client/src/components/dashboard/settings/access/Access.jsx
+// ------------------------------------------------------------------
+// Manage Access (3 roles only)
+// • Delete icon changed to blue trash can
+// • Selected user pill shown ABOVE "Choose a role" with divider
+// • Fully functional add/remove flow
+
+import React, { useMemo, useState } from "react";
 import {
   Box,
-  Grid,
+  Card,
+  CardContent,
   Typography,
-  Divider,
-  Paper,
   Stack,
+  Button,
+  TextField,
+  InputAdornment,
+  Divider,
   Chip,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   IconButton,
-  Collapse,
+  Radio,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Checkbox,
+  Tooltip,
+  Link as MuiLink,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import BuildIcon from "@mui/icons-material/Build";
-import EditIcon from "@mui/icons-material/Edit";
-import TuneIcon from "@mui/icons-material/Tune";
-import SecurityIcon from "@mui/icons-material/Security";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/PersonAdd";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // ✅ new delete icon
 
-const roles = [
-  {
-    key: "Read",
-    icon: <VisibilityIcon fontSize="small" />,
-    description:
-      "Read and clone repositories. Open and comment on issues and pull requests.",
-    groups: [
-      {
-        heading: "Issue and Pull Request",
-        items: [
-          "Open and comment on an issue",
-          "Open and comment on a pull request",
-        ],
-      },
-    ],
+const DIRECTORY = {
+  "45460309": {
+    id: "45460309",
+    name: "Prasad Chavan",
+    username: "pchavan",
+    type: "Outside Collaborator",
+    avatarBg: "#8BC34A",
   },
-  {
-    key: "Triage",
-    icon: <BuildIcon fontSize="small" />,
-    description: "Read permissions plus manage issues and pull requests.",
-    groups: [
-      {
-        heading: "Issue and Pull Request",
-        items: [
-          "Close an issue",
-          "Add or remove a label",
-          "Assign or remove a user",
-          "Remove an assigned user",
-        ],
-      },
-    ],
-  },
-  {
-    key: "Write",
-    icon: <EditIcon fontSize="small" />,
-    description:
-      "Triage permissions plus read, clone, and push to repositories.",
-    groups: [
-      { heading: "Code", items: ["Push to branches", "Create or delete branches"] },
-      { heading: "Pull Requests", items: ["Open, review, and merge pull requests"] },
-    ],
-  },
-  {
-    key: "Maintain",
-    icon: <TuneIcon fontSize="small" />,
-    description:
-      "Write permissions plus manage issues, pull requests, and some repository settings.",
-    groups: [
-      {
-        heading: "Repository",
-        items: [
-          "Manage some repository settings",
-          "Manage teams and collaborators",
-          "Manage issues and pull requests",
-        ],
-      },
-    ],
-  },
-  {
-    key: "Admin",
-    icon: <SecurityIcon fontSize="small" />,
-    description:
-      "Full access to repositories including sensitive and destructive actions.",
-    groups: [
-      {
-        heading: "Repository",
-        items: [
-          "Manage all repository settings",
-          "Manage access and permissions",
-          "Delete repositories and perform administrative actions",
-        ],
-      },
-    ],
-  },
-];
+};
 
-export default function TeamMemberRoles() {
-  const [expandedKey, setExpandedKey] = useState(null); // collapsed by default
-  const location = useLocation();
+const ROLE_DESCRIPTIONS = {
+  Admin:
+    "Recommended for people who need full access to the project, including sensitive and destructive actions.",
+  Write: "Recommended for contributors who actively push to your project.",
+  Read: "Recommended for non-code contributors who want to view or discuss your project.",
+};
+const ROLES = ["Admin", "Write", "Read"];
 
-  // Hard reset whenever this route mounts/changes
-  useEffect(() => {
-    setExpandedKey(null);
-  }, [location.pathname]);
+export default function Access() {
+  const [rows, setRows] = useState([]);
+  const [query, setQuery] = useState("");
 
-  const toggle = (key) => setExpandedKey((prev) => (prev === key ? null : key));
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.username.toLowerCase().includes(q) ||
+        r.id.toLowerCase().includes(q)
+    );
+  }, [query, rows]);
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [psidInput, setPsidInput] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [role, setRole] = useState("Read");
+  const [adding, setAdding] = useState(false);
+
+  const result = useMemo(() => DIRECTORY[psidInput.trim()] || null, [psidInput]);
+  const canAdd = Boolean(selectedId) && !adding;
+
+  const handleSubmitAdd = async () => {
+    if (!canAdd) return;
+    setAdding(true);
+    await new Promise((r) => setTimeout(r, 250));
+
+    const picked = DIRECTORY[selectedId];
+    const newRow = { ...picked, role };
+
+    setRows((prev) => [newRow, ...prev.filter((r) => r.id !== newRow.id)]);
+    setAdding(false);
+    setPsidInput("");
+    setSelectedId(null);
+    setRole("Read");
+    setAddOpen(false);
+  };
+
+  const handleRemove = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
 
   return (
-    <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        Repository roles
-      </Typography>
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Typography variant="h5">Manage access</Typography>
+        <Stack direction="row" spacing={1}>
+          <Button variant="outlined" disabled>
+            Add teams
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
+            Add people
+          </Button>
+        </Stack>
+      </Stack>
 
-      <Divider sx={{ my: 2 }} />
+      <Card variant="outlined">
+        <CardContent>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems="center"
+            sx={{ mb: 2 }}
+          >
+            <Checkbox disabled />
+            <TextField
+              fullWidth
+              placeholder="Find people or a team…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Chip size="small" label="Direct access" variant="outlined" />
+            <Chip size="small" label="Organization access" variant="outlined" />
+          </Stack>
 
-      <Grid container spacing={3} alignItems="flex-start">
-        {/* LEFT SIDE */}
-        <Grid item xs={12} md={4} lg={3}>
-          <Box sx={{ position: { md: "sticky" }, top: 88, pr: { md: 3 } }}>
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
-              Pre-defined roles
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Listed below are all the available roles that can be granted to
-              members and teams in this organization. Expand a role to view the
-              details of the permissions included.
-            </Typography>
-          </Box>
-        </Grid>
+          <Divider sx={{ mb: 2 }} />
 
-        {/* RIGHT SIDE */}
-        <Grid item xs={12} md={8} lg={9}>
-          <Stack spacing={1.5}>
-            {roles.map((r) => {
-              const open = expandedKey === r.key;
-              return (
-                <Paper
-                  key={r.key}
-                  elevation={0}
+          {rows.length === 0 ? (
+            <Box
+              sx={{
+                border: (t) => `1px dashed ${t.palette.divider}`,
+                borderRadius: 2,
+                p: 6,
+                textAlign: "center",
+                bgcolor: (t) =>
+                  t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "transparent",
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                No people added to org
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Assigned individuals and teams will appear here once you add them.
+              </Typography>
+              <Button variant="contained" onClick={() => setAddOpen(true)}>
+                Add people
+              </Button>
+            </Box>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox disabled />
+                  </TableCell>
+                  <TableCell>Direct access</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell align="right">Delete</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.map((r) => (
+                  <TableRow key={r.id} hover>
+                    <TableCell padding="checkbox">
+                      <Checkbox />
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
+                          {r.name?.[0] || "U"}
+                        </Avatar>
+                        <Stack>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {r.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {r.id} · {r.username}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="small" label={r.type} />
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="small" label={r.role} />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Remove access">
+                        <IconButton color="primary" onClick={() => handleRemove(r.id)}>
+                          <DeleteOutlineIcon /> {/* ✅ trash can */}
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filtered.length === 0 && rows.length > 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Typography variant="body2" color="text.secondary">
+                        No results match “{query}”.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add People Modal */}
+      <Dialog
+        open={addOpen}
+        onClose={() => !adding && setAddOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Add people to repository</DialogTitle>
+        <DialogContent>
+          {!selectedId && (
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <TextField
+                autoFocus
+                label="Search by username, full name, or email"
+                placeholder="Try 45460309"
+                value={psidInput}
+                onChange={(e) => {
+                  setPsidInput(e.target.value);
+                  setSelectedId(null);
+                }}
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {result && (
+                <Card
+                  variant="outlined"
                   sx={{
-                    border: 1,
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    overflow: "hidden",
+                    cursor: "pointer",
+                    borderColor: selectedId ? "primary.main" : "divider",
+                  }}
+                  onClick={() => setSelectedId(result.id)}
+                >
+                  <CardContent sx={{ py: 1.5 }}>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Avatar sx={{ bgcolor: result.avatarBg, width: 36, height: 36 }}>
+                        {result.name[0]}
+                      </Avatar>
+                      <Stack sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {result.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {result.id} · invite outside collaborator
+                        </Typography>
+                      </Stack>
+                      <Chip size="small" color="primary" label="Select" />
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
+            </Stack>
+          )}
+
+          {selectedId && result && (
+            <Box sx={{ pt: 1 }}>
+              {/* Selected user pill ABOVE roles */}
+              <Card
+                variant="outlined"
+                sx={{
+                  p: 1.25,
+                  borderRadius: 2,
+                  mb: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Avatar sx={{ bgcolor: result.avatarBg, width: 28, height: 28, mr: 1 }}>
+                  {result.name[0]}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                    {result.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {result.id}
+                  </Typography>
+                  <MuiLink component="button" variant="caption" sx={{ ml: 1 }}>
+                    View role details
+                  </MuiLink>
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setSelectedId(null);
+                    setRole("Read");
+                    setPsidInput("");
                   }}
                 >
-                  {/* Header row (NOT clickable) */}
-                  <Box
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Card>
+
+              {/* Divider below user pill */}
+              <Divider sx={{ mb: 2 }} />
+
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Choose a role
+              </Typography>
+              <Stack spacing={1.25}>
+                {ROLES.map((r) => (
+                  <Stack
+                    key={r}
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="flex-start"
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.25,
-                      px: 2,
-                      minHeight: 64,
-                      "&:hover": { bgcolor: "action.hover" },
+                      p: 1,
+                      borderRadius: 1,
+                      border: (t) =>
+                        role === r
+                          ? `1px solid ${t.palette.primary.main}`
+                          : `1px solid ${t.palette.divider}`,
+                      cursor: "pointer",
                     }}
+                    onClick={() => setRole(r)}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1.25} sx={{ pointerEvents: "none" }}>
-                      {r.icon}
-                      <Typography variant="subtitle1" fontWeight={700}>
-                        {r.key}
-                      </Typography>
-                      <Chip size="small" variant="outlined" label="Pre-defined" />
-                    </Stack>
-
-                    <Box sx={{ flex: 1 }} />
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mr: 1.5, pointerEvents: "none" }}>
-                      {r.description}
-                    </Typography>
-
-                    {/* The ONLY toggle */}
-                    <IconButton
+                    <Radio
+                      checked={role === r}
+                      onChange={() => setRole(r)}
+                      value={r}
                       size="small"
-                      edge="end"
-                      aria-label={open ? "Collapse" : "Expand"}
-                      onClick={() => toggle(r.key)}
-                      sx={{
-                        transform: open ? "rotate(180deg)" : "none",
-                        transition: "transform 0.2s ease",
-                      }}
-                    >
-                      <ExpandMoreIcon />
-                    </IconButton>
-                  </Box>
-
-                  <Divider />
-
-                  {/* Body (collapsible) */}
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    {r.groups.map((g, idx) => (
-                      <Grid
-                        key={g.heading}
-                        container
-                        sx={{
-                          borderTop: idx === 0 ? "none" : 1,
-                          borderColor: "divider",
-                        }}
-                      >
-                        <Grid item xs={12} sm={4} sx={{ px: 2, py: 2, bgcolor: "background.default" }}>
-                          <Typography variant="subtitle2" color="text.secondary" fontWeight={600}>
-                            {g.heading}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={8} sx={{ px: 2, py: 2 }}>
-                          <Box component="ul" sx={{ m: 0, pl: 2 }}>
-                            {g.items.map((it) => (
-                              <li key={it}>
-                                <Typography variant="body2">{it}</Typography>
-                              </li>
-                            ))}
-                          </Box>
-                        </Grid>
-                      </Grid>
-                    ))}
-                  </Collapse>
-                </Paper>
-              );
-            })}
-          </Stack>
-        </Grid>
-      </Grid>
+                      sx={{ mt: 0.25 }}
+                    />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {r}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {ROLE_DESCRIPTIONS[r]}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setAddOpen(false);
+              setSelectedId(null);
+              setPsidInput("");
+              setRole("Read");
+            }}
+            disabled={adding}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitAdd}
+            disabled={!canAdd}
+          >
+            {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to repository"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
