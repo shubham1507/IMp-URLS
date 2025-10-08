@@ -1,5 +1,6 @@
 // client/src/pages/dashboard/settings/access.jsx
-import React, { useMemo, useState, useEffect } from "react";
+
+import React, { useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -25,20 +26,12 @@ import {
   TableRow,
   Checkbox,
   Tooltip,
-  CircularProgress,
+  Link as MuiLink,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
-
-// ⬇️ use the hook you created (make sure the path resolves in your project)
-// If you have the @ alias to src, you can also: import { useRoles } from "@/hooks/useRoles.js";
-import { useRoles } from "../../../hooks/useRoles.js";
-
-/* -------------------------------------------------------------------------- */
-/*                               Mock directory                               */
-/* -------------------------------------------------------------------------- */
 
 const DIRECTORY = [
   {
@@ -50,59 +43,25 @@ const DIRECTORY = [
   },
 ];
 
-/* -------------------------------------------------------------------------- */
-/*                         Helpers for role normalization                      */
-/* -------------------------------------------------------------------------- */
-
-// (Optional) human-friendly labels for role.name values from API
-const NAME_TO_LABEL = {
-  org_admin: "Organization Admin",
-  org_auditor: "Organization Auditor",
-  project_maintainer: "Project Maintainer",
-  project_operator: "Project Operator",
-  project_viewer: "Project Viewer",
+const ROLE_DESCRIPTIONS = {
+  Admin:
+    "Recommended for people who need full access to the project, including sensitive and destructive actions.",
+  Write:
+    "Recommended for contributors who need to actively push to your project.",
+  Read:
+    "Recommended for non-code contributors who want to view or discuss your project.",
 };
 
-function normalizeRoles(apiArray) {
-  if (!Array.isArray(apiArray)) return [];
-  return apiArray.map((r) => ({
-    id: r.id,                 // API id (e.g., "68e4ab...9151")
-    key: r.name,              // API name (e.g., "project_viewer")
-    scope: r.scope,           // "org" | "project"
-    label: NAME_TO_LABEL[r.name] ?? r.name,
-    description: r.description || "No description provided.",
-  }));
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                  Component                                  */
-/* -------------------------------------------------------------------------- */
+const ROLES = ["Admin", "Write", "Read"];
 
 export default function Access() {
-  // table data
   const [rows, setRows] = useState(DIRECTORY);
-
-  // table search
   const [query, setQuery] = useState("");
-
-  // add people modal
   const [addOpen, setAddOpen] = useState(false);
   const [psidInput, setPsidInput] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-
-  // role selection (from API)
-  const { data: apiRoles, isLoading: rolesLoading, isError: rolesError } = useRoles();
-  const roles = useMemo(() => normalizeRoles(apiRoles), [apiRoles]);
-  const [roleKey, setRoleKey] = useState("");
-
-  // default role preselect (first role when loaded)
-  useEffect(() => {
-    if (!roleKey && roles.length) {
-      setRoleKey(roles[0].key);
-    }
-  }, [roles, roleKey]);
-
-  const canAdd = useMemo(() => Boolean(selectedId && roleKey), [selectedId, roleKey]);
+  const [role, setRole] = useState("Read");
+  const [adding, setAdding] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -115,15 +74,18 @@ export default function Access() {
     );
   }, [query, rows]);
 
+  const canAdd = useMemo(() => Boolean(selectedId), [selectedId]);
+
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
-    // simulate add
+    setAdding(true);
+    await new Promise((r) => setTimeout(r, 250));
     const newRow = DIRECTORY.find((r) => r.id === selectedId);
     setRows((prev) => [...prev.filter((r) => r.id !== newRow.id), newRow]);
-    // reset modal state
+    setAdding(false);
     setAddOpen(false);
     setSelectedId(null);
-    setRoleKey(roles[0]?.key ?? "");
+    setRole("Read");
     setPsidInput("");
   };
 
@@ -142,13 +104,17 @@ export default function Access() {
         <Typography variant="h5">Manage access</Typography>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined">Add teams</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setAddOpen(true)}
+          >
             Add people
           </Button>
         </Stack>
       </Stack>
 
-      {/* Table / Empty state */}
+      {/* Table */}
       <Card variant="outlined">
         <CardContent>
           <TextField
@@ -166,13 +132,16 @@ export default function Access() {
             sx={{ mb: 2 }}
           />
           <Divider sx={{ mb: 2 }} />
+
           {rows.length === 0 ? (
             <Box
               sx={{
                 borderRadius: 2,
                 border: (theme) =>
                   `1px dashed ${
-                    theme.palette.mode === "light" ? "rgba(0,0,0,0.08)" : theme.palette.divider
+                    theme.palette.mode === "light"
+                      ? "rgba(0,0,0,0.02)"
+                      : "transparent"
                   }`,
                 textAlign: "center",
                 py: 6,
@@ -184,7 +153,11 @@ export default function Access() {
               <Typography variant="body2" color="text.secondary">
                 Individuals and teams will appear here once you add them.
               </Typography>
-              <Button variant="contained" onClick={() => setAddOpen(true)} sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={() => setAddOpen(true)}
+                sx={{ mt: 2 }}
+              >
                 Add people
               </Button>
             </Box>
@@ -211,10 +184,16 @@ export default function Access() {
                           {r.name[0] || "U"}
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600 }}
+                          >
                             {r.name}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             {r.username}
                           </Typography>
                         </Box>
@@ -223,7 +202,6 @@ export default function Access() {
                     <TableCell>
                       <Chip size="small" label={r.type} />
                     </TableCell>
-                    {/* For demo we show a static role pill; once you bind backend, replace with r.role */}
                     <TableCell>
                       <Chip size="small" label="Read" />
                     </TableCell>
@@ -231,10 +209,10 @@ export default function Access() {
                       <Tooltip title="Remove access">
                         <IconButton
                           size="small"
+                          sx={{ color: "primary.main" }}
                           onClick={() => handleRemove(r.id)}
-                          sx={{ color: "primary.main" }} // blue icon
                         >
-                          <TrashIcon size={18} weight="regular" />
+                          <TrashIcon size={18} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -250,7 +228,7 @@ export default function Access() {
       <Dialog open={addOpen} onClose={() => setAddOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>Add people to repository</DialogTitle>
         <DialogContent sx={{ pt: 1 }}>
-          {/* Search box */}
+          {/* Search */}
           <TextField
             label="Search by username, full name, or email."
             value={psidInput}
@@ -268,12 +246,11 @@ export default function Access() {
             }}
           />
 
-          {/* Search result card */}
+          {/* Search Result */}
           {psidInput.trim() && (
             <Card
               variant="outlined"
               sx={{
-                mt: 1.5,
                 py: 1.5,
                 borderRadius: 2,
                 cursor: "pointer",
@@ -283,7 +260,13 @@ export default function Access() {
             >
               <CardContent>
                 <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Avatar sx={{ bgcolor: DIRECTORY[0].avatarBG, width: 36, height: 36 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: DIRECTORY[0].avatarBG,
+                      width: 36,
+                      height: 36,
+                    }}
+                  >
                     {DIRECTORY[0].name[0]}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
@@ -299,7 +282,7 @@ export default function Access() {
             </Card>
           )}
 
-          {/* Selected user pill */}
+          {/* Selected User Pill */}
           {selectedId && (
             <Box sx={{ pt: 1 }}>
               <Card
@@ -312,7 +295,14 @@ export default function Access() {
                   alignItems: "center",
                 }}
               >
-                <Avatar sx={{ bgcolor: DIRECTORY[0].avatarBG, width: 28, height: 28, mr: 1 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: DIRECTORY[0].avatarBG,
+                    width: 28,
+                    height: 28,
+                    mr: 1,
+                  }}
+                >
                   {DIRECTORY[0].name[0]}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
@@ -322,7 +312,7 @@ export default function Access() {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    component="span"
+                    component="button"
                     sx={{ ml: 1 }}
                   >
                     View role details
@@ -335,64 +325,47 @@ export default function Access() {
             </Box>
           )}
 
-          {/* Choose role — now dynamic from API */}
-          <Card variant="outlined" sx={{ p: 1.5, borderRadius: 1.5, mb: 2 }}>
+          {/* Choose Role */}
+          <Card variant="outlined" sx={{ p: 1, borderRadius: 1, mb: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Choose a role
+              Choose role
             </Typography>
-
-            {rolesLoading && (
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 1 }}>
-                <CircularProgress size={18} />
-                <Typography variant="body2" color="text.secondary">
-                  Loading roles…
-                </Typography>
-              </Stack>
-            )}
-
-            {!rolesLoading && rolesError && (
-              <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-                Couldn’t load roles from server.
-              </Typography>
-            )}
-
-            {!rolesLoading &&
-              !rolesError &&
-              roles.map((r) => (
-                <Stack
-                  key={r.id}
-                  direction="row"
-                  spacing={1.5}
-                  alignItems="flex-start"
+            <Stack direction="row" spacing={1.5} alignItems="flex-start">
+              {ROLES.map((r) => (
+                <Box
+                  key={r}
                   sx={{
                     p: 1,
                     borderRadius: 1,
-                    border: (t) =>
-                      roleKey === r.key
-                        ? `1px solid ${t.palette.primary.main}`
-                        : `1px solid ${t.palette.divider}`,
+                    border: (theme) =>
+                      `1px solid ${
+                        role === r
+                          ? theme.palette.primary.main
+                          : theme.palette.divider
+                      }`,
                     cursor: "pointer",
-                    "& + &": { mt: 1 },
                   }}
-                  onClick={() => setRoleKey(r.key)}
+                  onClick={() => setRole(r)}
                 >
                   <Radio
                     size="small"
-                    checked={roleKey === r.key}
-                    onChange={() => setRoleKey(r.key)}
-                    value={r.key}
-                    sx={{ mt: 0.25 }}
+                    checked={role === r}
+                    onChange={() => setRole(r)}
+                    value={r}
                   />
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {r.label}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                      {r.description}
-                    </Typography>
-                  </Box>
-                </Stack>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {r}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    {ROLE_DESCRIPTIONS[r]}
+                  </Typography>
+                </Box>
               ))}
+            </Stack>
           </Card>
         </DialogContent>
 
@@ -401,14 +374,22 @@ export default function Access() {
             onClick={() => {
               setAddOpen(false);
               setSelectedId(null);
-              setRoleKey(roles[0]?.key ?? "");
+              setRole("Read");
               setPsidInput("");
             }}
           >
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleSubmitAdd} disabled={!canAdd}>
-            {selectedId ? `Add ${selectedId}` : "Add to repository"}
+          <Button
+            variant="contained"
+            onClick={handleSubmitAdd}
+            disabled={!canAdd || adding}
+          >
+            {adding
+              ? "Adding..."
+              : selectedId
+              ? `Add ${selectedId}`
+              : "Add to repository"}
           </Button>
         </DialogActions>
       </Dialog>
