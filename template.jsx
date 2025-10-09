@@ -138,7 +138,7 @@ export default function Access() {
           {rows.length === 0 ? (
             <Box
               sx={{
-                border: (t) => 1px dashed ${t.palette.divider},
+                border: (t) => `1px dashed ${t.palette.divider}`,
                 borderRadius: 2,
                 p: 6,
                 textAlign: "center",
@@ -345,8 +345,8 @@ export default function Access() {
                         borderRadius: 1,
                         border: (t) =>
                           selectedRoleId === r.id
-                            ? 1px solid ${t.palette.primary.main}
-                            : 1px solid ${t.palette.divider},
+                            ? `1px solid ${t.palette.primary.main}`
+                            : `1px solid ${t.palette.divider}`,
                         cursor: "pointer",
                       }}
                       onClick={() => setSelectedRoleId(r.id)}
@@ -390,7 +390,7 @@ export default function Access() {
             onClick={handleSubmitAdd}
             disabled={!canAdd}
           >
-            {adding ? "Adding…" : selectedId ? Add ${selectedId} : "Add to project"}
+            {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to project"}
           </Button>
         </DialogActions>
       </Dialog>
