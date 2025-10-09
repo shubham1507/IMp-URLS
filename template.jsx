@@ -219,7 +219,7 @@ export default function Access() {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>Add people to repository</DialogTitle>
+        <DialogTitle>Add people to project</DialogTitle>
         <DialogContent>
           {!selectedId && (
             <Stack spacing={2} sx={{ pt: 1 }}>
