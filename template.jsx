@@ -23,7 +23,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Checkbox,
   Tooltip,
   Link as MuiLink,
 } from "@mui/material";
@@ -156,9 +155,7 @@ export default function Access() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox disabled />
-                  </TableCell>
+                  {/* ✅ Removed checkbox column completely */}
                   <TableCell>Member access</TableCell>
                   <TableCell>Role</TableCell>
                   <TableCell align="right">Actions</TableCell>
@@ -167,9 +164,7 @@ export default function Access() {
               <TableBody>
                 {filtered.map((r) => (
                   <TableRow key={r.id} hover>
-                    <TableCell padding="checkbox">
-                      <Checkbox />
-                    </TableCell>
+                    {/* ✅ Removed per-row checkbox */}
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
@@ -199,7 +194,7 @@ export default function Access() {
                 ))}
                 {filtered.length === 0 && rows.length > 0 && (
                   <TableRow>
-                    <TableCell colSpan={4}>
+                    <TableCell colSpan={3}>
                       <Typography variant="body2" color="text.secondary">
                         No results match “{query}”.
                       </Typography>
@@ -219,7 +214,7 @@ export default function Access() {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>Add people to project</DialogTitle>
+        <DialogTitle>Add people to repository</DialogTitle>
         <DialogContent>
           {!selectedId && (
             <Stack spacing={2} sx={{ pt: 1 }}>
@@ -274,6 +269,7 @@ export default function Access() {
 
           {selectedId && result && (
             <Box sx={{ pt: 1 }}>
+              {/* Selected user pill ABOVE roles */}
               <Card
                 variant="outlined"
                 sx={{
@@ -310,6 +306,7 @@ export default function Access() {
                 </IconButton>
               </Card>
 
+              {/* Choose a role (from API) */}
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Choose a role
               </Typography>
@@ -319,6 +316,7 @@ export default function Access() {
                   Loading roles…
                 </Typography>
               )}
+
               {isError && (
                 <Typography variant="body2" color="error" sx={{ px: 1, py: 0.5 }}>
                   Couldn’t load roles.
