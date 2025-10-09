@@ -23,6 +23,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Checkbox,
   Tooltip,
   Link as MuiLink,
 } from "@mui/material";
@@ -114,104 +115,100 @@ export default function Access() {
       </Stack>
 
       <Card variant="outlined">
-        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          {/* Center the whole table area and limit width */}
-          <Box sx={{ maxWidth: 960, mx: "auto", width: "100%" }}>
-            {/* Search */}
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                placeholder="Find people or a team…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Stack>
+        <CardContent>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              placeholder="Find people or a team…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Stack>
 
-            <Divider sx={{ mb: 2 }} />
+          <Divider sx={{ mb: 2 }} />
 
-            {rows.length === 0 ? (
-              <Box
-                sx={{
-                  border: (t) => `1px dashed ${t.palette.divider}`,
-                  borderRadius: 2,
-                  p: 6,
-                  textAlign: "center",
-                  bgcolor: (t) =>
-                    t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "transparent",
-                }}
-              >
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  No people added to org
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Assigned individuals and teams will appear here once you add them.
-                </Typography>
-              </Box>
-            ) : (
-              <Table size="medium">
-                <TableHead>
-                  <TableRow>
-                    {/* Renamed and tightened widths */}
-                    <TableCell sx={{ width: "60%" }}>Member access</TableCell>
-                    <TableCell sx={{ width: "25%" }}>Role</TableCell>
-                    <TableCell align="right" sx={{ width: "15%" }}>
-                      Actions
+          {rows.length === 0 ? (
+            <Box
+              sx={{
+                border: (t) => `1px dashed ${t.palette.divider}`,
+                borderRadius: 2,
+                p: 6,
+                textAlign: "center",
+                bgcolor: (t) =>
+                  t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "transparent",
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                No people added to org
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Assigned individuals and teams will appear here once you add them.
+              </Typography>
+            </Box>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox disabled />
+                  </TableCell>
+                  <TableCell>Member access</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.map((r) => (
+                  <TableRow key={r.id} hover>
+                    <TableCell padding="checkbox">
+                      <Checkbox />
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
+                          {r.name?.[0] || "U"}
+                        </Avatar>
+                        <Stack>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {r.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {r.id} · {r.username}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="small" label={r.roleName ?? "—"} />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Remove access">
+                        <IconButton size="small" onClick={() => handleRemove(r.id)}>
+                          <TrashIcon size={18} color="#1976d2" />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filtered.map((r) => (
-                    <TableRow key={r.id} hover>
-                      <TableCell sx={{ pr: 2 }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
-                            {r.name?.[0] || "U"}
-                          </Avatar>
-                          <Stack sx={{ minWidth: 0 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                              {r.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" noWrap>
-                              {r.id} · {r.username}
-                            </Typography>
-                          </Stack>
-                        </Stack>
-                      </TableCell>
-
-                      <TableCell sx={{ pr: 2 }}>
-                        <Chip size="small" label={r.roleName ?? "—"} />
-                      </TableCell>
-
-                      <TableCell align="right">
-                        <Tooltip title="Remove access">
-                          <IconButton size="small" onClick={() => handleRemove(r.id)}>
-                            <TrashIcon size={18} color="#1976d2" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                  {filtered.length === 0 && rows.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={3}>
-                        <Typography variant="body2" color="text.secondary">
-                          No results match “{query}”.
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </Box>
+                ))}
+                {filtered.length === 0 && rows.length > 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        No results match “{query}”.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -277,7 +274,6 @@ export default function Access() {
 
           {selectedId && result && (
             <Box sx={{ pt: 1 }}>
-              {/* Selected user pill ABOVE roles */}
               <Card
                 variant="outlined"
                 sx={{
@@ -314,7 +310,6 @@ export default function Access() {
                 </IconButton>
               </Card>
 
-              {/* Choose a role (from API) */}
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Choose a role
               </Typography>
@@ -324,7 +319,6 @@ export default function Access() {
                   Loading roles…
                 </Typography>
               )}
-
               {isError && (
                 <Typography variant="body2" color="error" sx={{ px: 1, py: 0.5 }}>
                   Couldn’t load roles.
