@@ -31,9 +31,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
-
-// ⬇️ hook that calls GET /access/roles and returns { roles: [...] }
-import { useRoles } from "@hooks/useRoles";
+import { useRoles } from "@hooks/useRoles"; // GET /access/roles
 
 const DIRECTORY = {
   "45460309": {
@@ -45,7 +43,6 @@ const DIRECTORY = {
   },
 };
 
-// prettifies API role names for display
 const prettyName = (apiName = "") =>
   apiName
     .replace(/^org_/i, "Organization ")
@@ -73,22 +70,20 @@ export default function Access() {
   const [psidInput, setPsidInput] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  // 🔹 role selection from API
+  // Roles from API
   const { data, isLoading, isError } = useRoles(); // expects { roles: [...] }
   const roles = data?.roles ?? [];
-
-  // store selected roleId (from API) instead of text
   const [selectedRoleId, setSelectedRoleId] = useState(null);
   const [adding, setAdding] = useState(false);
 
   const result = useMemo(() => DIRECTORY[psidInput.trim()] || null, [psidInput]);
-
   const canAdd = Boolean(selectedId) && Boolean(selectedRoleId) && !adding;
 
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
     setAdding(true);
     await new Promise((r) => setTimeout(r, 250));
+
     const picked = DIRECTORY[selectedId];
     const roleObj = roles.find((r) => r.id === selectedRoleId);
 
@@ -121,12 +116,8 @@ export default function Access() {
 
       <Card variant="outlined">
         <CardContent>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            alignItems="center"
-            sx={{ mb: 2 }}
-          >
+          {/* 🔹 Search row (removed the leading checkbox) */}
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
             <TextField
               fullWidth
               placeholder="Find people or a team…"
@@ -147,7 +138,7 @@ export default function Access() {
           {rows.length === 0 ? (
             <Box
               sx={{
-                border: (t) => `1px dashed ${t.palette.divider}`,
+                border: (t) => 1px dashed ${t.palette.divider},
                 borderRadius: 2,
                 p: 6,
                 textAlign: "center",
@@ -166,11 +157,11 @@ export default function Access() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox disabled />
-                  </TableCell>
-                  <TableCell>Direct access</TableCell>
-                  <TableCell>Type</TableCell>
+                  {/* 🔹 Keep a narrow cell for row checkboxes, but no header checkbox */}
+                  <TableCell padding="checkbox" />
+                  {/* 🔹 Renamed column */}
+                  <TableCell>Member access</TableCell>
+                  {/* 🔹 Removed Type column */}
                   <TableCell>Role</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
@@ -179,6 +170,7 @@ export default function Access() {
                 {filtered.map((r) => (
                   <TableRow key={r.id} hover>
                     <TableCell padding="checkbox">
+                      {/* keep per-row checkbox */}
                       <Checkbox />
                     </TableCell>
                     <TableCell>
@@ -196,16 +188,13 @@ export default function Access() {
                         </Stack>
                       </Stack>
                     </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={r.type} />
-                    </TableCell>
+                    {/* 🔹 Removed Type cell */}
                     <TableCell>
                       <Chip size="small" label={r.roleName ?? "—"} />
                     </TableCell>
                     <TableCell align="right">
                       <Tooltip title="Remove access">
                         <IconButton size="small" onClick={() => handleRemove(r.id)}>
-                          {/* phosphor icon accepts a color string; use MUI primary */}
                           <TrashIcon size={18} color="#1976d2" />
                         </IconButton>
                       </Tooltip>
@@ -214,7 +203,7 @@ export default function Access() {
                 ))}
                 {filtered.length === 0 && rows.length > 0 && (
                   <TableRow>
-                    <TableCell colSpan={5}>
+                    <TableCell colSpan={4}>
                       <Typography variant="body2" color="text.secondary">
                         No results match “{query}”.
                       </Typography>
@@ -356,8 +345,8 @@ export default function Access() {
                         borderRadius: 1,
                         border: (t) =>
                           selectedRoleId === r.id
-                            ? `1px solid ${t.palette.primary.main}`
-                            : `1px solid ${t.palette.divider}`,
+                            ? 1px solid ${t.palette.primary.main}
+                            : 1px solid ${t.palette.divider},
                         cursor: "pointer",
                       }}
                       onClick={() => setSelectedRoleId(r.id)}
@@ -401,7 +390,7 @@ export default function Access() {
             onClick={handleSubmitAdd}
             disabled={!canAdd}
           >
-            {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to project"}
+            {adding ? "Adding…" : selectedId ? Add ${selectedId} : "Add to project"}
           </Button>
         </DialogActions>
       </Dialog>
