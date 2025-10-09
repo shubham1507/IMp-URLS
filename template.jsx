@@ -23,7 +23,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import TuneIcon from "@mui/icons-material/Tune";
 import { useRoles } from "@hooks/useRoles";
 
-// Helper: pretty role names (same as before)
+// Pretty display name
 const prettyName = (apiName = "") =>
   apiName
     .replace(/^org_/i, "Organization ")
@@ -31,13 +31,11 @@ const prettyName = (apiName = "") =>
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-// Helper: icon by scope
 const scopeIcon = (scope) =>
   scope === "org" ? <SecurityIcon fontSize="small" /> : <TuneIcon fontSize="small" />;
 
-// Helper: convert permission string → object
+// Convert "projects:create@org" -> row object
 const parsePermission = (perm) => {
-  // example: "projects:create@org"
   const [left, level] = perm.split("@");
   const [scope, permission] = left.split(":");
   const scopeLabel =
@@ -54,24 +52,10 @@ const parsePermission = (perm) => {
       : scope === "audit"
       ? "Audit"
       : scope;
-  const permLabel =
-    permission.charAt(0).toUpperCase() + permission.slice(1).toLowerCase();
-  const levelLabel =
-    level === "org"
-      ? "Organization"
-      : level === "project"
-      ? "Project"
-      : level ?? "-";
-
-  // human readable description
+  const permLabel = permission.charAt(0).toUpperCase() + permission.slice(1).toLowerCase();
+  const levelLabel = level === "org" ? "Organization" : level === "project" ? "Project" : level ?? "-";
   const description = `${permLabel} ${scopeLabel} at ${levelLabel} level`;
-
-  return {
-    scope: scopeLabel,
-    permission: permLabel,
-    level: levelLabel,
-    description,
-  };
+  return { scope: scopeLabel, permission: permLabel, level: levelLabel, description };
 };
 
 export default function TeamMemberRoles() {
@@ -83,22 +67,19 @@ export default function TeamMemberRoles() {
   useEffect(() => setExpandedKey(null), [location.pathname]);
   const toggle = (key) => setExpandedKey((prev) => (prev === key ? null : key));
 
-  const empty = useMemo(() => !isLoading && !isError && roles.length === 0, [
-    isLoading,
-    isError,
-    roles,
-  ]);
+  const empty = useMemo(() => !isLoading && !isError && roles.length === 0, [isLoading, isError, roles]);
 
   return (
     <Box sx={{ px: { xs: 2, md: 6 }, py: 4, maxWidth: 1200, mx: "auto" }}>
+      {/* 1) Title update */}
       <Typography variant="h4" fontWeight={700} gutterBottom>
-        Repository roles
+        Team Member Roles
       </Typography>
 
       <Divider sx={{ my: 2 }} />
 
       <Grid container spacing={3} alignItems="flex-start">
-        {/* LEFT SIDE */}
+        {/* LEFT rail (kept as-is) */}
         <Grid item xs={12} md={4} lg={3}>
           <Box sx={{ position: { md: "sticky" }, top: 88, pr: { md: 3 } }}>
             <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
@@ -112,134 +93,141 @@ export default function TeamMemberRoles() {
           </Box>
         </Grid>
 
-        {/* RIGHT SIDE */}
-        <Grid item xs={12} md={8} lg={9}>
-          {isLoading && (
-            <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
-              <CircularProgress size={24} />
-            </Stack>
-          )}
+        {/* 2) Center the role list column */}
+        <Grid
+          item
+          xs={12}
+          md={8}
+          lg={9}
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
+          <Box sx={{ width: "100%", maxWidth: 960 }}>
+            {isLoading && (
+              <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
+                <CircularProgress size={24} />
+              </Stack>
+            )}
 
-          {isError && (
-            <Typography variant="body2" color="error" sx={{ py: 2 }}>
-              Failed to load roles.
-            </Typography>
-          )}
+            {isError && (
+              <Typography variant="body2" color="error" sx={{ py: 2 }}>
+                Failed to load roles.
+              </Typography>
+            )}
 
-          {empty && (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-              No roles found.
-            </Typography>
-          )}
+            {empty && (
+              <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                No roles found.
+              </Typography>
+            )}
 
-          {!isLoading && !isError && roles.length > 0 && (
-            <Stack spacing={1.5}>
-              {roles.map((r) => {
-                const open = expandedKey === r.id;
-                return (
-                  <Paper
-                    key={r.id}
-                    elevation={0}
-                    sx={{
-                      border: 1,
-                      borderColor: "divider",
-                      borderRadius: 2,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Header */}
-                    <Box
+            {!isLoading && !isError && roles.length > 0 && (
+              <Stack spacing={1.5}>
+                {roles.map((r) => {
+                  const open = expandedKey === r.id;
+                  return (
+                    <Paper
+                      key={r.id}
+                      elevation={0}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.25,
-                        px: 2,
-                        minHeight: 64,
-                        "&:hover": { bgcolor: "action.hover" },
+                        border: 1,
+                        borderColor: "divider",
+                        borderRadius: 2,
+                        overflow: "hidden",
                       }}
                     >
-                      <Stack direction="row" alignItems="center" spacing={1.25}>
-                        {scopeIcon(r.scope)}
-                        <Typography variant="subtitle1" fontWeight={700}>
-                          {prettyName(r.name)}
-                        </Typography>
-                        <Chip
-                          size="small"
-                          variant="outlined"
-                          color={r.scope === "org" ? "primary" : "secondary"}
-                          label={(r.scope || "").toUpperCase()}
-                        />
-                        {r.is_system && (
-                          <Chip size="small" variant="outlined" label="System" />
-                        )}
-                      </Stack>
-
-                      <Box sx={{ flex: 1 }} />
-
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mr: 1.5 }}
-                      >
-                        {r.description}
-                      </Typography>
-
-                      <IconButton
-                        size="small"
-                        edge="end"
-                        onClick={() => toggle(r.id)}
+                      {/* Header row — 3) left-align description */}
+                      <Box
                         sx={{
-                          transform: open ? "rotate(180deg)" : "none",
-                          transition: "transform 0.2s ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.25,
+                          px: 2,
+                          py: 1.25,
+                          minHeight: 64,
+                          "&:hover": { bgcolor: "action.hover" },
+                          flexWrap: "wrap", // allow wrap on small screens
                         }}
                       >
-                        <ExpandMoreIcon />
-                      </IconButton>
-                    </Box>
+                        <Stack direction="row" alignItems="center" spacing={1.25}>
+                          {scopeIcon(r.scope)}
+                          <Typography variant="subtitle1" fontWeight={700}>
+                            {prettyName(r.name)}
+                          </Typography>
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            color={r.scope === "org" ? "primary" : "secondary"}
+                            label={(r.scope || "").toUpperCase()}
+                          />
+                          {r.is_system && <Chip size="small" variant="outlined" label="System" />}
+                        </Stack>
 
-                    <Divider />
-
-                    {/* Expand content */}
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                      <Box sx={{ px: 2, py: 2 }}>
+                        {/* description now sits LEFT, flows naturally and can wrap */}
                         <Typography
-                          variant="subtitle2"
-                          fontWeight={600}
-                          sx={{ mb: 1 }}
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ ml: { xs: 0, sm: 2 }, flex: 1, minWidth: 260 }}
                         >
-                          Permissions
+                          {r.description}
                         </Typography>
 
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell sx={{ fontWeight: 600 }}>Scope</TableCell>
-                              <TableCell sx={{ fontWeight: 600 }}>Permission</TableCell>
-                              <TableCell sx={{ fontWeight: 600 }}>Level</TableCell>
-                              <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {(r.permissions || []).map((perm) => {
-                              const p = parsePermission(perm);
-                              return (
-                                <TableRow key={perm}>
-                                  <TableCell>{p.scope}</TableCell>
-                                  <TableCell>{p.permission}</TableCell>
-                                  <TableCell>{p.level}</TableCell>
-                                  <TableCell>{p.description}</TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+                        <IconButton
+                          size="small"
+                          edge="end"
+                          onClick={() => toggle(r.id)}
+                          sx={{
+                            transform: open ? "rotate(180deg)" : "none",
+                            transition: "transform 0.2s ease",
+                          }}
+                        >
+                          <ExpandMoreIcon />
+                        </IconButton>
                       </Box>
-                    </Collapse>
-                  </Paper>
-                );
-              })}
-            </Stack>
-          )}
+
+                      <Divider />
+
+                      <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{ px: 2, py: 2 }}>
+                          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+                            Permissions
+                          </Typography>
+
+                          <Table size="small" sx={{
+                            "& tbody tr:nth-of-type(odd)": {
+                              bgcolor: (t) =>
+                                t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.03)",
+                            },
+                          }}>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontWeight: 600 }}>Scope</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Permission</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Level</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {(r.permissions || []).map((perm) => {
+                                const p = parsePermission(perm);
+                                return (
+                                  <TableRow key={perm}>
+                                    <TableCell>{p.scope}</TableCell>
+                                    <TableCell>{p.permission}</TableCell>
+                                    <TableCell>{p.level}</TableCell>
+                                    <TableCell>{p.description}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </Box>
+                      </Collapse>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            )}
+          </Box>
         </Grid>
       </Grid>
     </Box>
