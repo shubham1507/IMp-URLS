@@ -153,13 +153,13 @@ export default function TeamMemberRoles() {
                           <Typography variant="subtitle1" fontWeight={700}>
                             {prettyName(r.name)}
                           </Typography>
-                          <Chip
+                          {/* <Chip
                             size="small"
                             variant="outlined"
                             color={r.scope === "org" ? "primary" : "secondary"}
                             label={(r.scope || "").toUpperCase()}
-                          />
-                          {r.is_system && <Chip size="small" variant="outlined" label="System" />}
+                          /> */}
+                          /* {r.is_system && <Chip size="small" variant="outlined" label="System" />} */
                         </Stack>
 
                         {/* description now sits LEFT, flows naturally and can wrap */}
