@@ -10,7 +10,6 @@ import {
   TextField,
   InputAdornment,
   Divider,
-  Chip,
   Avatar,
   Dialog,
   DialogTitle,
@@ -30,8 +29,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
-import { useRoles } from "@hooks/useRoles"; // GET /access/roles
 
+// API hook: returns { roles: [...] }
+import { useRoles } from "@hooks/useRoles";
+
+// Mock directory (unchanged)
 const DIRECTORY = {
   "45460309": {
     id: "45460309",
@@ -42,6 +44,7 @@ const DIRECTORY = {
   },
 };
 
+// Nicely format API role names
 const prettyName = (apiName = "") =>
   apiName
     .replace(/^org_/i, "Organization ")
@@ -50,6 +53,7 @@ const prettyName = (apiName = "") =>
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Access() {
+  // Table rows
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
 
@@ -64,14 +68,14 @@ export default function Access() {
     );
   }, [query, rows]);
 
-  // Add People modal state
-  const [addOpen, setAddOpen] = useState(false);
-  const [psidInput, setPsidInput] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
-
   // Roles from API
   const { data, isLoading, isError } = useRoles(); // expects { roles: [...] }
   const roles = data?.roles ?? [];
+
+  // “Add people” modal state
+  const [addOpen, setAddOpen] = useState(false);
+  const [psidInput, setPsidInput] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
   const [selectedRoleId, setSelectedRoleId] = useState(null);
   const [adding, setAdding] = useState(false);
 
@@ -101,6 +105,41 @@ export default function Access() {
   };
 
   const handleRemove = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
+
+  // ===== Role Change Popup (like “Choose role”) =====
+  const [roleDlgOpen, setRoleDlgOpen] = useState(false);
+  const [roleDlgRowId, setRoleDlgRowId] = useState(null);
+  const [roleDlgSelectedRoleId, setRoleDlgSelectedRoleId] = useState(null);
+
+  const openRoleDialog = (row) => {
+    setRoleDlgRowId(row.id);
+    // preset with current row role
+    setRoleDlgSelectedRoleId(row.roleId || null);
+    setRoleDlgOpen(true);
+  };
+
+  const closeRoleDialog = () => {
+    setRoleDlgOpen(false);
+    setRoleDlgRowId(null);
+    setRoleDlgSelectedRoleId(null);
+  };
+
+  const saveRoleDialog = () => {
+    if (!roleDlgRowId || !roleDlgSelectedRoleId) return;
+    const roleObj = roles.find((r) => r.id === roleDlgSelectedRoleId);
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === roleDlgRowId
+          ? {
+              ...r,
+              roleId: roleDlgSelectedRoleId,
+              roleName: roleObj ? prettyName(roleObj.name) : r.roleName,
+            }
+          : r
+      )
+    );
+    closeRoleDialog();
+  };
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
@@ -155,7 +194,6 @@ export default function Access() {
             <Table>
               <TableHead>
                 <TableRow>
-                  {/* ✅ Removed checkbox column completely */}
                   <TableCell>Member access</TableCell>
                   <TableCell>Role</TableCell>
                   <TableCell align="right">Actions</TableCell>
@@ -164,7 +202,6 @@ export default function Access() {
               <TableBody>
                 {filtered.map((r) => (
                   <TableRow key={r.id} hover>
-                    {/* ✅ Removed per-row checkbox */}
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
@@ -180,9 +217,19 @@ export default function Access() {
                         </Stack>
                       </Stack>
                     </TableCell>
+
+                    {/* Role column — Button opens Choose-role dialog */}
                     <TableCell>
-                      <Chip size="small" label={r.roleName ?? "—"} />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => openRoleDialog(r)}
+                        sx={{ textTransform: "none" }}
+                      >
+                        {r.roleName ? `Role: ${r.roleName}` : "Choose role"}
+                      </Button>
                     </TableCell>
+
                     <TableCell align="right">
                       <Tooltip title="Remove access">
                         <IconButton size="small" onClick={() => handleRemove(r.id)}>
@@ -207,7 +254,72 @@ export default function Access() {
         </CardContent>
       </Card>
 
-      {/* Add People Modal */}
+      {/* ===== Choose Role Dialog (per row) ===== */}
+      <Dialog open={roleDlgOpen} onClose={closeRoleDialog} fullWidth maxWidth="sm">
+        <DialogTitle>Choose role</DialogTitle>
+        <DialogContent dividers>
+          {isLoading && (
+            <Typography variant="body2" color="text.secondary">
+              Loading roles…
+            </Typography>
+          )}
+          {isError && (
+            <Typography variant="body2" color="error">
+              Couldn’t load roles.
+            </Typography>
+          )}
+          {!isLoading && !isError && (
+            <Stack spacing={1.25}>
+              {roles.map((role) => (
+                <Stack
+                  key={role.id}
+                  direction="row"
+                  spacing={1.5}
+                  alignItems="flex-start"
+                  sx={{
+                    p: 1,
+                    borderRadius: 1,
+                    border: (t) =>
+                      roleDlgSelectedRoleId === role.id
+                        ? `1px solid ${t.palette.primary.main}`
+                        : `1px solid ${t.palette.divider}`,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setRoleDlgSelectedRoleId(role.id)}
+                >
+                  <Radio
+                    checked={roleDlgSelectedRoleId === role.id}
+                    onChange={() => setRoleDlgSelectedRoleId(role.id)}
+                    value={role.id}
+                    size="small"
+                    sx={{ mt: 0.25 }}
+                  />
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {prettyName(role.name)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {role.description}
+                    </Typography>
+                  </Box>
+                </Stack>
+              ))}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={closeRoleDialog}>Cancel</Button>
+          <Button
+            onClick={saveRoleDialog}
+            variant="contained"
+            disabled={!roleDlgSelectedRoleId}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ===== Add People Modal (unchanged except roles are API-driven) ===== */}
       <Dialog
         open={addOpen}
         onClose={() => !adding && setAddOpen(false)}
@@ -259,7 +371,9 @@ export default function Access() {
                           {result.id} · invite outside collaborator
                         </Typography>
                       </Stack>
-                      <Chip size="small" color="primary" label="Select" />
+                      <Button size="small" variant="outlined">
+                        Selected
+                      </Button>
                     </Stack>
                   </CardContent>
                 </Card>
@@ -269,7 +383,7 @@ export default function Access() {
 
           {selectedId && result && (
             <Box sx={{ pt: 1 }}>
-              {/* Selected user pill ABOVE roles */}
+              {/* Selected pill */}
               <Card
                 variant="outlined"
                 sx={{
@@ -306,7 +420,7 @@ export default function Access() {
                 </IconButton>
               </Card>
 
-              {/* Choose a role (from API) */}
+              {/* Choose a role (from API) for “Add people” */}
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Choose a role
               </Typography>
@@ -316,7 +430,6 @@ export default function Access() {
                   Loading roles…
                 </Typography>
               )}
-
               {isError && (
                 <Typography variant="body2" color="error" sx={{ px: 1, py: 0.5 }}>
                   Couldn’t load roles.
@@ -376,11 +489,7 @@ export default function Access() {
           >
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmitAdd}
-            disabled={!canAdd}
-          >
+          <Button variant="contained" onClick={handleSubmitAdd} disabled={!canAdd}>
             {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to project"}
           </Button>
         </DialogActions>
