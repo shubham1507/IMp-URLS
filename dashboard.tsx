@@ -1,29 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  Stack,
+  Button,
+  TextField,
+  InputAdornment,
+  Divider,
+  Tooltip,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
 import MainEnvForm from "../../../components/environment/MainEnvForm";
 
-const Environment = () => {
+export default function Environment() {
   const [environments, setEnvironments] = useState([]);
+  const [query, setQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  // 🔹 Load sample or API data
+  // Load sample or API data
   useEffect(() => {
     setEnvironments([
       { id: 1, org: "org1", project: "projA", envName: "env1", type: "IKP" },
@@ -31,102 +36,185 @@ const Environment = () => {
     ]);
   }, []);
 
-  // 🔹 Add Environment handler
+  // Filter based on search
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return environments;
+    return environments.filter(
+      (env) =>
+        env.org.toLowerCase().includes(q) ||
+        env.project.toLowerCase().includes(q) ||
+        env.envName.toLowerCase().includes(q) ||
+        env.type.toLowerCase().includes(q)
+    );
+  }, [query, environments]);
+
+  // Add new environment
   const handleAddEnvironment = (newEnv) => {
-    setEnvironments([...environments, { id: Date.now(), ...newEnv }]);
+    setEnvironments((prev) => [
+      { id: Date.now(), ...newEnv },
+      ...prev,
+    ]);
     setOpenDialog(false);
   };
 
-  // 🔹 Delete Environment handler
+  // Delete environment
   const handleDelete = (id) => {
-    const updated = environments.filter((env) => env.id !== id);
-    setEnvironments(updated);
+    setEnvironments((prev) => prev.filter((env) => env.id !== id));
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography
-        variant="h5"
-        sx={{ mb: 2, fontWeight: "bold", textAlign: "center" }}
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      {/* Header Section */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 2 }}
       >
-        Environment Management
-      </Typography>
+        <Typography variant="h5">Environment Management</Typography>
 
-      {/* Add Environment Button */}
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenDialog(true)}
-        >
-          Add Environment
-        </Button>
-      </Box>
+        <Stack direction="row" spacing={1}>
+          {/* Cancel button appears only when modal open */}
+          {openDialog && (
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<CloseIcon />}
+              onClick={() => setOpenDialog(false)}
+            >
+              Cancel
+            </Button>
+          )}
 
-      {/* Environment Table */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            Existing Environments
-          </Typography>
-
-          <TableContainer
-            component={Paper}
-            sx={{ borderRadius: "8px", boxShadow: "none" }}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            color={isFormValid ? "primary" : "inherit"}
+            disabled={!isFormValid}
+            onClick={() => setOpenDialog(true)}
           >
-            <Table>
-              <TableHead sx={{ backgroundColor: "#f9fafb" }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Organization</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Environment</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                  <TableCell
-                    sx={{ fontWeight: 600, textAlign: "center", width: "150px" }}
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {environments.length > 0 ? (
-                  environments.map((env) => (
-                    <TableRow key={env.id}>
-                      <TableCell>{env.org}</TableCell>
-                      <TableCell>{env.project}</TableCell>
-                      <TableCell>{env.envName}</TableCell>
-                      <TableCell>{env.type}</TableCell>
-                      <TableCell align="center">
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          sx={{
-                            borderRadius: "20px",
-                            textTransform: "none",
-                            fontWeight: 500,
-                          }}
-                          onClick={() => handleDelete(env.id)}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center">
-                      No environments available.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+            Add Environment
+          </Button>
+        </Stack>
+      </Stack>
+
+      {/* Search Field */}
+      <Card variant="outlined">
+        <CardContent>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems="center"
+            sx={{ mb: 2 }}
+          >
+            <TextField
+              fullWidth
+              placeholder="Find environment…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Stack>
+
+          <Divider sx={{ mb: 2 }} />
+
+          {/* Empty State */}
+          {filtered.length === 0 ? (
+            <Box
+              sx={{
+                border: (t) => `1px dashed ${t.palette.divider}`,
+                borderRadius: 2,
+                p: 6,
+                textAlign: "center",
+                bgcolor: (t) =>
+                  t.palette.mode === "light"
+                    ? "rgba(0,0,0,0.02)"
+                    : "transparent",
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                No environments available
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Added environments will appear here once you create them.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Box sx={{ width: "85%" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        align="left"
+                        style={{ width: "25%", paddingBottom: 8 }}
+                      >
+                        Organization
+                      </th>
+                      <th
+                        align="left"
+                        style={{ width: "25%", paddingBottom: 8 }}
+                      >
+                        Project
+                      </th>
+                      <th
+                        align="left"
+                        style={{ width: "25%", paddingBottom: 8 }}
+                      >
+                        Environment
+                      </th>
+                      <th align="left" style={{ width: "15%" }}>
+                        Type
+                      </th>
+                      <th align="right" style={{ width: "10%" }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((env) => (
+                      <tr key={env.id} style={{ borderTop: "1px solid #eee" }}>
+                        <td style={{ padding: "12px 8px" }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {env.org}
+                          </Typography>
+                        </td>
+                        <td style={{ padding: "12px 8px" }}>{env.project}</td>
+                        <td style={{ padding: "12px 8px" }}>{env.envName}</td>
+                        <td style={{ padding: "12px 8px" }}>{env.type}</td>
+                        <td align="right">
+                          <Tooltip title="Delete Environment">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(env.id)}
+                            >
+                              <TrashIcon size={18} color="#1976d2" />
+                            </IconButton>
+                          </Tooltip>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Box>
+            </Box>
+          )}
         </CardContent>
       </Card>
 
-      {/* ✅ Add Environment Modal */}
+      {/* === Add Environment Modal === */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
@@ -137,27 +225,41 @@ const Environment = () => {
           Add New Environment
         </DialogTitle>
         <DialogContent dividers>
-          <MainEnvForm onAdd={handleAddEnvironment} />
+          <MainEnvForm
+            onAdd={handleAddEnvironment}
+            onValidate={(valid) => setIsFormValid(valid)} // 👈 enable Add button
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="inherit">
+          <Button
+            onClick={() => setOpenDialog(false)}
+            color="inherit"
+            startIcon={<CloseIcon />}
+          >
             Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              document.getElementById("submitEnvForm")?.click();
+            }}
+            variant="contained"
+            color="primary"
+            disabled={!isFormValid}
+          >
+            Add Environment
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
-};
-
-export default Environment;
------
-
+}
+----------
   import React, { useState, useEffect } from "react";
-import { TextField, MenuItem, Box, Button } from "@mui/material";
+import { TextField, MenuItem, Box } from "@mui/material";
 import EnvConfFormIKP from "./EnvConfFormIKP";
 import EnvConfFormHIC from "./EnvConfFormHIC";
 
-const MainEnvForm = ({ onAdd }) => {
+const MainEnvForm = ({ onAdd, onValidate }) => {
   const [organization, setOrganization] = useState("");
   const [project, setProject] = useState("");
   const [envName, setEnvName] = useState("");
@@ -176,29 +278,27 @@ const MainEnvForm = ({ onAdd }) => {
     }
   }, [organization]);
 
-  const handleSubmit = () => {
-    if (!organization || !project || !envName || !envType) {
-      alert("Please fill all fields before adding.");
-      return;
-    }
+  // Validate form fields
+  useEffect(() => {
+    const valid =
+      organization.trim() && project.trim() && envName.trim() && envType.trim();
+    onValidate(valid);
+  }, [organization, project, envName, envType]);
 
-    const newEnv = {
-      org: organization,
-      project,
-      envName,
-      type: envType,
-    };
-    onAdd(newEnv);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!organization || !project || !envName || !envType) return;
 
-    // reset form
-    setOrganization("");
-    setProject("");
-    setEnvName("");
-    setEnvType("");
+    onAdd({ org: organization, project, envName, type: envType });
   };
 
   return (
-    <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+    <Box
+      component="form"
+      id="envForm"
+      onSubmit={handleSubmit}
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
       <TextField
         select
         label="Organization Name"
@@ -248,11 +348,8 @@ const MainEnvForm = ({ onAdd }) => {
       {envType === "IKP" && <EnvConfFormIKP />}
       {envType === "HIC" && <EnvConfFormHIC />}
 
-      <Box display="flex" justifyContent="flex-end" mt={3}>
-        <Button variant="contained" color="success" onClick={handleSubmit}>
-          Add Environment
-        </Button>
-      </Box>
+      {/* Hidden submit trigger for parent dialog */}
+      <button type="submit" id="submitEnvForm" style={{ display: "none" }} />
     </Box>
   );
 };
