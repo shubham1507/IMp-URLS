@@ -28,7 +28,7 @@ export default function Environment() {
   const [openDialog, setOpenDialog] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Load sample or API data
+  // 🔹 Load sample or API data
   useEffect(() => {
     setEnvironments([
       { id: 1, org: "org1", project: "projA", envName: "env1", type: "IKP" },
@@ -36,7 +36,7 @@ export default function Environment() {
     ]);
   }, []);
 
-  // Filter based on search
+  // 🔹 Filtered search
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return environments;
@@ -49,7 +49,7 @@ export default function Environment() {
     );
   }, [query, environments]);
 
-  // Add new environment
+  // 🔹 Add Environment
   const handleAddEnvironment = (newEnv) => {
     setEnvironments((prev) => [
       { id: Date.now(), ...newEnv },
@@ -58,7 +58,7 @@ export default function Environment() {
     setOpenDialog(false);
   };
 
-  // Delete environment
+  // 🔹 Delete Environment
   const handleDelete = (id) => {
     setEnvironments((prev) => prev.filter((env) => env.id !== id));
   };
@@ -74,24 +74,11 @@ export default function Environment() {
       >
         <Typography variant="h5">Environment Management</Typography>
 
+        {/* ✅ Blue Add Environment button (like Access.jsx) */}
         <Stack direction="row" spacing={1}>
-          {/* Cancel button appears only when modal open */}
-          {openDialog && (
-            <Button
-              variant="outlined"
-              color="inherit"
-              startIcon={<CloseIcon />}
-              onClick={() => setOpenDialog(false)}
-            >
-              Cancel
-            </Button>
-          )}
-
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            color={isFormValid ? "primary" : "inherit"}
-            disabled={!isFormValid}
             onClick={() => setOpenDialog(true)}
           >
             Add Environment
@@ -157,22 +144,13 @@ export default function Environment() {
                 >
                   <thead>
                     <tr>
-                      <th
-                        align="left"
-                        style={{ width: "25%", paddingBottom: 8 }}
-                      >
+                      <th align="left" style={{ width: "25%", paddingBottom: 8 }}>
                         Organization
                       </th>
-                      <th
-                        align="left"
-                        style={{ width: "25%", paddingBottom: 8 }}
-                      >
+                      <th align="left" style={{ width: "25%", paddingBottom: 8 }}>
                         Project
                       </th>
-                      <th
-                        align="left"
-                        style={{ width: "25%", paddingBottom: 8 }}
-                      >
+                      <th align="left" style={{ width: "25%", paddingBottom: 8 }}>
                         Environment
                       </th>
                       <th align="left" style={{ width: "15%" }}>
@@ -227,7 +205,7 @@ export default function Environment() {
         <DialogContent dividers>
           <MainEnvForm
             onAdd={handleAddEnvironment}
-            onValidate={(valid) => setIsFormValid(valid)} // 👈 enable Add button
+            onValidate={(valid) => setIsFormValid(valid)} // enables/disables Add button
           />
         </DialogContent>
         <DialogActions>
@@ -239,9 +217,7 @@ export default function Environment() {
             Cancel
           </Button>
           <Button
-            onClick={() => {
-              document.getElementById("submitEnvForm")?.click();
-            }}
+            onClick={() => document.getElementById("submitEnvForm")?.click()}
             variant="contained"
             color="primary"
             disabled={!isFormValid}
@@ -253,105 +229,3 @@ export default function Environment() {
     </Box>
   );
 }
-----------
-  import React, { useState, useEffect } from "react";
-import { TextField, MenuItem, Box } from "@mui/material";
-import EnvConfFormIKP from "./EnvConfFormIKP";
-import EnvConfFormHIC from "./EnvConfFormHIC";
-
-const MainEnvForm = ({ onAdd, onValidate }) => {
-  const [organization, setOrganization] = useState("");
-  const [project, setProject] = useState("");
-  const [envName, setEnvName] = useState("");
-  const [envType, setEnvType] = useState("");
-  const [projects, setProjects] = useState([]);
-
-  const orgProjectMap = {
-    org1: ["projA", "projB"],
-    org2: ["projC", "projD"],
-  };
-
-  useEffect(() => {
-    if (organization) {
-      setProjects(orgProjectMap[organization] || []);
-      setProject("");
-    }
-  }, [organization]);
-
-  // Validate form fields
-  useEffect(() => {
-    const valid =
-      organization.trim() && project.trim() && envName.trim() && envType.trim();
-    onValidate(valid);
-  }, [organization, project, envName, envType]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!organization || !project || !envName || !envType) return;
-
-    onAdd({ org: organization, project, envName, type: envType });
-  };
-
-  return (
-    <Box
-      component="form"
-      id="envForm"
-      onSubmit={handleSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-    >
-      <TextField
-        select
-        label="Organization Name"
-        value={organization}
-        onChange={(e) => setOrganization(e.target.value)}
-        fullWidth
-      >
-        <MenuItem value="org1">org1</MenuItem>
-        <MenuItem value="org2">org2</MenuItem>
-      </TextField>
-
-      <TextField
-        select
-        label="Project Name"
-        value={project}
-        onChange={(e) => setProject(e.target.value)}
-        fullWidth
-        disabled={!organization}
-      >
-        {projects.map((p) => (
-          <MenuItem key={p} value={p}>
-            {p}
-          </MenuItem>
-        ))}
-      </TextField>
-
-      <TextField
-        label="Environment Name"
-        value={envName}
-        onChange={(e) => setEnvName(e.target.value)}
-        fullWidth
-      />
-
-      <TextField
-        select
-        label="Environment Type"
-        value={envType}
-        onChange={(e) => setEnvType(e.target.value)}
-        fullWidth
-      >
-        <MenuItem value="IKP">IKP</MenuItem>
-        <MenuItem value="HIC">HIC</MenuItem>
-        <MenuItem value="GCP">GCP</MenuItem>
-        <MenuItem value="AWS">AWS</MenuItem>
-      </TextField>
-
-      {envType === "IKP" && <EnvConfFormIKP />}
-      {envType === "HIC" && <EnvConfFormHIC />}
-
-      {/* Hidden submit trigger for parent dialog */}
-      <button type="submit" id="submitEnvForm" style={{ display: "none" }} />
-    </Box>
-  );
-};
-
-export default MainEnvForm;
