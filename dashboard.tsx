@@ -32,15 +32,48 @@ const closeRoleMenu = () => setRoleMenu({ anchorEl: null, rowId: null });
   onClose={closeRoleMenu}
   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
   transformOrigin={{ vertical: "top", horizontal: "left" }}
-  PaperProps={{ sx: { borderRadius: 2, minWidth: 360 } }}
+  PaperProps={{
+    sx: {
+      borderRadius: 2,
+      minWidth: 360,
+      boxShadow: 4,
+      p: 0,
+    },
+  }}
 >
-  <MenuList dense sx={{ p: 1 }}>
+  {/* Header section */}
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      px: 2,
+      py: 1.5,
+      borderBottom: (t) => `1px solid ${t.palette.divider}`,
+    }}
+  >
+    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+      Choose role
+    </Typography>
+    <IconButton
+      size="small"
+      onClick={closeRoleMenu}
+      sx={{
+        color: "text.secondary",
+        "&:hover": { color: "text.primary" },
+      }}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  </Box>
+
+  {/* Role list section */}
+  <MenuList dense sx={{ p: 1, maxHeight: 300, overflowY: "auto" }}>
     {roles.map((role) => {
       const row = rows.find((x) => x.id === roleMenu.rowId);
       const selected = row?.roleId === role.id;
 
       const handleSelect = () => {
-        // update row immediately (no Save/Cancel)
         setRows((prev) =>
           prev.map((x) =>
             x.id === roleMenu.rowId
@@ -59,7 +92,12 @@ const closeRoleMenu = () => setRoleMenu({ anchorEl: null, rowId: null });
         <MenuItem
           key={role.id}
           onClick={handleSelect}
-          sx={{ alignItems: "flex-start", py: 1 }}
+          sx={{
+            alignItems: "flex-start",
+            py: 1,
+            borderRadius: 1,
+            border: selected ? "1px solid #1976d2" : "1px solid transparent",
+          }}
         >
           <ListItemIcon sx={{ minWidth: 28, mt: "2px" }}>
             {selected ? <CheckIcon fontSize="small" /> : null}
