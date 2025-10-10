@@ -1,64 +1,83 @@
-{/* ===== Choose Role Dialog (per row) ===== */}
-<Dialog open={roleDlgOpen} onClose={closeRoleDialog} fullWidth maxWidth="sm">
-  <DialogTitle>Choose role</DialogTitle>
-  <DialogContent dividers>
-    {isLoading && (
-      <Typography variant="body2" color="text.secondary">
-        Loading roles…
-      </Typography>
-    )}
-    {isError && (
-      <Typography variant="body2" color="error">
-        Couldn’t load roles.
-      </Typography>
-    )}
-    {!isLoading && !isError && (
-      <Stack spacing={1.25}>
-        {roles.map((role) => (
-          <Stack
-            key={role.id}
-            direction="row"
-            spacing={1.5}
-            alignItems="flex-start"
-            sx={{
-              p: 1,
-              borderRadius: 1,
-              border: (t) =>
-                roleDlgSelectedRoleId === role.id
-                  ? `1px solid ${t.palette.primary.main}`
-                  : `1px solid ${t.palette.divider}`,
-              cursor: "pointer",
-            }}
-            onClick={() => setRoleDlgSelectedRoleId(role.id)}
-          >
-            <Radio
-              checked={roleDlgSelectedRoleId === role.id}
-              onChange={() => setRoleDlgSelectedRoleId(role.id)}
-              value={role.id}
-              size="small"
-              sx={{ mt: 0.25 }}
-            />
-            <Box>
+import Popover from "@mui/material/Popover";
+import MenuList from "@mui/material/MenuList";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import CheckIcon from "@mui/icons-material/Check";
+
+
+const [roleMenu, setRoleMenu] = useState({ anchorEl: null, rowId: null });
+
+const openRoleMenu = (event, rowId) => {
+  setRoleMenu({ anchorEl: event.currentTarget, rowId });
+};
+const closeRoleMenu = () => setRoleMenu({ anchorEl: null, rowId: null });
+
+
+
+<TableCell>
+  <Button
+    size="small"
+    variant="outlined"
+    onClick={(e) => openRoleMenu(e, r.id)}
+  >
+    Role: {r.roleName ?? "Select"}
+  </Button>
+</TableCell>
+
+
+<Popover
+  open={Boolean(roleMenu.anchorEl)}
+  anchorEl={roleMenu.anchorEl}
+  onClose={closeRoleMenu}
+  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+  transformOrigin={{ vertical: "top", horizontal: "left" }}
+  PaperProps={{ sx: { borderRadius: 2, minWidth: 360 } }}
+>
+  <MenuList dense sx={{ p: 1 }}>
+    {roles.map((role) => {
+      const row = rows.find((x) => x.id === roleMenu.rowId);
+      const selected = row?.roleId === role.id;
+
+      const handleSelect = () => {
+        // update row immediately (no Save/Cancel)
+        setRows((prev) =>
+          prev.map((x) =>
+            x.id === roleMenu.rowId
+              ? {
+                  ...x,
+                  roleId: role.id,
+                  roleName: prettyName(role.name),
+                }
+              : x
+          )
+        );
+        closeRoleMenu();
+      };
+
+      return (
+        <MenuItem
+          key={role.id}
+          onClick={handleSelect}
+          sx={{ alignItems: "flex-start", py: 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: 28, mt: "2px" }}>
+            {selected ? <CheckIcon fontSize="small" /> : null}
+          </ListItemIcon>
+          <ListItemText
+            primary={
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {prettyName(role.name)}
               </Typography>
+            }
+            secondary={
               <Typography variant="caption" color="text.secondary">
                 {role.description}
               </Typography>
-            </Box>
-          </Stack>
-        ))}
-      </Stack>
-    )}
-  </DialogContent>
-  <DialogActions sx={{ px: 3, py: 2 }}>
-    <Button onClick={closeRoleDialog}>Cancel</Button>
-    <Button
-      onClick={saveRoleDialog}
-      variant="contained"
-      disabled={!roleDlgSelectedRoleId}
-    >
-      Save
-    </Button>
-  </DialogActions>
-</Dialog>
+            }
+          />
+        </MenuItem>
+      );
+    })}
+  </MenuList>
+</Popover>
