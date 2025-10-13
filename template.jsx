@@ -1,4 +1,3 @@
-// client/src/pages/dashboard/settings/access.jsx
 import React, { useMemo, useState } from "react";
 import {
   Box,
@@ -25,7 +24,6 @@ import {
   Tooltip,
   Link as MuiLink,
   Radio,
-  // Popover,  // <-- we keep popover code commented-out below
   CircularProgress,
 } from "@mui/material";
 
@@ -77,7 +75,6 @@ const prettyName = (apiName = "") =>
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Access() {
-  // Seed with one existing member
   const [rows, setRows] = useState([
     {
       id: "43226675",
@@ -102,11 +99,10 @@ export default function Access() {
     );
   }, [query, rows]);
 
-  // Roles from API
   const { data, isLoading: rolesLoading, isError: rolesError } = useRoles();
   const roles = data?.roles ?? [];
 
-  // ---------- Add people modal ----------
+  // Add People Modal
   const [addOpen, setAddOpen] = useState(false);
   const [psidInput, setPsidInput] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -119,7 +115,7 @@ export default function Access() {
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
     setAdding(true);
-    await new Promise((r) => setTimeout(r, 400)); // simulate network
+    await new Promise((r) => setTimeout(r, 400));
     const picked = DIRECTORY[selectedId];
     const roleObj = roles.find((r) => r.id === selectedRoleId);
 
@@ -137,26 +133,18 @@ export default function Access() {
     setAddOpen(false);
   };
 
-  // Remove member
   const handleRemove = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
 
-  // ---------- Inline Role change (Save/Cancel + spinner) ----------
-  // (The old popover is commented below; now we use a Dialog per your request.)
-
-  // temp role selections per row: { [rowId]: roleId }
+  // Role change (modal)
   const [tempRoleByRow, setTempRoleByRow] = useState({});
-  // rows changed but not saved
   const [dirtyRowIds, setDirtyRowIds] = useState(new Set());
-  // rows being saved
   const [savingRowIds, setSavingRowIds] = useState(new Set());
 
-  // ===== Modal (Dialog) state for role picking =====
   const [roleDlgOpen, setRoleDlgOpen] = useState(false);
   const [roleDlgRow, setRoleDlgRow] = useState(null);
 
   const openRoleDialog = (row) => {
     setRoleDlgRow(row);
-    // initialize temp with current if not present
     setTempRoleByRow((prev) => ({
       ...prev,
       [row.id]: prev[row.id] ?? row.roleId ?? null,
@@ -170,10 +158,9 @@ export default function Access() {
   const handleRolePickFromDialog = (rowId, roleId) => {
     setTempRoleByRow((prev) => ({ ...prev, [rowId]: roleId }));
     setDirtyRowIds((prev) => new Set(prev).add(rowId));
-    closeRoleDialog(); // auto-close like GitHub
+    closeRoleDialog();
   };
 
-  // Save/Cancel
   const saveRoleChange = async (rowId) => {
     setSavingRowIds((prev) => {
       const next = new Set(prev);
@@ -181,7 +168,7 @@ export default function Access() {
       return next;
     });
 
-    await new Promise((r) => setTimeout(r, 600)); // simulate API
+    await new Promise((r) => setTimeout(r, 600));
 
     const newRoleId = tempRoleByRow[rowId];
     const roleObj = roles.find((r) => r.id === newRoleId);
@@ -230,7 +217,6 @@ export default function Access() {
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
-      {/* Header */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Typography variant="h5">Manage access</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
@@ -238,7 +224,6 @@ export default function Access() {
         </Button>
       </Stack>
 
-      {/* Table card */}
       <Card variant="outlined">
         <CardContent>
           <TextField
@@ -279,15 +264,17 @@ export default function Access() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Member Name</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell sx={{ color: "#000 !important", fontWeight: 700 }}>Member Name</TableCell>
+                  <TableCell sx={{ color: "#000 !important", fontWeight: 700 }}>Role</TableCell>
+                  <TableCell align="right" sx={{ color: "#000 !important", fontWeight: 700 }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {filtered.map((r) => (
                   <TableRow key={r.id} hover>
-                    {/* Member */}
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar sx={{ width: 28, height: 28, bgcolor: r.avatarBg }}>
@@ -298,25 +285,17 @@ export default function Access() {
                             {r.name}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {r.id} · {r.username}
+                            {r.id} {r.username}
                           </Typography>
                         </Stack>
                       </Stack>
                     </TableCell>
 
-                    {/* Role (button + Save/Cancel + loader) */}
                     <TableCell sx={{ whiteSpace: "nowrap" }}>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => openRoleDialog(r)} // open modal (not popover)
-                        >
+                        <Button size="small" variant="outlined" onClick={() => openRoleDialog(r)}>
                           Role:{" "}
-                          {renderRoleName(
-                            tempRoleByRow[r.id] ?? r.roleId,
-                            r.roleName ?? "—"
-                          )}
+                          {renderRoleName(tempRoleByRow[r.id] ?? r.roleId, r.roleName ?? "—")}
                         </Button>
 
                         {dirtyRowIds.has(r.id) && !savingRowIds.has(r.id) && (
@@ -340,7 +319,6 @@ export default function Access() {
                       </Stack>
                     </TableCell>
 
-                    {/* Actions */}
                     <TableCell align="right">
                       <Tooltip title="Remove access">
                         <IconButton size="small" onClick={() => handleRemove(r.id)}>
@@ -356,21 +334,7 @@ export default function Access() {
         </CardContent>
       </Card>
 
-      {/* ---------------- Role Popover (old) ---------------- */}
-      {/*
-      <Popover
-        open={Boolean(rolePopoverAnchor)}
-        anchorEl={rolePopoverAnchor}
-        onClose={closeRolePopover}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{ sx: { width: 360, p: 1 } }}
-      >
-        ... (kept for future use)
-      </Popover>
-      */}
-
-      {/* ---------------- Choose Role Dialog (modal) ---------------- */}
+      {/* Choose Role Modal */}
       <Dialog open={roleDlgOpen} onClose={closeRoleDialog} fullWidth maxWidth="sm">
         <DialogTitle
           sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
@@ -414,12 +378,7 @@ export default function Access() {
                           : `1px solid ${t.palette.divider}`,
                     }}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="flex-start"
-                      sx={{ width: "100%" }}
-                    >
+                    <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ width: "100%" }}>
                       <Box sx={{ mt: "2px", width: 18 }}>
                         {checked ? <CheckIcon fontSize="small" /> : null}
                       </Box>
@@ -438,175 +397,6 @@ export default function Access() {
             </Stack>
           )}
         </DialogContent>
-      </Dialog>
-
-      {/* ---------------- Add People Modal ---------------- */}
-      <Dialog open={addOpen} onClose={() => !adding && setAddOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Add people to repository</DialogTitle>
-        <DialogContent>
-          {!selectedId && (
-            <Stack spacing={2} sx={{ pt: 1 }}>
-              <TextField
-                autoFocus
-                label="Search by username, full name, or email"
-                placeholder="Try 45460309"
-                value={psidInput}
-                onChange={(e) => {
-                  setPsidInput(e.target.value);
-                  setSelectedId(null);
-                  setSelectedRoleId(null);
-                }}
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {result && (
-                <Card
-                  variant="outlined"
-                  sx={{
-                    cursor: "pointer",
-                    borderColor: selectedId ? "primary.main" : "divider",
-                  }}
-                  onClick={() => setSelectedId(result.id)}
-                >
-                  <CardContent sx={{ py: 1.5 }}>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Avatar sx={{ bgcolor: result.avatarBg, width: 36, height: 36 }}>
-                        {result.name[0]}
-                      </Avatar>
-                      <Stack sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {result.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {result.id} · invite outside collaborator
-                        </Typography>
-                      </Stack>
-                      <Chip size="small" color="primary" label="Select" />
-                    </Stack>
-                  </CardContent>
-                </Card>
-              )}
-            </Stack>
-          )}
-
-          {selectedId && result && (
-            <Box sx={{ pt: 1 }}>
-              {/* Selected user pill */}
-              <Card
-                variant="outlined"
-                sx={{
-                  p: 1.25,
-                  borderRadius: 2,
-                  mb: 2,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <Avatar sx={{ bgcolor: result.avatarBg, width: 28, height: 28, mr: 1 }}>
-                  {result.name[0]}
-                </Avatar>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                    {result.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {result.id}
-                  </Typography>
-                  <MuiLink component="button" variant="caption" sx={{ ml: 1 }}>
-                    View role details
-                  </MuiLink>
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setSelectedId(null);
-                    setSelectedRoleId(null);
-                    setPsidInput("");
-                  }}
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Card>
-
-              {/* Choose a role (from API) */}
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Choose a role
-              </Typography>
-
-              {rolesLoading && (
-                <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 0.5 }}>
-                  Loading roles…
-                </Typography>
-              )}
-              {rolesError && (
-                <Typography variant="body2" color="error" sx={{ px: 1, py: 0.5 }}>
-                  Couldn’t load roles.
-                </Typography>
-              )}
-
-              {!rolesLoading && !rolesError && (
-                <Stack spacing={1.25}>
-                  {roles.map((r) => (
-                    <Stack
-                      key={r.id}
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="flex-start"
-                      sx={{
-                        p: 1,
-                        borderRadius: 1,
-                        border: (t) =>
-                          selectedRoleId === r.id
-                            ? `1px solid ${t.palette.primary.main}`
-                            : `1px solid ${t.palette.divider}`,
-                        cursor: "pointer",
-                      }}
-                      onClick={() => setSelectedRoleId(r.id)}
-                    >
-                      <Radio
-                        checked={selectedRoleId === r.id}
-                        onChange={() => setSelectedRoleId(r.id)}
-                        value={r.id}
-                        size="small"
-                        sx={{ mt: 0.25 }}
-                      />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {prettyName(r.name)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {r.description}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => {
-              setAddOpen(false);
-              setSelectedId(null);
-              setPsidInput("");
-              setSelectedRoleId(null);
-            }}
-            disabled={adding}
-          >
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleSubmitAdd} disabled={!canAdd || adding}>
-            {adding ? "Adding…" : selectedId ? `Add ${selectedId}` : "Add to project"}
-          </Button>
-        </DialogActions>
       </Dialog>
     </Box>
   );
