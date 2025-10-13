@@ -1,59 +1,46 @@
-{/* 
-  ------------------------------------------------------------
-  ✅ ALTERNATE DESIGN: Large Dialog-style Role Selector (for reuse)
-  ------------------------------------------------------------
-  <Dialog
-    open={roleDlgOpen}
-    onClose={closeRoleDialog}
-    fullWidth
-    maxWidth="sm"
-  >
-    <DialogTitle>Choose role</DialogTitle>
-    <DialogContent>
-      {roles.map((r) => (
-        <Stack
-          key={r.id}
-          direction="row"
-          spacing={1.5}
-          alignItems="flex-start"
-          sx={{
-            p: 1,
-            borderRadius: 1,
-            border: (t) =>
-              tempRoleByRow[selectedRowId] === r.id
-                ? `1px solid ${t.palette.primary.main}`
-                : `1px solid ${t.palette.divider}`,
-            cursor: "pointer",
-          }}
-          onClick={() => handleRolePick(selectedRowId, r.id)}
-        >
-          <Radio
-            checked={tempRoleByRow[selectedRowId] === r.id}
-            onChange={() => handleRolePick(selectedRowId, r.id)}
-            value={r.id}
-            size="small"
-            sx={{ mt: 0.25 }}
-          />
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {prettyName(r.name)}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {r.description}
-            </Typography>
-          </Box>
-        </Stack>
-      ))}
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={closeRoleDialog}>Cancel</Button>
-      <Button
-        variant="contained"
-        onClick={saveRoleDialog}
-        disabled={!selectedRowId}
-      >
-        Save
-      </Button>
-    </DialogActions>
-  </Dialog>
-*/}
+// Dialog (modal) version state — only needed if you enable the Dialog
+const [roleDlgOpen, setRoleDlgOpen] = useState(false);
+const [selectedRowId, setSelectedRowId] = useState(null);   // which table row is being edited
+const [tempRoleByRow, setTempRoleByRow] = useState({});     // rowId -> roleId (temp selection)
+
+// Open/close the dialog
+const openRoleDialog = (rowId) => {
+  setSelectedRowId(rowId);
+  setRoleDlgOpen(true);
+};
+
+const closeRoleDialog = () => {
+  setRoleDlgOpen(false);
+  setSelectedRowId(null);
+};
+
+// When a role is clicked inside the dialog
+const handleRolePick = (rowId, roleId) => {
+  setTempRoleByRow((prev) => ({ ...prev, [rowId]: roleId }));
+};
+
+// Save the picked role to the rows table data
+const saveRoleDialog = () => {
+  const roleId = tempRoleByRow[selectedRowId];
+  if (!roleId) return;
+
+  setRows((prev) =>
+    prev.map((r) =>
+      r.id === selectedRowId ? { ...r, roleId, roleName: prettyName(roles.find(x => x.id === roleId)?.name || "") } : r
+    )
+  );
+
+  setRoleDlgOpen(false);
+  setSelectedRowId(null);
+};
+
+
+
+
+<Button
+  size="small"
+  variant="outlined"
+  onClick={() => openRoleDialog(r.id)}
+>
+  Role: {r.roleName ?? "—"}
+</Button>
