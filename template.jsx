@@ -25,7 +25,7 @@ import {
   Tooltip,
   Link as MuiLink,
   Radio,
-  Popover,
+  // Popover,  // <-- we keep popover code commented-out below
   CircularProgress,
 } from "@mui/material";
 
@@ -35,23 +35,40 @@ import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import CheckIcon from "@mui/icons-material/Check";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
+import { useRoles } from "../../../hooks/useRoles";
 
-// 🔹 GET /access/roles hook
-import { useRoles } from "@hooks/useRoles";
-
-// -----------------------------------------------------------------------------
-// Mock directory for lookups when adding people (unchanged)
+// Mock directory for “Add people” modal search
 const DIRECTORY = {
   "45460309": {
     id: "45460309",
     name: "Prasad Chavan",
-    username: "pchavan",
-    type: "Outside Collaborator",
+    username: "u45460309ca",
+    type: "Non-perm",
     avatarBg: "#8BC34A",
+  },
+  "45312530": {
+    id: "45312530",
+    name: "Sumit Joshi",
+    username: "u45312530ca",
+    type: "Non-perm",
+    avatarBg: "#1976d2",
+  },
+  "43976178": {
+    id: "43976178",
+    name: "Dnyaneshwar Kawade",
+    username: "u43976178ca",
+    type: "Non-perm",
+    avatarBg: "#FF9800",
+  },
+  "43304543": {
+    id: "43304543",
+    name: "Maya Arora",
+    username: "u43304543ca",
+    type: "Perm",
+    avatarBg: "#E91E63",
   },
 };
 
-// Turn API role names into nice labels
 const prettyName = (apiName = "") =>
   apiName
     .replace(/^org_/i, "Organization ")
@@ -59,11 +76,19 @@ const prettyName = (apiName = "") =>
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-// -----------------------------------------------------------------------------
-
 export default function Access() {
-  // table state
-  const [rows, setRows] = useState([]); // [{ id, name, username, avatarBg, type, roleId, roleName }]
+  // Seed with one existing member
+  const [rows, setRows] = useState([
+    {
+      id: "43226675",
+      name: "Nikhil Sonowal",
+      username: "u43226675ca",
+      type: "Org Admin",
+      avatarBg: "#1976d2",
+      roleId: "org_admin",
+      roleName: "Organization Admin",
+    },
+  ]);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -77,18 +102,16 @@ export default function Access() {
     );
   }, [query, rows]);
 
-  // roles from API
+  // Roles from API
   const { data, isLoading: rolesLoading, isError: rolesError } = useRoles();
   const roles = data?.roles ?? [];
 
-  // ---------------------------------------------------------------------------
-  // “Add people” modal state (kept same behavior)
+  // ---------- Add people modal ----------
   const [addOpen, setAddOpen] = useState(false);
   const [psidInput, setPsidInput] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const result = useMemo(() => DIRECTORY[psidInput.trim()] || null, [psidInput]);
 
-  // chosen role when adding
   const [selectedRoleId, setSelectedRoleId] = useState(null);
   const canAdd = Boolean(selectedId) && Boolean(selectedRoleId);
   const [adding, setAdding] = useState(false);
@@ -96,8 +119,7 @@ export default function Access() {
   const handleSubmitAdd = async () => {
     if (!canAdd) return;
     setAdding(true);
-    // simulate server latency
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 400)); // simulate network
     const picked = DIRECTORY[selectedId];
     const roleObj = roles.find((r) => r.id === selectedRoleId);
 
@@ -115,52 +137,51 @@ export default function Access() {
     setAddOpen(false);
   };
 
-  // remove row
+  // Remove member
   const handleRemove = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
 
-  // ---------------------------------------------------------------------------
-  // Inline Role change (popover + save/cancel)
-  const [rolePopoverAnchor, setRolePopoverAnchor] = useState(null);
-  const [rolePopoverRow, setRolePopoverRow] = useState(null);
+  // ---------- Inline Role change (Save/Cancel + spinner) ----------
+  // (The old popover is commented below; now we use a Dialog per your request.)
 
   // temp role selections per row: { [rowId]: roleId }
   const [tempRoleByRow, setTempRoleByRow] = useState({});
-
-  // which rows are “dirty” (role changed but unsaved)
+  // rows changed but not saved
   const [dirtyRowIds, setDirtyRowIds] = useState(new Set());
-
-  // which rows are being saved (show spinner)
+  // rows being saved
   const [savingRowIds, setSavingRowIds] = useState(new Set());
 
-  const openRolePopover = (event, row) => {
-    setRolePopoverAnchor(event.currentTarget);
-    setRolePopoverRow(row);
-    // initialize temporary value with existing roleId
+  // ===== Modal (Dialog) state for role picking =====
+  const [roleDlgOpen, setRoleDlgOpen] = useState(false);
+  const [roleDlgRow, setRoleDlgRow] = useState(null);
+
+  const openRoleDialog = (row) => {
+    setRoleDlgRow(row);
+    // initialize temp with current if not present
     setTempRoleByRow((prev) => ({
       ...prev,
       [row.id]: prev[row.id] ?? row.roleId ?? null,
     }));
+    setRoleDlgOpen(true);
   };
-
-  const closeRolePopover = () => {
-    setRolePopoverAnchor(null);
-    setRolePopoverRow(null);
+  const closeRoleDialog = () => {
+    setRoleDlgOpen(false);
+    setRoleDlgRow(null);
   };
-
-  const handleRolePick = (rowId, roleId) => {
+  const handleRolePickFromDialog = (rowId, roleId) => {
     setTempRoleByRow((prev) => ({ ...prev, [rowId]: roleId }));
-    setDirtyRowIds((prev) => new Set(prev).add(rowId)); // mark as changed
+    setDirtyRowIds((prev) => new Set(prev).add(rowId));
+    closeRoleDialog(); // auto-close like GitHub
   };
 
+  // Save/Cancel
   const saveRoleChange = async (rowId) => {
-    // simulate save
     setSavingRowIds((prev) => {
       const next = new Set(prev);
       next.add(rowId);
       return next;
     });
 
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 600)); // simulate API
 
     const newRoleId = tempRoleByRow[rowId];
     const roleObj = roles.find((r) => r.id === newRoleId);
@@ -177,7 +198,6 @@ export default function Access() {
       )
     );
 
-    // clear dirty + saving flags
     setDirtyRowIds((prev) => {
       const next = new Set(prev);
       next.delete(rowId);
@@ -188,13 +208,9 @@ export default function Access() {
       next.delete(rowId);
       return next;
     });
-
-    // close popover if it was open for this row
-    if (rolePopoverRow?.id === rowId) closeRolePopover();
   };
 
   const cancelRoleChange = (rowId) => {
-    // revert temp to saved role
     setTempRoleByRow((prev) => {
       const next = { ...prev };
       delete next[rowId];
@@ -205,17 +221,12 @@ export default function Access() {
       next.delete(rowId);
       return next;
     });
-    // also close the popover if open
-    if (rolePopoverRow?.id === rowId) closeRolePopover();
   };
 
-  // helper to render role name by id
   const renderRoleName = (roleId, fallback) => {
     const r = roles.find((x) => x.id === roleId);
     return r ? prettyName(r.name) : fallback ?? "—";
   };
-
-  // -----------------------------------------------------------------------------
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2 } }}>
@@ -254,8 +265,7 @@ export default function Access() {
                 borderRadius: 2,
                 p: 6,
                 textAlign: "center",
-                bgcolor: (t) =>
-                  t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "transparent",
+                bgcolor: (t) => (t.palette.mode === "light" ? "rgba(0,0,0,0.02)" : "transparent"),
               }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
@@ -300,7 +310,7 @@ export default function Access() {
                         <Button
                           size="small"
                           variant="outlined"
-                          onClick={(e) => openRolePopover(e, r)}
+                          onClick={() => openRoleDialog(r)} // open modal (not popover)
                         >
                           Role:{" "}
                           {renderRoleName(
@@ -346,7 +356,8 @@ export default function Access() {
         </CardContent>
       </Card>
 
-      {/* ---------------- Role Popover ---------------- */}
+      {/* ---------------- Role Popover (old) ---------------- */}
+      {/*
       <Popover
         open={Boolean(rolePopoverAnchor)}
         anchorEl={rolePopoverAnchor}
@@ -355,75 +366,82 @@ export default function Access() {
         transformOrigin={{ vertical: "top", horizontal: "left" }}
         PaperProps={{ sx: { width: 360, p: 1 } }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 1, py: 0.5 }}>
-          <Typography variant="subtitle1">Choose role</Typography>
-          <IconButton size="small" onClick={closeRolePopover}>
+        ... (kept for future use)
+      </Popover>
+      */}
+
+      {/* ---------------- Choose Role Dialog (modal) ---------------- */}
+      <Dialog open={roleDlgOpen} onClose={closeRoleDialog} fullWidth maxWidth="sm">
+        <DialogTitle
+          sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+        >
+          <Typography variant="h6">Choose role</Typography>
+          <IconButton onClick={closeRoleDialog} size="small">
             <CloseIcon fontSize="small" />
           </IconButton>
-        </Stack>
+        </DialogTitle>
 
-        <Divider sx={{ mb: 0.5 }} />
-
-        <Stack spacing={1} sx={{ px: 0.5, pb: 1 }}>
+        <DialogContent dividers>
           {rolesLoading && (
-            <Typography variant="body2" color="text.secondary" sx={{ px: 1 }}>
+            <Typography variant="body2" color="text.secondary">
               Loading roles…
             </Typography>
           )}
           {rolesError && (
-            <Typography variant="body2" color="error" sx={{ px: 1 }}>
+            <Typography variant="body2" color="error">
               Couldn’t load roles.
             </Typography>
           )}
-          {!rolesLoading &&
-            !rolesError &&
-            roles.map((role) => {
-              const checked =
-                (rolePopoverRow &&
-                  (tempRoleByRow[rolePopoverRow.id] ?? rolePopoverRow.roleId)) ===
-                role.id;
 
-              return (
-                <Button
-                  key={role.id}
-                  onClick={() => handleRolePick(rolePopoverRow.id, role.id)}
-                  sx={{
-                    justifyContent: "flex-start",
-                    textTransform: "none",
-                    borderRadius: 1,
-                    p: 1,
-                    border: (t) =>
-                      checked
-                        ? `1px solid ${t.palette.primary.main}`
-                        : `1px solid transparent`,
-                  }}
-                >
-                  <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ width: "100%" }}>
-                    <Box sx={{ mt: "2px" }}>
-                      {checked ? <CheckIcon fontSize="small" /> : <Box sx={{ width: 18 }} />}
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {prettyName(role.name)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {role.description}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Button>
-              );
-            })}
-        </Stack>
-      </Popover>
+          {!rolesLoading && !rolesError && roleDlgRow && (
+            <Stack spacing={1}>
+              {roles.map((role) => {
+                const checked =
+                  (tempRoleByRow[roleDlgRow.id] ?? roleDlgRow.roleId) === role.id;
+
+                return (
+                  <Button
+                    key={role.id}
+                    onClick={() => handleRolePickFromDialog(roleDlgRow.id, role.id)}
+                    sx={{
+                      justifyContent: "flex-start",
+                      textTransform: "none",
+                      borderRadius: 1,
+                      p: 1.25,
+                      border: (t) =>
+                        checked
+                          ? `1px solid ${t.palette.primary.main}`
+                          : `1px solid ${t.palette.divider}`,
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      alignItems="flex-start"
+                      sx={{ width: "100%" }}
+                    >
+                      <Box sx={{ mt: "2px", width: 18 }}>
+                        {checked ? <CheckIcon fontSize="small" /> : null}
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {prettyName(role.name)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {role.description}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Button>
+                );
+              })}
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ---------------- Add People Modal ---------------- */}
-      <Dialog
-        open={addOpen}
-        onClose={() => !adding && setAddOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
+      <Dialog open={addOpen} onClose={() => !adding && setAddOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>Add people to repository</DialogTitle>
         <DialogContent>
           {!selectedId && (
