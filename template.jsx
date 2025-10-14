@@ -1,5 +1,5 @@
 // client/src/pages/auth/register.jsx
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -19,17 +19,23 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useNavigate } from "react-router-dom";
-import LoginLayout from "@components/auth/login-layout";
+import { LoginLayout } from "@/components/auth/login-layout"; // <-- named export
 
 export default function Register() {
   const navigate = useNavigate();
   const API_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL;
 
+  // existing fields
   const [requesterName, setRequesterName] = useState("");
   const [requesterStaffId, setRequesterStaffId] = useState("");
   const [orgName, setOrgName] = useState("");
   const [orgDescription, setOrgDescription] = useState("");
   const [gbgf, setGbgf] = useState("");
+
+  // new fields
+  const [serviceLine, setServiceLine] = useState("");
+  const [eimName, setEimName] = useState("");
+  const [eimId, setEimId] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState("");
@@ -42,28 +48,44 @@ export default function Register() {
       requesterStaffId.trim() &&
       orgName.trim() &&
       orgDescription.trim() &&
-      gbgf.trim(),
-    [requesterName, requesterStaffId, orgName, orgDescription, gbgf]
+      gbgf.trim() &&
+      serviceLine.trim() &&
+      eimName.trim() &&
+      eimId.trim(),
+    [
+      requesterName,
+      requesterStaffId,
+      orgName,
+      orgDescription,
+      gbgf,
+      serviceLine,
+      eimName,
+      eimId,
+    ]
   );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+
     if (!isValid) {
       setError("Please fill all required fields.");
       return;
     }
+
     setLoading(true);
     setInfoMessage("Submitting registration request ...");
 
     try {
-      // TODO: replace endpoint if your backend differs
       const resp = await fetch(
         `${API_GATEWAY_URL}/v1/services/access/registration`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", accept: "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
           credentials: "include",
           body: JSON.stringify({
             requester_name: requesterName,
@@ -71,6 +93,9 @@ export default function Register() {
             organization_name: orgName,
             organization_description: orgDescription,
             gbgf,
+            service_line: serviceLine,
+            eim_name: eimName,
+            eim_id: eimId,
           }),
         }
       );
@@ -82,12 +107,9 @@ export default function Register() {
 
       setSuccessMessage("Registration submitted successfully.");
       setInfoMessage("");
-      // brief success pause then redirect to login
       setTimeout(() => navigate("/auth/login"), 900);
     } catch (err) {
-      setError(
-        err?.message || "Something went wrong while submitting the request."
-      );
+      setError(err?.message || "Something went wrong while submitting.");
     } finally {
       setLoading(false);
       setInfoMessage("");
@@ -184,19 +206,42 @@ export default function Register() {
                 />
               </FormControl>
 
+              {/* New fields */}
+              <FormControl fullWidth>
+                <InputLabel htmlFor="service_line">Service Line</InputLabel>
+                <OutlinedInput
+                  id="service_line"
+                  label="Service Line"
+                  value={serviceLine}
+                  onChange={(e) => setServiceLine(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel htmlFor="eim_name">EIM Name</InputLabel>
+                <OutlinedInput
+                  id="eim_name"
+                  label="EIM Name"
+                  value={eimName}
+                  onChange={(e) => setEimName(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel htmlFor="eim_id">EIM ID</InputLabel>
+                <OutlinedInput
+                  id="eim_id"
+                  label="EIM ID"
+                  value={eimId}
+                  onChange={(e) => setEimId(e.target.value)}
+                />
+              </FormControl>
+
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={!isValid || loading}
-                >
+                <Button type="submit" variant="contained" disabled={!isValid || loading}>
                   Submit
                 </Button>
-                <Button
-                  type="button"
-                  variant="text"
-                  onClick={() => navigate("/auth/login")}
-                >
+                <Button type="button" variant="text" onClick={() => navigate("/auth/login")}>
                   Back to Login
                 </Button>
                 {loading && (
