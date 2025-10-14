@@ -1,4 +1,3 @@
-// client/src/pages/auth/register.jsx
 import React, { useMemo, useState } from "react";
 import {
   Box,
@@ -19,12 +18,12 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useNavigate } from "react-router-dom";
-import { LoginLayout } from "@/components/auth/login-layout";
+import { LoginLayout } from "@/components/auth/login-layout"; // keep as named export
 
 export default function Register() {
   const navigate = useNavigate();
-  const API_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL;
 
+  // form fields
   const [requesterName, setRequesterName] = useState("");
   const [requesterStaffId, setRequesterStaffId] = useState("");
   const [orgName, setOrgName] = useState("");
@@ -34,8 +33,8 @@ export default function Register() {
   const [eimName, setEimName] = useState("");
   const [eimId, setEimId] = useState("");
 
+  // ui state
   const [loading, setLoading] = useState(false);
-  const [infoMessage, setInfoMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -65,49 +64,20 @@ export default function Register() {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+
     if (!isValid) {
       setError("Please fill all required fields.");
       return;
     }
 
+    // ❗No API call right now. Simulate submit + loader.
     setLoading(true);
-    setInfoMessage("Submitting registration request ...");
 
-    try {
-      const resp = await fetch(
-        `${API_GATEWAY_URL}/v1/services/access/registration`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            requester_name: requesterName,
-            requester_staff_id: requesterStaffId,
-            organization_name: orgName,
-            organization_description: orgDescription,
-            gbgf,
-            service_line: serviceLine,
-            eim_name: eimName,
-            eim_id: eimId,
-          }),
-        }
-      );
-
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => "");
-        throw new Error(text || "Registration failed");
-      }
-
-      // ✅ success message changed
-      setSuccessMessage(
-        "Thank you for your interest. We will get back to you soon."
-      );
-      setInfoMessage("");
-
-      // Optional: clear form
+    // mimic network latency then show success
+    setTimeout(() => {
+      setLoading(false);
+      setSuccessMessage("Thank you");
+      // optional: clear form
       setRequesterName("");
       setRequesterStaffId("");
       setOrgName("");
@@ -116,15 +86,9 @@ export default function Register() {
       setServiceLine("");
       setEimName("");
       setEimId("");
-
-      // optional redirect after 2s
-      setTimeout(() => navigate("/auth/login"), 2000);
-    } catch (err) {
-      setError(err?.message || "Something went wrong while submitting.");
-    } finally {
-      setLoading(false);
-      setInfoMessage("");
-    }
+      // optional: navigate after success
+      // setTimeout(() => navigate("/auth/login"), 1500);
+    }, 1200);
   };
 
   return (
@@ -137,21 +101,14 @@ export default function Register() {
             <Tab value="register" label="Register" tabIndex={0} />
           </Tabs>
 
+          {/* error (validation only; no server errors shown) */}
           {error && (
             <Typography color="error" variant="body2" sx={{ mt: 2 }}>
               {error}
             </Typography>
           )}
 
-          {infoMessage && (
-            <Box display="flex" alignItems="center" sx={{ mt: 2 }}>
-              <CircularProgress size={18} />
-              <Typography variant="body2" sx={{ ml: 1 }}>
-                {infoMessage}
-              </Typography>
-            </Box>
-          )}
-
+          {/* success: show plain 'Thank you' */}
           {successMessage && (
             <Box display="flex" alignItems="center" sx={{ mt: 2 }}>
               <CheckCircleIcon fontSize="small" />
@@ -171,6 +128,7 @@ export default function Register() {
                 <OutlinedInput
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
+                  label="Requester Name"
                 />
               </FormControl>
 
@@ -179,6 +137,7 @@ export default function Register() {
                 <OutlinedInput
                   value={requesterStaffId}
                   onChange={(e) => setRequesterStaffId(e.target.value)}
+                  label="Requester Staff ID"
                 />
               </FormControl>
 
@@ -187,6 +146,7 @@ export default function Register() {
                 <OutlinedInput
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
+                  label="Organization Name"
                 />
               </FormControl>
 
@@ -204,6 +164,7 @@ export default function Register() {
                 <OutlinedInput
                   value={gbgf}
                   onChange={(e) => setGbgf(e.target.value)}
+                  label="GBGF"
                 />
               </FormControl>
 
@@ -212,6 +173,7 @@ export default function Register() {
                 <OutlinedInput
                   value={serviceLine}
                   onChange={(e) => setServiceLine(e.target.value)}
+                  label="Service Line"
                 />
               </FormControl>
 
@@ -220,6 +182,7 @@ export default function Register() {
                 <OutlinedInput
                   value={eimName}
                   onChange={(e) => setEimName(e.target.value)}
+                  label="EIM Name"
                 />
               </FormControl>
 
@@ -228,6 +191,7 @@ export default function Register() {
                 <OutlinedInput
                   value={eimId}
                   onChange={(e) => setEimId(e.target.value)}
+                  label="EIM ID"
                 />
               </FormControl>
 
@@ -247,11 +211,7 @@ export default function Register() {
                   )}
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="text"
-                  onClick={() => navigate("/auth/login")}
-                >
+                <Button type="button" variant="text" onClick={() => navigate("/auth/login")}>
                   Back to Login
                 </Button>
               </Stack>
