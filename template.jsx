@@ -19,20 +19,17 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useNavigate } from "react-router-dom";
-import { LoginLayout } from "@/components/auth/login-layout"; // <-- named export
+import { LoginLayout } from "@/components/auth/login-layout";
 
 export default function Register() {
   const navigate = useNavigate();
   const API_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL;
 
-  // existing fields
   const [requesterName, setRequesterName] = useState("");
   const [requesterStaffId, setRequesterStaffId] = useState("");
   const [orgName, setOrgName] = useState("");
   const [orgDescription, setOrgDescription] = useState("");
   const [gbgf, setGbgf] = useState("");
-
-  // new fields
   const [serviceLine, setServiceLine] = useState("");
   const [eimName, setEimName] = useState("");
   const [eimId, setEimId] = useState("");
@@ -68,7 +65,6 @@ export default function Register() {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
-
     if (!isValid) {
       setError("Please fill all required fields.");
       return;
@@ -105,9 +101,24 @@ export default function Register() {
         throw new Error(text || "Registration failed");
       }
 
-      setSuccessMessage("Registration submitted successfully.");
+      // ✅ success message changed
+      setSuccessMessage(
+        "Thank you for your interest. We will get back to you soon."
+      );
       setInfoMessage("");
-      setTimeout(() => navigate("/auth/login"), 900);
+
+      // Optional: clear form
+      setRequesterName("");
+      setRequesterStaffId("");
+      setOrgName("");
+      setOrgDescription("");
+      setGbgf("");
+      setServiceLine("");
+      setEimName("");
+      setEimId("");
+
+      // optional redirect after 2s
+      setTimeout(() => navigate("/auth/login"), 2000);
     } catch (err) {
       setError(err?.message || "Something went wrong while submitting.");
     } finally {
@@ -144,7 +155,10 @@ export default function Register() {
           {successMessage && (
             <Box display="flex" alignItems="center" sx={{ mt: 2 }}>
               <CheckCircleIcon fontSize="small" />
-              <Typography variant="body2" sx={{ ml: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{ ml: 1, color: "success.main", fontWeight: 500 }}
+              >
                 {successMessage}
               </Typography>
             </Box>
@@ -153,41 +167,30 @@ export default function Register() {
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <Stack spacing={2} sx={{ mt: 2 }}>
               <FormControl fullWidth>
-                <InputLabel htmlFor="requester_name">Requester Name</InputLabel>
+                <InputLabel>Requester Name</InputLabel>
                 <OutlinedInput
-                  id="requester_name"
-                  label="Requester Name"
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
                 />
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel htmlFor="requester_staff_id">
-                  Requester Staff ID
-                </InputLabel>
+                <InputLabel>Requester Staff ID</InputLabel>
                 <OutlinedInput
-                  id="requester_staff_id"
-                  label="Requester Staff ID"
                   value={requesterStaffId}
                   onChange={(e) => setRequesterStaffId(e.target.value)}
                 />
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel htmlFor="organization_name">
-                  Organization Name
-                </InputLabel>
+                <InputLabel>Organization Name</InputLabel>
                 <OutlinedInput
-                  id="organization_name"
-                  label="Organization Name"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
                 />
               </FormControl>
 
               <TextField
-                id="organization_description"
                 label="Organization Description"
                 value={orgDescription}
                 onChange={(e) => setOrgDescription(e.target.value)}
@@ -197,61 +200,60 @@ export default function Register() {
               />
 
               <FormControl fullWidth>
-                <InputLabel htmlFor="gbgf">GBGF</InputLabel>
+                <InputLabel>GBGF</InputLabel>
                 <OutlinedInput
-                  id="gbgf"
-                  label="GBGF"
                   value={gbgf}
                   onChange={(e) => setGbgf(e.target.value)}
                 />
               </FormControl>
 
-              {/* New fields */}
               <FormControl fullWidth>
-                <InputLabel htmlFor="service_line">Service Line</InputLabel>
+                <InputLabel>Service Line</InputLabel>
                 <OutlinedInput
-                  id="service_line"
-                  label="Service Line"
                   value={serviceLine}
                   onChange={(e) => setServiceLine(e.target.value)}
                 />
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel htmlFor="eim_name">EIM Name</InputLabel>
+                <InputLabel>EIM Name</InputLabel>
                 <OutlinedInput
-                  id="eim_name"
-                  label="EIM Name"
                   value={eimName}
                   onChange={(e) => setEimName(e.target.value)}
                 />
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel htmlFor="eim_id">EIM ID</InputLabel>
+                <InputLabel>EIM ID</InputLabel>
                 <OutlinedInput
-                  id="eim_id"
-                  label="EIM ID"
                   value={eimId}
                   onChange={(e) => setEimId(e.target.value)}
                 />
               </FormControl>
 
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button type="submit" variant="contained" disabled={!isValid || loading}>
-                  Submit
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={!isValid || loading}
+                >
+                  {loading ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
                 </Button>
-                <Button type="button" variant="text" onClick={() => navigate("/auth/login")}>
+
+                <Button
+                  type="button"
+                  variant="text"
+                  onClick={() => navigate("/auth/login")}
+                >
                   Back to Login
                 </Button>
-                {loading && (
-                  <Box display="flex" alignItems="center">
-                    <CircularProgress size={22} />
-                    <Typography variant="body2" sx={{ ml: 1 }}>
-                      Processing...
-                    </Typography>
-                  </Box>
-                )}
               </Stack>
             </Stack>
           </Box>
