@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "id": "exp-001",
+      "experiment_code": "EXP1001",
+      "name": "API Performance Test",
+      "executed_by": "john.doe",
+      "environment": "Production",
+      "status": "running",
+      "createdAt": "2025-10-14T10:30:00Z",
+      "result": { "findings": "Execution in progress" }
+    },
+    {
+      "id": "exp-002",
+      "experiment_code": "EXP1002",
+      "name": "Memory Load Analysis",
+      "executed_by": "manasi.k",
+      "environment": "Pre-Prod",
+      "status": "completed",
+      "createdAt": "2025-10-12T08:15:00Z",
+      "result": { "findings": "All memory thresholds stable" }
+    },
+    {
+      "id": "exp-003",
+      "experiment_code": "EXP1003",
+      "name": "Database Failover Test",
+      "executed_by": "shubham.j",
+      "environment": "QA",
+      "status": "failed",
+      "createdAt": "2025-10-10T17:00:00Z",
+      "result": { "findings": "Primary DB did not reconnect" }
+    },
+    {
+      "id": "exp-004",
+      "experiment_code": "EXP1004",
+      "name": "Container Restart Validation",
+      "executed_by": "alex.t",
+      "environment": "Development",
+      "status": "pending",
+      "createdAt": "2025-10-09T06:00:00Z",
+      "result": { "findings": "Awaiting execution" }
+    },
+    {
+      "id": "exp-005",
+      "experiment_code": "EXP1005",
+      "name": "Security Headers Scan",
+      "executed_by": "kriti.s",
+      "environment": "Production",
+      "status": "completed",
+      "createdAt": "2025-10-05T12:00:00Z",
+      "result": { "findings": "All headers present" }
+    },
+    {
+      "id": "exp-006",
+      "experiment_code": "EXP1006",
+      "name": "Autoscaling Stress Run",
+      "executed_by": "rahul.v",
+      "environment": "Pre-Prod",
+      "status": "running",
+      "createdAt": "2025-10-14T09:05:00Z",
+      "result": { "findings": "Scaling to 6 replicas" }
+    },
+    {
+      "id": "exp-007",
+      "experiment_code": "EXP1007",
+      "name": "DB Migration Dry-Run",
+      "executed_by": "nina.p",
+      "environment": "QA",
+      "status": "failed",
+      "createdAt": "2025-10-01T07:30:00Z",
+      "result": { "findings": "Checksum mismatch on table orders" }
+    },
+    {
+      "id": "exp-008",
+      "experiment_code": "EXP1008",
+      "name": "Chaos Pod Kill",
+      "executed_by": "ops.bot",
+      "environment": "Development",
+      "status": "pending",
+      "createdAt": "2025-10-15T06:00:00Z",
+      "result": { "findings": "Scheduled" }
+    }
+  ]
+}
