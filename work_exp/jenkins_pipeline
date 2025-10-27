@@ -1,0 +1,144 @@
+#Declartive
+
+@Liberary('')
+pipeline{
+    agent any
+    environment{
+        GIT_URL, Branch_name, Sonarqube_server(Must match the name in Jenkins global config),
+        project_key, project_name, src
+        artifact_id, repo_releases/snapshot
+        stackholders
+    }
+    options{
+        timestamp()
+    }
+    stages{
+
+        stage('Checkout'){
+            steps{}
+        }
+        stage('Build(Maven)'){
+            steps{
+                scripts{
+
+                }
+            }
+        }
+        stage('SonarQube scan'){
+            steps{
+                withSonarQubeEnv(){
+                    sh """
+                    """
+                }
+            }
+        }
+        stage('Qualiy gate'){}
+        stage('Publish artifact to artifactory'){
+            steps{
+                script{
+
+                }
+            }
+        }
+        stage('Notify Stakeholders'){
+            steps {
+                script{}
+            }
+        }
+    }
+   
+}
+
+
+
+
+
+
+#scripted
+node {
+  // ---------- CONFIG ----------
+  def GIT_URL           = 'https://github.com/your-org/your-repo.git'
+  def BRANCH            = 'main'
+  def SONAR_INSTANCE    = 'sonarqube'       // Jenkins global name
+  def SONAR_PROJECT_KEY = 'your-org:your-repo'
+  def SONAR_SOURCES     = 'src'
+  def ARTIFACTORY_URL   = 'https://artifactory.example.com/artifactory'
+  def ARTIFACTORY_REPO  = 'libs-release-local'
+  def STAKEHOLDERS      = 'dev-team@example.com, qa@example.com'
+  // ----------------------------
+
+  timestamps()
+  ansiColor('xterm')
+
+  stage('Checkout') {
+    checkout([$class: 'GitSCM',
+      branches: [[name: "*/${BRANCH}"]],
+      userRemoteConfigs: [[url: GIT_URL]]
+    ])
+  }
+
+  stage('Setup JFrog CLI') {
+    withCredentials([usernamePassword(credentialsId: 'artifactory-cred', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+      sh """
+        curl -fL https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/${sh(returnStdout:true, script:'uname -s | tr A-Z a-z').trim()}/amd64/jf | tee /usr/local/bin/jf > /dev/null
+        chmod +x /usr/local/bin/jf
+        jf config add art --interactive=false --url='${ARTIFACTORY_URL}' --user="$ART_USER" --password="$ART_PASS"
+        jf --version
+      """
+    }
+  }
+
+  stage('Build') {
+    sh 'mvn -B -V -U clean package -DskipTests=false'
+  }
+
+  stage('SonarQube Scan') {
+    withSonarQubeEnv("${SONAR_INSTANCE}") {
+      sh """
+        mvn -B sonar:sonar \
+          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+          -Dsonar.sources=${SONAR_SOURCES}
+      """
+    }
+  }
+
+  stage('Quality Gate') {
+    timeout(time: 10, unit: 'MINUTES') {
+      def qg = waitForQualityGate()
+      if (qg.status != 'OK') {
+        error "Quality Gate failed: ${qg.status}"
+      }
+    }
+  }
+
+  stage('Upload Artifact to Artifactory') {
+    // Example: upload all jars from target/ to a build-specific path
+    sh """
+      jf rt u "target/*.jar" "${ARTIFACTORY_REPO}/your-repo/${BRANCH}/${env.BUILD_NUMBER}/" --flat=true --build-name="${env.JOB_NAME}" --build-number="${env.BUILD_NUMBER}"
+      jf rt build-publish "${env.JOB_NAME}" "${env.BUILD_NUMBER}"
+    """
+  }
+
+  stage('Notify Stakeholders') {
+    def sonarUrl = "${env.SONAR_HOST_URL ?: 'https://sonarqube.example.com'}/dashboard?id=${SONAR_PROJECT_KEY}"
+    def artiUrl  = "${ARTIFACTORY_URL}/${ARTIFACTORY_REPO}/your-repo/${BRANCH}/${env.BUILD_NUMBER}/"
+
+    emailext(
+      subject: "✅ Build #${env.BUILD_NUMBER} Passed – ${env.JOB_NAME}",
+      to: STAKEHOLDERS,
+      body: """\
+Build: ${env.BUILD_URL}
+Branch: ${BRANCH}
+
+Artifacts:
+  ${artiUrl}
+
+SonarQube Dashboard:
+  ${sonarUrl}
+
+Regards,
+Jenkins
+""")
+  }
+}
+
