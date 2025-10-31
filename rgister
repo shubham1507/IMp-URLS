@@ -1,0 +1,256 @@
+// client/src/pages/auth/register.jsx
+import React, { useMemo, useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Tabs,
+  Tab,
+  Divider,
+  Grid,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useNavigate } from "react-router-dom";
+import { LoginLayout } from "@/components/auth/login-layout";
+
+export default function Register() {
+  const navigate = useNavigate();
+
+  // form fields
+  const [requesterName, setRequesterName] = useState("");
+  const [requesterStaffId, setRequesterStaffId] = useState("");
+  const [orgName, setOrgName] = useState("");
+  const [orgDescription, setOrgDescription] = useState("");
+  const [gbgf, setGbgf] = useState("");
+  const [serviceLine, setServiceLine] = useState("");
+  const [eimName, setEimName] = useState("");
+  const [eimId, setEimId] = useState("");
+
+  // UI state
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const isValid = useMemo(
+    () =>
+      requesterName.trim() &&
+      requesterStaffId.trim() &&
+      orgName.trim() &&
+      orgDescription.trim() &&
+      gbgf.trim() &&
+      serviceLine.trim() &&
+      eimName.trim() &&
+      eimId.trim(),
+    [
+      requesterName,
+      requesterStaffId,
+      orgName,
+      orgDescription,
+      gbgf,
+      serviceLine,
+      eimName,
+      eimId,
+    ]
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+
+    if (!isValid) {
+      setError("Please fill all required fields.");
+      return;
+    }
+
+    // simulate submit
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setSuccessMessage("Thank you");
+      // optional clear
+      setRequesterName("");
+      setRequesterStaffId("");
+      setOrgName("");
+      setOrgDescription("");
+      setGbgf("");
+      setServiceLine("");
+      setEimName("");
+      setEimId("");
+    }, 900);
+  };
+
+  return (
+    <LoginLayout>
+      <Card sx={{ maxWidth: 980, mx: "auto" }}>
+        <CardHeader title="Register Organization Access" sx={{ px: 3, py: 2 }} />
+        <Divider />
+        <CardContent sx={{ px: 3, py: 2 }}>
+          <Tabs value="register" variant="fullWidth" sx={{ px: 1, mb: 2 }}>
+            <Tab value="register" label="Register" />
+            <Tab label="Login" onClick={() => navigate("/auth/login")} />
+          </Tabs>
+
+          {error && (
+            <Typography color="error" variant="body2" sx={{ mb: 1 }}>
+              {error}
+            </Typography>
+          )}
+
+          {successMessage && (
+            <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
+              <CheckCircleIcon fontSize="small" />
+              <Typography
+                variant="body2"
+                sx={{ ml: 1, color: "success.main", fontWeight: 500 }}
+              >
+                {successMessage}
+              </Typography>
+            </Box>
+          )}
+
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            {/* Two-column compact grid */}
+            <Grid container spacing={2}>
+              {/* Row 1 */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Requester Name</InputLabel>
+                  <OutlinedInput
+                    label="Requester Name"
+                    value={requesterName}
+                    onChange={(e) => setRequesterName(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Requester Staff ID</InputLabel>
+                  <OutlinedInput
+                    label="Requester Staff ID"
+                    value={requesterStaffId}
+                    onChange={(e) => setRequesterStaffId(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+
+              {/* Row 2 */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Organization Name</InputLabel>
+                  <OutlinedInput
+                    label="Organization Name"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>GBGF</InputLabel>
+                  <OutlinedInput
+                    label="GBGF"
+                    value={gbgf}
+                    onChange={(e) => setGbgf(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+
+              {/* Row 3 */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Service Line</InputLabel>
+                  <OutlinedInput
+                    label="Service Line"
+                    value={serviceLine}
+                    onChange={(e) => setServiceLine(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>EIM Name</InputLabel>
+                  <OutlinedInput
+                    label="EIM Name"
+                    value={eimName}
+                    onChange={(e) => setEimName(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+
+              {/* Row 4 */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>EIM ID</InputLabel>
+                  <OutlinedInput
+                    label="EIM ID"
+                    value={eimId}
+                    onChange={(e) => setEimId(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+
+              {/* Row 5: Description full width but compact */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Organization Description"
+                  value={orgDescription}
+                  onChange={(e) => setOrgDescription(e.target.value)}
+                  multiline
+                  minRows={2}
+                  fullWidth
+                  size="small"
+                />
+              </Grid>
+
+              {/* Actions */}
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    mt: 1,
+                    display: "flex",
+                    gap: 2,
+                    alignItems: "center",
+                    justifyContent: { xs: "stretch", md: "flex-start" },
+                  }}
+                >
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!isValid || loading}
+                    sx={{ minWidth: 140 }}
+                  >
+                    {loading ? (
+                      <>
+                        <CircularProgress size={18} sx={{ mr: 1 }} />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="text"
+                    onClick={() => navigate("/auth/login")}
+                  >
+                    Back to Login
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </CardContent>
+      </Card>
+    </LoginLayout>
+  );
+}
