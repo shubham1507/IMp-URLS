@@ -13,7 +13,7 @@ import { paths } from "@/paths";
 import { RouterLink } from "@/components/core/link";
 import { SignOut } from "./sign-out";
 
-// Staff ID from env; fallback to your known ID for now
+// Staff ID from env; fallback to known ID (change if needed)
 const STAFF_ID = import.meta.env.VITE_STAFF_ID || "43226675";
 
 const initialUser = {
@@ -35,7 +35,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
       return;
     }
 
-    // Remove trailing slash if any
+    // remove trailing slash if present
     baseUrl = baseUrl.replace(/\/$/, "");
 
     if (!STAFF_ID) {
@@ -52,7 +52,6 @@ export function UserPopover({ anchorEl, onClose, open }) {
         const url = `${baseUrl}/api/v1/users/${STAFF_ID}/profile`;
         console.log("[UserPopover] Fetching profile:", url);
 
-        // Optional token support, if your app stores one
         const token =
           window.localStorage.getItem("access_token") ||
           window.localStorage.getItem("token");
@@ -68,7 +67,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
         const res = await fetch(url, {
           method: "GET",
           headers,
-          credentials: "include", // send cookies for auth
+          credentials: "include",
           signal: controller.signal,
         });
 
@@ -84,10 +83,11 @@ export function UserPopover({ anchorEl, onClose, open }) {
         const data = await res.json();
         console.log("[UserPopover] profile response =", data);
 
+        // NOTE: display_name & email are TOP-LEVEL fields
         setUser({
           id: data?.staff_id ?? "",
-          name: data?.profile?.display_name ?? "User",
-          email: data?.profile?.email ?? "",
+          name: data?.display_name ?? "User",
+          email: data?.email ?? "",
           avatar: "/assets/avatar-3.png",
         });
       } catch (err) {
