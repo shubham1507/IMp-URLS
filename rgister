@@ -1,205 +1,169 @@
-// client/src/pages/auth/register.jsx
-import React, { useMemo, useState } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Divider,
-  Stack,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  TextField,
-  Button,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { useNavigate } from "react-router-dom";
-import { LoginLayout } from "@/components/auth/login-layout";
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
+import { CreditCard as CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
+import { LockKey as LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
+import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 
-export default function Register() {
-  const navigate = useNavigate();
+import { paths } from '@/paths';
+import { RouterLink } from '@/components/core/link';
+import { useSession } from '@/hooks/use-session';
+import { signOut } from '@/lib/auth';
 
-  // fields
-  const [requesterName, setRequesterName] = useState("");
-  const [requesterStaffId, setRequesterStaffId] = useState("");
-  const [orgName, setOrgName] = useState("");
-  const [orgDescription, setOrgDescription] = useState("");
-  const [gbgf, setGbgf] = useState("");
-  const [serviceLine, setServiceLine] = useState("");
-  const [eimName, setEimName] = useState("");
-  const [eimId, setEimId] = useState("");
+// ---- NEW: default user state (no more hard-coded Alice Smith) ----
+const initialUser = {
+  id: '',
+  name: '',
+  avatar: '/assets/avatar-3.png',
+  email: '',
+};
 
-  // ui
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const isValid = useMemo(
-    () =>
-      requesterName.trim() &&
-      requesterStaffId.trim() &&
-      orgName.trim() &&
-      orgDescription.trim() &&
-      gbgf.trim() &&
-      serviceLine.trim() &&
-      eimName.trim() &&
-      eimId.trim(),
-    [
-      requesterName,
-      requesterStaffId,
-      orgName,
-      orgDescription,
-      gbgf,
-      serviceLine,
-      eimName,
-      eimId,
-    ]
+function SignOutButton() {
+  return (
+    <MenuItem
+      component="button"
+      onClick={() => {
+        void signOut();
+      }}
+    >
+      Sign out
+    </MenuItem>
   );
+}
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+export function UserPopover({ anchorEl, onClose, open }) {
+  // session should already have the logged-in user info (incl. staff_id)
+  const { user: sessionUser } = useSession();
 
-    if (!isValid) {
-      setError("Please fill all required fields.");
+  // local state for the user shown in the popover
+  const [user, setUser] = React.useState(() => ({
+    ...initialUser,
+    id: sessionUser?.staff_id ?? initialUser.id,
+    name:
+      sessionUser?.name ??
+      sessionUser?.display_name ??
+      initialUser.name,
+    email: sessionUser?.email ?? initialUser.email,
+  }));
+
+  // ---- NEW: fetch profile from your API using staff_id ----
+  React.useEffect(() => {
+    const staffId = sessionUser?.staff_id;
+
+    if (!staffId) {
       return;
     }
 
-    // simulate submit + loader
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSuccessMessage("Thank you");
-    }, 900);
+    const controller = new AbortController();
+
+    async function loadProfile() {
+      try {
+        const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
+        if (!baseUrl) {
+          console.error('VITE_API_GATEWAY_URL is not configured');
+          return;
+        }
+
+        const res = await fetch(
+          `${baseUrl}/api/v1/users/${staffId}/profile`,
+          {
+            method: 'GET',
+            headers: { accept: 'application/json' },
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) {
+          console.error('Failed to fetch user profile', res.status);
+          return;
+        }
+
+        const data = await res.json();
+        // sample response (from your screenshot):
+        // { ok, staff_id, profile: { display_name, email, ... }, created, chaos_platform_role }
+
+        setUser((prev) => ({
+          ...prev,
+          id: data?.staff_id ?? prev.id,
+          name: data?.profile?.display_name ?? prev.name,
+          email: data?.profile?.email ?? prev.email,
+        }));
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Error fetching user profile', err);
+      }
+    }
+
+    loadProfile();
+
+    return () => controller.abort();
+  }, [sessionUser?.staff_id]);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
-    <LoginLayout>
-      <Card sx={{ maxWidth: 900, mx: "auto" }}>
-        <CardHeader title="Register Organization Access" sx={{ py: 1.5 }} />
-        <Divider />
-        <CardContent sx={{ py: 2 }}>
-          {error && (
-            <Typography color="error" variant="body2" sx={{ mb: 1 }}>
-              {error}
-            </Typography>
-          )}
-          {successMessage && (
-            <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-              <CheckCircleIcon fontSize="small" />
-              <Typography sx={{ ml: 1 }} color="success.main" variant="body2">
-                {successMessage}
-              </Typography>
-            </Box>
-          )}
+    <Popover
+      anchorEl={anchorEl}
+      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      onClose={handleClose}
+      open={open}
+      slotProps={{ paper: { sx: { width: 280 } } }}
+      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+    >
+      <Box sx={{ p: 2 }}>
+        <Typography variant="subtitle1">
+          {user.name || 'User'}
+        </Typography>
+        <Typography color="text.secondary" variant="body2">
+          {user.email || 'Loading...'}
+        </Typography>
+      </Box>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <Stack spacing={1.5}>
-              {/* ONLY CHANGE: put Requester Name + Staff ID side-by-side */}
-              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Requester Name</InputLabel>
-                  <OutlinedInput
-                    label="Requester Name"
-                    value={requesterName}
-                    onChange={(e) => setRequesterName(e.target.value)}
-                  />
-                </FormControl>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Requester Staff ID</InputLabel>
-                  <OutlinedInput
-                    label="Requester Staff ID"
-                    value={requesterStaffId}
-                    onChange={(e) => setRequesterStaffId(e.target.value)}
-                  />
-                </FormControl>
-              </Stack>
+      <Divider />
 
-              {/* keep remaining fields as-is, just compact size and tight spacing */}
-              <FormControl fullWidth size="small">
-                <InputLabel>Organization Name</InputLabel>
-                <OutlinedInput
-                  label="Organization Name"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                />
-              </FormControl>
+      <Box sx={{ p: 1 }}>
+        <List>
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.profile.account}
+            onClick={handleClose}
+          >
+            <UserIcon style={{ marginRight: 8 }} />
+            Account
+          </ListItem>
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.profile.settings}
+            onClick={handleClose}
+          >
+            <LockKeyIcon style={{ marginRight: 8 }} />
+            Settings
+          </ListItem>
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.billing}
+            onClick={handleClose}
+          >
+            <CreditCardIcon style={{ marginRight: 8 }} />
+            Billing
+          </ListItem>
+        </List>
+      </Box>
 
-              <TextField
-                label="Organization Description"
-                value={orgDescription}
-                onChange={(e) => setOrgDescription(e.target.value)}
-                multiline
-                minRows={2}       // compact
-                fullWidth
-                size="small"
-              />
+      <Divider />
 
-              <FormControl fullWidth size="small">
-                <InputLabel>GBGF</InputLabel>
-                <OutlinedInput
-                  label="GBGF"
-                  value={gbgf}
-                  onChange={(e) => setGbgf(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl fullWidth size="small">
-                <InputLabel>Service Line</InputLabel>
-                <OutlinedInput
-                  label="Service Line"
-                  value={serviceLine}
-                  onChange={(e) => setServiceLine(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl fullWidth size="small">
-                <InputLabel>EIM Name</InputLabel>
-                <OutlinedInput
-                  label="EIM Name"
-                  value={eimName}
-                  onChange={(e) => setEimName(e.target.value)}
-                />
-              </FormControl>
-
-              <FormControl fullWidth size="small">
-                <InputLabel>EIM ID</InputLabel>
-                <OutlinedInput
-                  label="EIM ID"
-                  value={eimId}
-                  onChange={(e) => setEimId(e.target.value)}
-                />
-              </FormControl>
-
-              {/* Actions always visible without scroll */}
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ pt: 0.5 }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="medium"
-                  disabled={!isValid || loading}
-                >
-                  {loading ? (
-                    <>
-                      <CircularProgress size={18} sx={{ mr: 1 }} />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit"
-                  )}
-                </Button>
-                <Button variant="text" onClick={() => navigate("/auth/login")}>
-                  Back to Login
-                </Button>
-              </Stack>
-            </Stack>
-          </Box>
-        </CardContent>
-      </Card>
-    </LoginLayout>
+      <Box sx={{ p: 1 }}>
+        <SignOutButton />
+      </Box>
+    </Popover>
   );
 }
