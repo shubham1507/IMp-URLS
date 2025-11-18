@@ -1,30 +1,56 @@
-  React.useEffect(() => {
+React.useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
     if (!baseUrl) {
       console.error("VITE_API_GATEWAY_URL is not configured in .env");
-      return;
     }
 
-    // Read staff ID from localStorage "user" object
+    // 1) Read user object from localStorage and set name/email immediately
     let staffId = null;
+
     try {
       const rawUser = window.localStorage.getItem("user");
       if (rawUser) {
         const parsed = JSON.parse(rawUser);
-        // adjust these field names if needed
+        console.log("[UserPopover] localStorage.user =", parsed);
+
+        // Try to get staff id from multiple common fields
         staffId =
           parsed.staff_id ||
           parsed.staffId ||
           parsed.qc_id ||
           parsed.qcid ||
-          parsed.id; // fallback
+          parsed.id;
+
+        // Try to get name + email directly from this local object
+        const localName =
+          parsed.display_name ||
+          parsed.displayName ||
+          parsed.name ||
+          user.name;
+
+        const localEmail =
+          parsed.email ||
+          parsed.mail ||
+          parsed.userPrincipalName ||
+          user.email;
+
+        setUser((prev) => ({
+          ...prev,
+          id: staffId || prev.id,
+          name: localName || prev.name,
+          email: localEmail || prev.email,
+        }));
+      } else {
+        console.warn("[UserPopover] localStorage.user not found");
       }
     } catch (e) {
-      console.error("Failed to parse localStorage.user", e);
+      console.error("[UserPopover] Failed to parse localStorage.user", e);
     }
 
-    if (!staffId) {
-      console.warn("No staff ID found in localStorage.user – using default user.");
+    console.log("[UserPopover] baseUrl =", baseUrl, "staffId =", staffId);
+
+    // If we don't have baseUrl or staffId, stop here.
+    if (!baseUrl || !staffId) {
       return;
     }
 
@@ -34,21 +60,26 @@
       try {
         setLoading(true);
 
-        const res = await fetch(
-          `${baseUrl}/api/v1/users/${staffId}/profile`,
-          {
-            method: "GET",
-            headers: { accept: "application/json" },
-            signal: controller.signal,
-          }
-        );
+        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
+        console.log("[UserPopover] Fetching profile:", url);
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { accept: "application/json" },
+          signal: controller.signal,
+        });
 
         if (!res.ok) {
-          console.error("Failed to fetch user profile", res.status);
+          console.error(
+            "[UserPopover] Failed to fetch user profile",
+            res.status,
+            res.statusText
+          );
           return;
         }
 
         const data = await res.json();
+        console.log("[UserPopover] profile response =", data);
 
         setUser((prev) => ({
           ...prev,
@@ -58,7 +89,7 @@
         }));
       } catch (err) {
         if (err.name !== "AbortError") {
-          console.error("Error fetching user profile", err);
+          console.error("[UserPopover] Error fetching user profile", err);
         }
       } finally {
         setLoading(false);
