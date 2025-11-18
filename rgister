@@ -12,7 +12,7 @@ function adminGuard(loader) {
       const data = await res.json();
       const isAdmin = !!data?.claims?.is_platform_admin;
 
-      // Non-admin → return access denied page
+      // Non-admin → show "You don't have access" page
       if (!isAdmin) {
         const { default: AccessDenied } = await import(
           "@/pages/common/AccessDenied"
@@ -20,7 +20,7 @@ function adminGuard(loader) {
         return { Component: AccessDenied };
       }
 
-      // Admin → return actual page
+      // Admin → render real page
       return loader();
     } catch (e) {
       const { default: AccessDenied } = await import(
@@ -40,7 +40,7 @@ export const route = {
   ),
   children: [
     // -------------------------------------------------
-    // DASHBOARD OVERVIEW (NON-ADMIN CAN SEE)
+    // DASHBOARD OVERVIEW  (visible to everyone)
     // -------------------------------------------------
     {
       index: true,
@@ -53,7 +53,7 @@ export const route = {
     },
 
     // -------------------------------------------------
-    // CHAOS EXPERIMENTS (NON-ADMIN CAN SEE)
+    // CHAOS EXPERIMENTS  (visible to everyone)
     // -------------------------------------------------
     {
       path: "experiments",
@@ -117,7 +117,7 @@ export const route = {
     {
       path: "settings",
       children: [
-        // NON-ADMIN CAN SEE ------------------------
+        // ---------- NON-ADMIN CAN SEE ----------
         {
           path: "general",
           lazy: async () => {
@@ -128,16 +128,25 @@ export const route = {
           },
         },
         {
-          path: "project",
+          path: "notification",
           lazy: async () => {
+            const { default: Notification } = await import(
+              "@/pages/dashboard/settings/notification"
+            );
+            return { Component: Notification };
+          },
+        },
+
+        // ---------- ADMIN ONLY ----------
+        {
+          path: "project",
+          lazy: adminGuard(async () => {
             const { default: ProjectPage } = await import(
               "@/pages/dashboard/settings/project"
             );
             return { Component: ProjectPage };
-          },
+          }),
         },
-
-        // ADMIN ONLY --------------------------------
         {
           path: "access",
           lazy: adminGuard(async () => {
@@ -172,6 +181,15 @@ export const route = {
               "@/pages/dashboard/settings/audit"
             );
             return { Component: AuditPage };
+          }),
+        },
+        {
+          path: "team-and-member-role",
+          lazy: adminGuard(async () => {
+            const { default: TeamAndMemberRolePage } = await import(
+              "@/pages/dashboard/settings/team_and_member_role.jsx"
+            );
+            return { Component: TeamAndMemberRolePage };
           }),
         },
       ],
