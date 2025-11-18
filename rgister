@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import MenuItem from "@mui/material/MenuItem";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
@@ -12,8 +11,10 @@ import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { paths } from "@/paths";
 import { RouterLink } from "@/components/core/link";
-import { useAuth } from "@/context/auth-context";
 import { SignOut } from "./sign-out";
+
+// --- use env, or fall back to hard-coded staff id if needed ---
+const STAFF_ID = import.meta.env.VITE_STAFF_ID || "43226675";
 
 const initialUser = {
   id: "",
@@ -23,68 +24,19 @@ const initialUser = {
 };
 
 export function UserPopover({ anchorEl, onClose, open }) {
-  const { user: authUser } = useAuth();
-
-  const [user, setUser] = React.useState(() => ({
-    ...initialUser,
-    id: authUser?.staff_id ?? authUser?.id ?? "",
-    name:
-      authUser?.full_name ||
-      authUser?.display_name ||
-      authUser?.name ||
-      authUser?.preferred_username ||
-      "User",
-    email:
-      authUser?.email ||
-      authUser?.mail ||
-      authUser?.userPrincipalName ||
-      "",
-  }));
-
+  const [user, setUser] = React.useState(initialUser);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    // First, make sure authUser is available:
-    if (!authUser) {
-      console.warn("[UserPopover] authUser is not set yet");
-      return;
-    }
-
-    // Update from authUser whenever it changes
-    setUser((prev) => ({
-      ...prev,
-      id: authUser.staff_id ?? authUser.id ?? prev.id,
-      name:
-        authUser.full_name ||
-        authUser.display_name ||
-        authUser.name ||
-        authUser.preferred_username ||
-        prev.name,
-      email:
-        authUser.email ||
-        authUser.mail ||
-        authUser.userPrincipalName ||
-        prev.email,
-    }));
-
-    // Then, if we have config + staffId, call profile API to refine
     const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
-    const staffId =
-      authUser.staff_id ??
-      authUser.staffId ??
-      authUser.qcid ??
-      authUser.qc_id ??
-      authUser.id;
+    // baseUrl from .env: e.g. https://chaosarmor-dev.uk.hsbc:8080/api/v1
 
-    console.log(
-      "[UserPopover] authUser =", authUser,
-      "baseUrl =", baseUrl,
-      "staffId =", staffId
-    );
-
-    if (!baseUrl || !staffId) {
-      // If env not set or no staff id, we’re still showing authUser name/email,
-      // so just stop here.
+    if (!baseUrl || !STAFF_ID) {
+      console.error(
+        "[UserPopover] Missing baseUrl or staff id",
+        baseUrl,
+        STAFF_ID
+      );
       return;
     }
 
@@ -93,7 +45,8 @@ export function UserPopover({ anchorEl, onClose, open }) {
     async function fetchProfile() {
       try {
         setLoading(true);
-        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
+
+        const url = `${baseUrl}/users/${STAFF_ID}/profile`;
         console.log("[UserPopover] Fetching profile:", url);
 
         const res = await fetch(url, {
@@ -114,12 +67,12 @@ export function UserPopover({ anchorEl, onClose, open }) {
         const data = await res.json();
         console.log("[UserPopover] profile response =", data);
 
-        setUser((prev) => ({
-          ...prev,
-          id: data?.staff_id ?? prev.id,
-          name: data?.profile?.display_name ?? prev.name,
-          email: data?.profile?.email ?? prev.email,
-        }));
+        setUser({
+          id: data?.staff_id ?? "",
+          name: data?.profile?.display_name ?? "User",
+          email: data?.profile?.email ?? "",
+          avatar: "/assets/avatar-3.png",
+        });
       } catch (err) {
         if (err.name !== "AbortError") {
           console.error("[UserPopover] Error fetching user profile", err);
@@ -131,7 +84,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
 
     fetchProfile();
     return () => controller.abort();
-  }, [authUser]);
+  }, []);
 
   const handleClose = () => {
     if (onClose) {
