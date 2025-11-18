@@ -1,69 +1,33 @@
-import { lazy, useEffect, useState } from "react";
-import { Outlet, Navigate, useLocation } from "react-router-dom";
+import { lazy } from "react";
+import { Outlet } from "react-router-dom";
 
-import DashboardLayout from "@/components/dashboard/layout/dashboard-layout";
-import Environment from "@/pages/dashboard/settings/environment";
+import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout";
 
 // ───────────────────────────────────────────────
-// Guard: only allow users with claims.is_platform_admin === true
+// SIMPLE ADMIN GUARD
 // ───────────────────────────────────────────────
-function RequirePlatformAdmin() {
-  const [loading, setLoading] = useState(true);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
-  const [error, setError] = useState(null);
-  const location = useLocation();
+function adminGuard(loader) {
+  return async () => {
+    try {
+      const res = await fetch("/auth/me", { credentials: "include" });
+      const data = await res.json();
+      const isAdmin = !!data?.claims?.is_platform_admin;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchMe() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch("/auth/me", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to load /auth/me: ${res.status}`);
-        }
-
-        const data = await res.json();
-        if (!cancelled) {
-          const adminFlag = !!data?.claims?.is_platform_admin;
-          setIsPlatformAdmin(adminFlag);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e.message ?? "Failed to load user");
-          setIsPlatformAdmin(false);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+      if (!isAdmin) {
+        const { default: AccessDenied } = await import(
+          "@/pages/common/AccessDenied"
+        );
+        return { Component: AccessDenied };
       }
+
+      return loader();
+    } catch (e) {
+      const { default: AccessDenied } = await import(
+        "@/pages/common/AccessDenied"
+      );
+      return { Component: AccessDenied };
     }
-
-    fetchMe();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (loading) {
-    return <div className="p-4 text-sm text-gray-500">Loading…</div>;
-  }
-
-  if (error || !isPlatformAdmin) {
-    // Non-admins (or error) → send back to dashboard overview
-    return <Navigate to="/dashboard" state={{ from: location }} replace />;
-  }
-
-  // User is platform admin → allow nested routes
-  return <Outlet />;
+  };
 }
 
 export const route = {
@@ -74,6 +38,9 @@ export const route = {
     </DashboardLayout>
   ),
   children: [
+    // ────────────────────────────────────────────
+    // DASHBOARD HOME
+    // ────────────────────────────────────────────
     {
       index: true,
       lazy: async () => {
@@ -152,14 +119,16 @@ export const route = {
     {
       path: "settings",
       children: [
-        // 🔓 Routes available for everyone
+        // -------------------------
+        // PUBLIC SETTINGS
+        // -------------------------
         {
-          path: "team-and-member-role",
+          path: "general",
           lazy: async () => {
-            const { default: TeamAndMemberRolePage } = await import(
-              "@/pages/dashboard/settings/team_and_member_role.jsx"
+            const { default: General } = await import(
+              "@/pages/dashboard/settings/general"
             );
-            return { Component: TeamAndMemberRolePage };
+            return { Component: General };
           },
         },
         {
@@ -172,69 +141,66 @@ export const route = {
           },
         },
         {
-          path: "general",
+          path: "team-and-member-role",
           lazy: async () => {
-            const { default: General } = await import(
-              "@/pages/dashboard/settings/general"
+            const { default: TeamAndMemberRolePage } = await import(
+              "@/pages/dashboard/settings/team_and_member_role.jsx"
             );
-            return { Component: General };
+            return { Component: TeamAndMemberRolePage };
           },
         },
 
-        // 🔒 Platform-admin-only routes
+        // -------------------------
+        // ADMIN-ONLY SETTINGS
+        // -------------------------
         {
-          element: <RequirePlatformAdmin />,
-          children: [
-            {
-              path: "organization",
-              lazy: async () => {
-                const { default: SettingsOrganizationPage } = await import(
-                  "@/pages/dashboard/settings/organization"
-                );
-                return { Component: SettingsOrganizationPage };
-              },
-            },
+          path: "access",
+          lazy: adminGuard(async () => {
+            const { default: AccessPage } = await import(
+              "@/pages/dashboard/settings/access.jsx"
+            );
+            return { Component: AccessPage };
+          }),
+        },
 
-            {
-              path: "project",
-              lazy: async () => {
-                const { default: SettingsProjectPage } = await import(
-                  "@/pages/dashboard/settings/project"
-                );
-                return { Component: SettingsProjectPage };
-              },
-            },
+        {
+          path: "environment",
+          lazy: adminGuard(async () => {
+            const { default: EnvironmentPage } = await import(
+              "@/pages/dashboard/settings/environment.jsx"
+            );
+            return { Component: EnvironmentPage };
+          }),
+        },
 
-            {
-              path: "audit",
-              lazy: async () => {
-                const { default: AuditPage } = await import(
-                  "@/pages/dashboard/settings/audit"
-                );
-                return { Component: AuditPage };
-              },
-            },
+        {
+          path: "organization",
+          lazy: adminGuard(async () => {
+            const { default: SettingsOrganizationPage } = await import(
+              "@/pages/dashboard/settings/organization"
+            );
+            return { Component: SettingsOrganizationPage };
+          }),
+        },
 
-            {
-              path: "access",
-              lazy: async () => {
-                const { default: AccessPage } = await import(
-                  "@/pages/dashboard/settings/access.jsx"
-                );
-                return { Component: AccessPage };
-              },
-            },
+        {
+          path: "project",
+          lazy: adminGuard(async () => {
+            const { default: SettingsProjectPage } = await import(
+              "@/pages/dashboard/settings/project"
+            );
+            return { Component: SettingsProjectPage };
+          }),
+        },
 
-            {
-              path: "environment",
-              lazy: async () => {
-                const { default: EnvironmentPage } = await import(
-                  "@/pages/dashboard/settings/environment.jsx"
-                );
-                return { Component: EnvironmentPage };
-              },
-            },
-          ],
+        {
+          path: "audit",
+          lazy: adminGuard(async () => {
+            const { default: AuditPage } = await import(
+              "@/pages/dashboard/settings/audit"
+            );
+            return { Component: AuditPage };
+          }),
         },
       ],
     },
