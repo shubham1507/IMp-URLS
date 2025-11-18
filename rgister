@@ -1,11 +1,10 @@
 import { lazy } from "react";
 import { Outlet } from "react-router-dom";
-
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout";
 
-// ───────────────────────────────────────────────
-// SIMPLE ADMIN GUARD
-// ───────────────────────────────────────────────
+// -----------------------------------------------
+// SIMPLE ADMIN GUARD (ONLY FOR SETTINGS PAGES)
+// -----------------------------------------------
 function adminGuard(loader) {
   return async () => {
     try {
@@ -13,6 +12,7 @@ function adminGuard(loader) {
       const data = await res.json();
       const isAdmin = !!data?.claims?.is_platform_admin;
 
+      // Non-admin → return access denied page
       if (!isAdmin) {
         const { default: AccessDenied } = await import(
           "@/pages/common/AccessDenied"
@@ -20,6 +20,7 @@ function adminGuard(loader) {
         return { Component: AccessDenied };
       }
 
+      // Admin → return actual page
       return loader();
     } catch (e) {
       const { default: AccessDenied } = await import(
@@ -38,9 +39,9 @@ export const route = {
     </DashboardLayout>
   ),
   children: [
-    // ────────────────────────────────────────────
-    // DASHBOARD HOME
-    // ────────────────────────────────────────────
+    // -------------------------------------------------
+    // DASHBOARD OVERVIEW (NON-ADMIN CAN SEE)
+    // -------------------------------------------------
     {
       index: true,
       lazy: async () => {
@@ -51,61 +52,58 @@ export const route = {
       },
     },
 
-    // ────────────────────────────────────────────
-    // EXPERIMENTS
-    // ────────────────────────────────────────────
+    // -------------------------------------------------
+    // CHAOS EXPERIMENTS (NON-ADMIN CAN SEE)
+    // -------------------------------------------------
     {
       path: "experiments",
       children: [
         {
           path: "browse",
           lazy: async () => {
-            const { default: ExperimentsBrowsePage } = await import(
+            const { default: BrowsePage } = await import(
               "@/pages/dashboard/experiments/browse"
             );
-            return { Component: ExperimentsBrowsePage };
+            return { Component: BrowsePage };
           },
         },
-
         {
           path: "create",
           lazy: async () => {
-            const { default: ExperimentsCreatePage } = await import(
+            const { default: CreatePage } = await import(
               "@/pages/dashboard/experiments/create"
             );
-            return { Component: ExperimentsCreatePage };
+            return { Component: CreatePage };
           },
         },
-
         {
           path: "execute",
           lazy: async () => {
-            const { default: ExperimentsExecutePage } = await import(
+            const { default: ExecutePage } = await import(
               "@/pages/dashboard/experiments/execute"
             );
-            return { Component: ExperimentsExecutePage };
+            return { Component: ExecutePage };
           },
         },
-
         {
           path: "status",
           children: [
             {
               index: true,
               lazy: async () => {
-                const { default: ExperimentStatusPage } = await import(
+                const { default: StatusPage } = await import(
                   "@/pages/dashboard/experiments/status"
                 );
-                return { Component: ExperimentStatusPage };
+                return { Component: StatusPage };
               },
             },
             {
               path: ":experimentId",
               lazy: async () => {
-                const { default: ExperimentStatusPage } = await import(
+                const { default: StatusPage } = await import(
                   "@/pages/dashboard/experiments/status"
                 );
-                return { Component: ExperimentStatusPage };
+                return { Component: StatusPage };
               },
             },
           ],
@@ -113,15 +111,13 @@ export const route = {
       ],
     },
 
-    // ────────────────────────────────────────────
+    // -------------------------------------------------
     // SETTINGS
-    // ────────────────────────────────────────────
+    // -------------------------------------------------
     {
       path: "settings",
       children: [
-        // -------------------------
-        // PUBLIC SETTINGS
-        // -------------------------
+        // NON-ADMIN CAN SEE ------------------------
         {
           path: "general",
           lazy: async () => {
@@ -132,27 +128,16 @@ export const route = {
           },
         },
         {
-          path: "notification",
+          path: "project",
           lazy: async () => {
-            const { default: Notification } = await import(
-              "@/pages/dashboard/settings/notification"
+            const { default: ProjectPage } = await import(
+              "@/pages/dashboard/settings/project"
             );
-            return { Component: Notification };
-          },
-        },
-        {
-          path: "team-and-member-role",
-          lazy: async () => {
-            const { default: TeamAndMemberRolePage } = await import(
-              "@/pages/dashboard/settings/team_and_member_role.jsx"
-            );
-            return { Component: TeamAndMemberRolePage };
+            return { Component: ProjectPage };
           },
         },
 
-        // -------------------------
-        // ADMIN-ONLY SETTINGS
-        // -------------------------
+        // ADMIN ONLY --------------------------------
         {
           path: "access",
           lazy: adminGuard(async () => {
@@ -162,7 +147,6 @@ export const route = {
             return { Component: AccessPage };
           }),
         },
-
         {
           path: "environment",
           lazy: adminGuard(async () => {
@@ -172,27 +156,15 @@ export const route = {
             return { Component: EnvironmentPage };
           }),
         },
-
         {
           path: "organization",
           lazy: adminGuard(async () => {
-            const { default: SettingsOrganizationPage } = await import(
+            const { default: OrgPage } = await import(
               "@/pages/dashboard/settings/organization"
             );
-            return { Component: SettingsOrganizationPage };
+            return { Component: OrgPage };
           }),
         },
-
-        {
-          path: "project",
-          lazy: adminGuard(async () => {
-            const { default: SettingsProjectPage } = await import(
-              "@/pages/dashboard/settings/project"
-            );
-            return { Component: SettingsProjectPage };
-          }),
-        },
-
         {
           path: "audit",
           lazy: adminGuard(async () => {
