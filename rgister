@@ -40,7 +40,7 @@ export const route = {
   ),
   children: [
     // -------------------------------------------------
-    // DASHBOARD OVERVIEW  (visible to everyone)
+    // DASHBOARD OVERVIEW (visible to everyone)
     // -------------------------------------------------
     {
       index: true,
@@ -53,7 +53,7 @@ export const route = {
     },
 
     // -------------------------------------------------
-    // CHAOS EXPERIMENTS  (visible to everyone)
+    // CHAOS EXPERIMENTS (visible to everyone)
     // -------------------------------------------------
     {
       path: "experiments",
