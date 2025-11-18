@@ -1,26 +1,25 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import MenuItem from '@mui/material/MenuItem';
-import Popover from '@mui/material/Popover';
-import Typography from '@mui/material/Typography';
-import { CreditCard as CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
-import { LockKey as LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
-import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import MenuItem from "@mui/material/MenuItem";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
+import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
+import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
+import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
-import { paths } from '@/paths';
-import { RouterLink } from '@/components/core/link';
-import { useSession } from '@/hooks/use-session';
-import { signOut } from '@/lib/auth';
+import { paths } from "@/paths";
+import { RouterLink } from "@/components/core/link";
+import { signOut } from "@/lib/auth";
 
-// ---- NEW: default user state (no more hard-coded Alice Smith) ----
+// Default user (used as fallback before API loads)
 const initialUser = {
-  id: '',
-  name: '',
-  avatar: '/assets/avatar-3.png',
-  email: '',
+  id: "",
+  name: "User",
+  avatar: "/assets/avatar-3.png",
+  email: "",
 };
 
 function SignOutButton() {
@@ -37,55 +36,59 @@ function SignOutButton() {
 }
 
 export function UserPopover({ anchorEl, onClose, open }) {
-  // session should already have the logged-in user info (incl. staff_id)
-  const { user: sessionUser } = useSession();
+  const [user, setUser] = React.useState(initialUser);
+  const [loading, setLoading] = React.useState(false);
 
-  // local state for the user shown in the popover
-  const [user, setUser] = React.useState(() => ({
-    ...initialUser,
-    id: sessionUser?.staff_id ?? initialUser.id,
-    name:
-      sessionUser?.name ??
-      sessionUser?.display_name ??
-      initialUser.name,
-    email: sessionUser?.email ?? initialUser.email,
-  }));
-
-  // ---- NEW: fetch profile from your API using staff_id ----
   React.useEffect(() => {
-    const staffId = sessionUser?.staff_id;
+    // ⚠️ Best-guess: read staff ID from localStorage.
+    // If your app uses a different key, update this line only.
+    const storedStaffId =
+      window.localStorage.getItem("staff_id") ||
+      window.localStorage.getItem("qc_id") ||
+      window.localStorage.getItem("qcid");
 
-    if (!staffId) {
+    if (!storedStaffId) {
+      console.warn("No staff_id/qcid found in localStorage – using default user.");
+      return;
+    }
+
+    const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
+    if (!baseUrl) {
+      console.error("VITE_API_GATEWAY_URL is not configured in .env");
       return;
     }
 
     const controller = new AbortController();
 
-    async function loadProfile() {
+    async function fetchProfile() {
       try {
-        const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
-        if (!baseUrl) {
-          console.error('VITE_API_GATEWAY_URL is not configured');
-          return;
-        }
+        setLoading(true);
 
         const res = await fetch(
-          `${baseUrl}/api/v1/users/${staffId}/profile`,
+          `${baseUrl}/api/v1/users/${storedStaffId}/profile`,
           {
-            method: 'GET',
-            headers: { accept: 'application/json' },
+            method: "GET",
+            headers: {
+              accept: "application/json",
+            },
             signal: controller.signal,
           }
         );
 
         if (!res.ok) {
-          console.error('Failed to fetch user profile', res.status);
+          console.error("Failed to fetch profile", res.status);
           return;
         }
 
         const data = await res.json();
-        // sample response (from your screenshot):
-        // { ok, staff_id, profile: { display_name, email, ... }, created, chaos_platform_role }
+        // Example (from your curl):
+        // {
+        //   "ok": true,
+        //   "staff_id": "43226675",
+        //   "profile": { "display_name": "Nikhil Sonowal", "email": "nikhil.sonowal@hsbc.co.in", ... },
+        //   "created": false,
+        //   "chaos_platform_role": ...
+        // }
 
         setUser((prev) => ({
           ...prev,
@@ -94,15 +97,18 @@ export function UserPopover({ anchorEl, onClose, open }) {
           email: data?.profile?.email ?? prev.email,
         }));
       } catch (err) {
-        if (err.name === 'AbortError') return;
-        console.error('Error fetching user profile', err);
+        if (err.name !== "AbortError") {
+          console.error("Error fetching user profile", err);
+        }
+      } finally {
+        setLoading(false);
       }
     }
 
-    loadProfile();
+    fetchProfile();
 
     return () => controller.abort();
-  }, [sessionUser?.staff_id]);
+  }, []);
 
   const handleClose = () => {
     if (onClose) {
@@ -113,18 +119,18 @@ export function UserPopover({ anchorEl, onClose, open }) {
   return (
     <Popover
       anchorEl={anchorEl}
-      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       onClose={handleClose}
       open={open}
       slotProps={{ paper: { sx: { width: 280 } } }}
-      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+      transformOrigin={{ horizontal: "right", vertical: "top" }}
     >
       <Box sx={{ p: 2 }}>
         <Typography variant="subtitle1">
-          {user.name || 'User'}
+          {loading ? "Loading..." : user.name}
         </Typography>
         <Typography color="text.secondary" variant="body2">
-          {user.email || 'Loading...'}
+          {loading ? "" : user.email}
         </Typography>
       </Box>
 
@@ -140,6 +146,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
             <UserIcon style={{ marginRight: 8 }} />
             Account
           </ListItem>
+
           <ListItem
             component={RouterLink}
             href={paths.dashboard.profile.settings}
@@ -148,6 +155,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
             <LockKeyIcon style={{ marginRight: 8 }} />
             Settings
           </ListItem>
+
           <ListItem
             component={RouterLink}
             href={paths.dashboard.billing}
