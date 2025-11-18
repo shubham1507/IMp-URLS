@@ -1,246 +1,242 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import MenuItem from "@mui/material/MenuItem";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
-import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
-import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
+import { lazy, useEffect, useState } from "react";
+import { Outlet, Navigate, useLocation } from "react-router-dom";
 
-import { paths } from "@/paths";
-import { RouterLink } from "@/components/core/link";
+import DashboardLayout from "@/components/dashboard/layout/dashboard-layout";
+import Environment from "@/pages/dashboard/settings/environment";
 
-// Staff id from env (optional, no hardcoding)
-const STAFF_ID_FROM_ENV = import.meta.env.VITE_STAFF_ID || "";
+// ───────────────────────────────────────────────
+// Guard: only allow users with claims.is_platform_admin === true
+// ───────────────────────────────────────────────
+function RequirePlatformAdmin() {
+  const [loading, setLoading] = useState(true);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [error, setError] = useState(null);
+  const location = useLocation();
 
-// ✅ Same sign-out behavior as original code
-function SignOutButton() {
-  return (
-    <MenuItem
-      component="a"
-      href="/sign-out"
-      sx={{ justifyContent: "center" }}
-    >
-      Sign out
-    </MenuItem>
-  );
-}
+  useEffect(() => {
+    let cancelled = false;
 
-const initialUser = {
-  id: "",
-  name: "User",
-  avatar: "/assets/avatar-3.png",
-  email: "",
-};
-
-export function UserPopover({ anchorEl, onClose, open }) {
-  const [user, setUser] = React.useState(initialUser);
-  const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    let baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
-
-    if (!baseUrl) {
-      console.error("[UserPopover] VITE_API_GATEWAY_URL is not set");
-      return;
-    }
-
-    baseUrl = baseUrl.replace(/\/$/, "");
-
-    // ---- Dynamically resolve staffId ----
-    let staffId: string | null = null;
-
-    // 1) Highest priority: env (useful in local dev)
-    if (STAFF_ID_FROM_ENV) {
-      staffId = STAFF_ID_FROM_ENV;
-    }
-
-    // 2) Try localStorage.user
-    if (!staffId) {
-      try {
-        const rawUser = window.localStorage.getItem("user");
-        if (rawUser) {
-          const parsed = JSON.parse(rawUser);
-          staffId =
-            parsed.staff_id ||
-            parsed.staffId ||
-            parsed.qcid ||
-            parsed.qc_id ||
-            parsed.id ||
-            null;
-        }
-      } catch (e) {
-        console.error("[UserPopover] Failed to parse localStorage.user", e);
-      }
-    }
-
-    // 3) Try localStorage.session
-    if (!staffId) {
-      try {
-        const rawSession = window.localStorage.getItem("session");
-        if (rawSession) {
-          const parsed = JSON.parse(rawSession);
-          staffId =
-            parsed.staff_id ||
-            parsed.staffId ||
-            parsed.qcid ||
-            parsed.qc_id ||
-            parsed.id ||
-            null;
-        }
-      } catch (e) {
-        console.error("[UserPopover] Failed to parse localStorage.session", e);
-      }
-    }
-
-    // 4) Try decoding JWT token (access_token or token)
-    if (!staffId) {
-      try {
-        const jwt =
-          window.localStorage.getItem("access_token") ||
-          window.localStorage.getItem("token");
-        if (jwt && jwt.split(".").length === 3) {
-          const payloadPart = jwt.split(".")[1];
-          const jsonPayload = JSON.parse(
-            atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
-          );
-          staffId =
-            jsonPayload.staff_id ||
-            jsonPayload.staffId ||
-            jsonPayload.qcid ||
-            jsonPayload.qc_id ||
-            jsonPayload.sub ||
-            null;
-        }
-      } catch (e) {
-        console.error("[UserPopover] Failed to decode JWT for staff id", e);
-      }
-    }
-
-    console.log("[UserPopover] Resolved staffId =", staffId);
-
-    if (!staffId) {
-      // No staff id => we can't call the profile API safely
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function fetchProfile() {
+    async function fetchMe() {
       try {
         setLoading(true);
+        setError(null);
 
-        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
-        console.log("[UserPopover] Fetching profile:", url);
-
-        const token =
-          window.localStorage.getItem("access_token") ||
-          window.localStorage.getItem("token");
-
-        const headers: Record<string, string> = {
-          accept: "application/json",
-        };
-
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        const res = await fetch(url, {
-          method: "GET",
-          headers,
+        const res = await fetch("/auth/me", {
           credentials: "include",
-          signal: controller.signal,
         });
 
         if (!res.ok) {
-          console.error(
-            "[UserPopover] Failed to fetch user profile",
-            res.status,
-            res.statusText
-          );
-          return;
+          throw new Error(`Failed to load /auth/me: ${res.status}`);
         }
 
         const data = await res.json();
-        console.log("[UserPopover] profile response =", data);
-
-        setUser({
-          id: data?.staff_id ?? "",
-          name: data?.display_name ?? "User",
-          email: data?.email ?? "",
-          avatar: "/assets/avatar-3.png",
-        });
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("[UserPopover] Error fetching user profile", err);
+        if (!cancelled) {
+          const adminFlag = !!data?.claims?.is_platform_admin;
+          setIsPlatformAdmin(adminFlag);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e.message ?? "Failed to load user");
+          setIsPlatformAdmin(false);
         }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchProfile();
-    return () => controller.abort();
+    fetchMe();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
+  if (loading) {
+    return <div className="p-4 text-sm text-gray-500">Loading…</div>;
+  }
 
-  return (
-    <Popover
-      anchorEl={anchorEl}
-      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-      onClose={handleClose}
-      open={open}
-      slotProps={{ paper: { sx: { width: 280 } } }}
-      transformOrigin={{ horizontal: "right", vertical: "top" }}
-    >
-      {/* Top: name + email (same design) */}
-      <Box sx={{ p: 2 }}>
-        <Typography variant="subtitle1">
-          {loading ? "Loading..." : user.name}
-        </Typography>
-        <Typography color="text.secondary" variant="body2">
-          {loading ? "" : user.email}
-        </Typography>
-      </Box>
+  if (error || !isPlatformAdmin) {
+    // Non-admins (or error) → send back to dashboard overview
+    return <Navigate to="/dashboard" state={{ from: location }} replace />;
+  }
 
-      <Divider />
-
-      {/* Middle: Account + Settings */}
-      <Box sx={{ p: 1 }}>
-        <List>
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.profile.account}
-            onClick={handleClose}
-          >
-            <UserIcon style={{ marginRight: 8 }} />
-            Account
-          </ListItem>
-
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.profile.settings}
-            onClick={handleClose}
-          >
-            <LockKeyIcon style={{ marginRight: 8 }} />
-            Settings
-          </ListItem>
-        </List>
-      </Box>
-
-      <Divider />
-
-      {/* Bottom: Sign out */}
-      <Box sx={{ p: 1 }}>
-        <SignOutButton />
-      </Box>
-    </Popover>
-  );
+  // User is platform admin → allow nested routes
+  return <Outlet />;
 }
+
+export const route = {
+  path: "dashboard",
+  element: (
+    <DashboardLayout>
+      <Outlet />
+    </DashboardLayout>
+  ),
+  children: [
+    {
+      index: true,
+      lazy: async () => {
+        const { default: DashboardPage } = await import(
+          "@/pages/dashboard/dashboard-page"
+        );
+        return { Component: DashboardPage };
+      },
+    },
+
+    // ────────────────────────────────────────────
+    // EXPERIMENTS
+    // ────────────────────────────────────────────
+    {
+      path: "experiments",
+      children: [
+        {
+          path: "browse",
+          lazy: async () => {
+            const { default: ExperimentsBrowsePage } = await import(
+              "@/pages/dashboard/experiments/browse"
+            );
+            return { Component: ExperimentsBrowsePage };
+          },
+        },
+
+        {
+          path: "create",
+          lazy: async () => {
+            const { default: ExperimentsCreatePage } = await import(
+              "@/pages/dashboard/experiments/create"
+            );
+            return { Component: ExperimentsCreatePage };
+          },
+        },
+
+        {
+          path: "execute",
+          lazy: async () => {
+            const { default: ExperimentsExecutePage } = await import(
+              "@/pages/dashboard/experiments/execute"
+            );
+            return { Component: ExperimentsExecutePage };
+          },
+        },
+
+        {
+          path: "status",
+          children: [
+            {
+              index: true,
+              lazy: async () => {
+                const { default: ExperimentStatusPage } = await import(
+                  "@/pages/dashboard/experiments/status"
+                );
+                return { Component: ExperimentStatusPage };
+              },
+            },
+            {
+              path: ":experimentId",
+              lazy: async () => {
+                const { default: ExperimentStatusPage } = await import(
+                  "@/pages/dashboard/experiments/status"
+                );
+                return { Component: ExperimentStatusPage };
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    // ────────────────────────────────────────────
+    // SETTINGS
+    // ────────────────────────────────────────────
+    {
+      path: "settings",
+      children: [
+        // 🔓 Routes available for everyone
+        {
+          path: "team-and-member-role",
+          lazy: async () => {
+            const { default: TeamAndMemberRolePage } = await import(
+              "@/pages/dashboard/settings/team_and_member_role.jsx"
+            );
+            return { Component: TeamAndMemberRolePage };
+          },
+        },
+        {
+          path: "notification",
+          lazy: async () => {
+            const { default: Notification } = await import(
+              "@/pages/dashboard/settings/notification"
+            );
+            return { Component: Notification };
+          },
+        },
+        {
+          path: "general",
+          lazy: async () => {
+            const { default: General } = await import(
+              "@/pages/dashboard/settings/general"
+            );
+            return { Component: General };
+          },
+        },
+
+        // 🔒 Platform-admin-only routes
+        {
+          element: <RequirePlatformAdmin />,
+          children: [
+            {
+              path: "organization",
+              lazy: async () => {
+                const { default: SettingsOrganizationPage } = await import(
+                  "@/pages/dashboard/settings/organization"
+                );
+                return { Component: SettingsOrganizationPage };
+              },
+            },
+
+            {
+              path: "project",
+              lazy: async () => {
+                const { default: SettingsProjectPage } = await import(
+                  "@/pages/dashboard/settings/project"
+                );
+                return { Component: SettingsProjectPage };
+              },
+            },
+
+            {
+              path: "audit",
+              lazy: async () => {
+                const { default: AuditPage } = await import(
+                  "@/pages/dashboard/settings/audit"
+                );
+                return { Component: AuditPage };
+              },
+            },
+
+            {
+              path: "access",
+              lazy: async () => {
+                const { default: AccessPage } = await import(
+                  "@/pages/dashboard/settings/access.jsx"
+                );
+                return { Component: AccessPage };
+              },
+            },
+
+            {
+              path: "environment",
+              lazy: async () => {
+                const { default: EnvironmentPage } = await import(
+                  "@/pages/dashboard/settings/environment.jsx"
+                );
+                return { Component: EnvironmentPage };
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
