@@ -1,48 +1,200 @@
-React.useEffect(() => {
-    // 1) Read user object from localStorage
-    try {
-      const rawUser = window.localStorage.getItem("user");
-      if (!rawUser) {
-        console.warn("[UserPopover] localStorage.user not found");
-        return;
-      }
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import MenuItem from "@mui/material/MenuItem";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
+import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
+import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
+import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
-      const parsed = JSON.parse(rawUser);
-      console.log("[UserPopover] localStorage.user =", parsed);
+import { paths } from "@/paths";
+import { RouterLink } from "@/components/core/link";
+import { useAuth } from "@/context/auth-context";
+import { SignOut } from "./sign-out";
 
-      // 2) Try to infer email: any string containing "@"
-      let inferredEmail = "";
-      for (const [key, value] of Object.entries(parsed)) {
-        if (typeof value === "string" && value.includes("@")) {
-          inferredEmail = value;
-          break;
-        }
-      }
+const initialUser = {
+  id: "",
+  name: "User",
+  avatar: "/assets/avatar-3.png",
+  email: "",
+};
 
-      // 3) Try to infer name:
-      //    - prefer string with a space that is not an email
-      //    - otherwise take any non-email string as a fallback
-      let inferredName = "";
-      for (const [key, value] of Object.entries(parsed)) {
-        if (typeof value !== "string") continue;
-        if (value.includes("@")) continue;
+export function UserPopover({ anchorEl, onClose, open }) {
+  const { user: authUser } = useAuth();
 
-        const hasSpace = value.trim().includes(" ");
-        if (hasSpace) {
-          inferredName = value;
-          break;
-        }
-        if (!inferredName) {
-          inferredName = value; // fallback if nothing better
-        }
-      }
+  const [user, setUser] = React.useState(() => ({
+    ...initialUser,
+    id: authUser?.staff_id ?? authUser?.id ?? "",
+    name:
+      authUser?.full_name ||
+      authUser?.display_name ||
+      authUser?.name ||
+      authUser?.preferred_username ||
+      "User",
+    email:
+      authUser?.email ||
+      authUser?.mail ||
+      authUser?.userPrincipalName ||
+      "",
+  }));
 
-      setUser((prev) => ({
-        ...prev,
-        name: inferredName || prev.name,
-        email: inferredEmail || prev.email,
-      }));
-    } catch (e) {
-      console.error("[UserPopover] Failed to read localStorage.user", e);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    // First, make sure authUser is available:
+    if (!authUser) {
+      console.warn("[UserPopover] authUser is not set yet");
+      return;
     }
-  }, []);
+
+    // Update from authUser whenever it changes
+    setUser((prev) => ({
+      ...prev,
+      id: authUser.staff_id ?? authUser.id ?? prev.id,
+      name:
+        authUser.full_name ||
+        authUser.display_name ||
+        authUser.name ||
+        authUser.preferred_username ||
+        prev.name,
+      email:
+        authUser.email ||
+        authUser.mail ||
+        authUser.userPrincipalName ||
+        prev.email,
+    }));
+
+    // Then, if we have config + staffId, call profile API to refine
+    const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
+    const staffId =
+      authUser.staff_id ??
+      authUser.staffId ??
+      authUser.qcid ??
+      authUser.qc_id ??
+      authUser.id;
+
+    console.log(
+      "[UserPopover] authUser =", authUser,
+      "baseUrl =", baseUrl,
+      "staffId =", staffId
+    );
+
+    if (!baseUrl || !staffId) {
+      // If env not set or no staff id, we’re still showing authUser name/email,
+      // so just stop here.
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function fetchProfile() {
+      try {
+        setLoading(true);
+        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
+        console.log("[UserPopover] Fetching profile:", url);
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { accept: "application/json" },
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          console.error(
+            "[UserPopover] Failed to fetch user profile",
+            res.status,
+            res.statusText
+          );
+          return;
+        }
+
+        const data = await res.json();
+        console.log("[UserPopover] profile response =", data);
+
+        setUser((prev) => ({
+          ...prev,
+          id: data?.staff_id ?? prev.id,
+          name: data?.profile?.display_name ?? prev.name,
+          email: data?.profile?.email ?? prev.email,
+        }));
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("[UserPopover] Error fetching user profile", err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+    return () => controller.abort();
+  }, [authUser]);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  return (
+    <Popover
+      anchorEl={anchorEl}
+      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      onClose={handleClose}
+      open={open}
+      slotProps={{ paper: { sx: { width: 280 } } }}
+      transformOrigin={{ horizontal: "right", vertical: "top" }}
+    >
+      <Box sx={{ p: 2 }}>
+        <Typography variant="subtitle1">
+          {loading ? "Loading..." : user.name}
+        </Typography>
+        <Typography color="text.secondary" variant="body2">
+          {loading ? "" : user.email}
+        </Typography>
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ p: 1 }}>
+        <List>
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.profile.account}
+            onClick={handleClose}
+          >
+            <UserIcon style={{ marginRight: 8 }} />
+            Account
+          </ListItem>
+
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.profile.settings}
+            onClick={handleClose}
+          >
+            <LockKeyIcon style={{ marginRight: 8 }} />
+            Settings
+          </ListItem>
+
+          <ListItem
+            component={RouterLink}
+            href={paths.dashboard.billing}
+            onClick={handleClose}
+          >
+            <CreditCardIcon style={{ marginRight: 8 }} />
+            Billing
+          </ListItem>
+        </List>
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ p: 1 }}>
+        <SignOut />
+      </Box>
+    </Popover>
+  );
+}
