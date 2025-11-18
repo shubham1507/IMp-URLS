@@ -12,9 +12,9 @@ import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { paths } from "@/paths";
 import { RouterLink } from "@/components/core/link";
-import { signOut } from "@/lib/auth";
+import { SignOut } from "./sign-out";
 
-// Default user (used as fallback before API loads)
+// Default user (fallback before API response)
 const initialUser = {
   id: "",
   name: "User",
@@ -22,39 +22,25 @@ const initialUser = {
   email: "",
 };
 
-function SignOutButton() {
-  return (
-    <MenuItem
-      component="button"
-      onClick={() => {
-        void signOut();
-      }}
-    >
-      Sign out
-    </MenuItem>
-  );
-}
-
 export function UserPopover({ anchorEl, onClose, open }) {
   const [user, setUser] = React.useState(initialUser);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    // ⚠️ Best-guess: read staff ID from localStorage.
-    // If your app uses a different key, update this line only.
-    const storedStaffId =
-      window.localStorage.getItem("staff_id") ||
-      window.localStorage.getItem("qc_id") ||
-      window.localStorage.getItem("qcid");
-
-    if (!storedStaffId) {
-      console.warn("No staff_id/qcid found in localStorage – using default user.");
-      return;
-    }
-
     const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
     if (!baseUrl) {
       console.error("VITE_API_GATEWAY_URL is not configured in .env");
+      return;
+    }
+
+    // 👉 Adjust these keys if your app stores staff/qc id differently
+    const staffId =
+      window.localStorage.getItem("staff_id") ||
+      window.localStorage.getItem("qcid") ||
+      window.localStorage.getItem("qc_id");
+
+    if (!staffId) {
+      console.warn("No staff_id/qcid found in localStorage – using default user.");
       return;
     }
 
@@ -65,29 +51,30 @@ export function UserPopover({ anchorEl, onClose, open }) {
         setLoading(true);
 
         const res = await fetch(
-          `${baseUrl}/api/v1/users/${storedStaffId}/profile`,
+          `${baseUrl}/api/v1/users/${staffId}/profile`,
           {
             method: "GET",
-            headers: {
-              accept: "application/json",
-            },
+            headers: { accept: "application/json" },
             signal: controller.signal,
           }
         );
 
         if (!res.ok) {
-          console.error("Failed to fetch profile", res.status);
+          console.error("Failed to fetch user profile", res.status);
           return;
         }
 
         const data = await res.json();
-        // Example (from your curl):
+        // Expected shape from your curl:
         // {
-        //   "ok": true,
-        //   "staff_id": "43226675",
-        //   "profile": { "display_name": "Nikhil Sonowal", "email": "nikhil.sonowal@hsbc.co.in", ... },
-        //   "created": false,
-        //   "chaos_platform_role": ...
+        //   ok: true,
+        //   staff_id: "43226675",
+        //   profile: {
+        //     display_name: "Nikhil Sonowal",
+        //     email: "nikhil.sonowal@hsbc.co.in",
+        //     ...
+        //   },
+        //   ...
         // }
 
         setUser((prev) => ({
@@ -106,7 +93,6 @@ export function UserPopover({ anchorEl, onClose, open }) {
     }
 
     fetchProfile();
-
     return () => controller.abort();
   }, []);
 
@@ -170,7 +156,8 @@ export function UserPopover({ anchorEl, onClose, open }) {
       <Divider />
 
       <Box sx={{ p: 1 }}>
-        <SignOutButton />
+        {/* Reuse your existing SignOut component */}
+        <SignOut />
       </Box>
     </Popover>
   );
