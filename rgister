@@ -13,7 +13,7 @@ import { paths } from "@/paths";
 import { RouterLink } from "@/components/core/link";
 import { SignOut } from "./sign-out";
 
-// --- use env, or fall back to hard-coded staff id if needed ---
+// Staff ID from env; fallback to your known ID for now
 const STAFF_ID = import.meta.env.VITE_STAFF_ID || "43226675";
 
 const initialUser = {
@@ -28,15 +28,18 @@ export function UserPopover({ anchorEl, onClose, open }) {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
-    // baseUrl from .env: e.g. https://chaosarmor-dev.uk.hsbc:8080/api/v1
+    let baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
 
-    if (!baseUrl || !STAFF_ID) {
-      console.error(
-        "[UserPopover] Missing baseUrl or staff id",
-        baseUrl,
-        STAFF_ID
-      );
+    if (!baseUrl) {
+      console.error("[UserPopover] VITE_API_GATEWAY_URL is not set");
+      return;
+    }
+
+    // Remove trailing slash if any
+    baseUrl = baseUrl.replace(/\/$/, "");
+
+    if (!STAFF_ID) {
+      console.error("[UserPopover] STAFF_ID is not set");
       return;
     }
 
@@ -46,12 +49,26 @@ export function UserPopover({ anchorEl, onClose, open }) {
       try {
         setLoading(true);
 
-        const url = `${baseUrl}/users/${STAFF_ID}/profile`;
+        const url = `${baseUrl}/api/v1/users/${STAFF_ID}/profile`;
         console.log("[UserPopover] Fetching profile:", url);
+
+        // Optional token support, if your app stores one
+        const token =
+          window.localStorage.getItem("access_token") ||
+          window.localStorage.getItem("token");
+
+        const headers = {
+          accept: "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
 
         const res = await fetch(url, {
           method: "GET",
-          headers: { accept: "application/json" },
+          headers,
+          credentials: "include", // send cookies for auth
           signal: controller.signal,
         });
 
