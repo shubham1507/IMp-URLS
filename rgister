@@ -1,101 +1,48 @@
 React.useEffect(() => {
-    const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
-    if (!baseUrl) {
-      console.error("VITE_API_GATEWAY_URL is not configured in .env");
-    }
-
-    // 1) Read user object from localStorage and set name/email immediately
-    let staffId = null;
-
+    // 1) Read user object from localStorage
     try {
       const rawUser = window.localStorage.getItem("user");
-      if (rawUser) {
-        const parsed = JSON.parse(rawUser);
-        console.log("[UserPopover] localStorage.user =", parsed);
-
-        // Try to get staff id from multiple common fields
-        staffId =
-          parsed.staff_id ||
-          parsed.staffId ||
-          parsed.qc_id ||
-          parsed.qcid ||
-          parsed.id;
-
-        // Try to get name + email directly from this local object
-        const localName =
-          parsed.display_name ||
-          parsed.displayName ||
-          parsed.name ||
-          user.name;
-
-        const localEmail =
-          parsed.email ||
-          parsed.mail ||
-          parsed.userPrincipalName ||
-          user.email;
-
-        setUser((prev) => ({
-          ...prev,
-          id: staffId || prev.id,
-          name: localName || prev.name,
-          email: localEmail || prev.email,
-        }));
-      } else {
+      if (!rawUser) {
         console.warn("[UserPopover] localStorage.user not found");
+        return;
       }
+
+      const parsed = JSON.parse(rawUser);
+      console.log("[UserPopover] localStorage.user =", parsed);
+
+      // 2) Try to infer email: any string containing "@"
+      let inferredEmail = "";
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === "string" && value.includes("@")) {
+          inferredEmail = value;
+          break;
+        }
+      }
+
+      // 3) Try to infer name:
+      //    - prefer string with a space that is not an email
+      //    - otherwise take any non-email string as a fallback
+      let inferredName = "";
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value !== "string") continue;
+        if (value.includes("@")) continue;
+
+        const hasSpace = value.trim().includes(" ");
+        if (hasSpace) {
+          inferredName = value;
+          break;
+        }
+        if (!inferredName) {
+          inferredName = value; // fallback if nothing better
+        }
+      }
+
+      setUser((prev) => ({
+        ...prev,
+        name: inferredName || prev.name,
+        email: inferredEmail || prev.email,
+      }));
     } catch (e) {
-      console.error("[UserPopover] Failed to parse localStorage.user", e);
+      console.error("[UserPopover] Failed to read localStorage.user", e);
     }
-
-    console.log("[UserPopover] baseUrl =", baseUrl, "staffId =", staffId);
-
-    // If we don't have baseUrl or staffId, stop here.
-    if (!baseUrl || !staffId) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    async function fetchProfile() {
-      try {
-        setLoading(true);
-
-        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
-        console.log("[UserPopover] Fetching profile:", url);
-
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { accept: "application/json" },
-          signal: controller.signal,
-        });
-
-        if (!res.ok) {
-          console.error(
-            "[UserPopover] Failed to fetch user profile",
-            res.status,
-            res.statusText
-          );
-          return;
-        }
-
-        const data = await res.json();
-        console.log("[UserPopover] profile response =", data);
-
-        setUser((prev) => ({
-          ...prev,
-          id: data?.staff_id ?? prev.id,
-          name: data?.profile?.display_name ?? prev.name,
-          email: data?.profile?.email ?? prev.email,
-        }));
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("[UserPopover] Error fetching user profile", err);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProfile();
-    return () => controller.abort();
   }, []);
