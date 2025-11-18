@@ -1,31 +1,3 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import MenuItem from "@mui/material/MenuItem";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
-import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
-import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
-import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
-
-import { paths } from "@/paths";
-import { RouterLink } from "@/components/core/link";
-import { SignOut } from "./sign-out";
-
-// Default user (fallback before API response)
-const initialUser = {
-  id: "",
-  name: "User",
-  avatar: "/assets/avatar-3.png",
-  email: "",
-};
-
-export function UserPopover({ anchorEl, onClose, open }) {
-  const [user, setUser] = React.useState(initialUser);
-  const [loading, setLoading] = React.useState(false);
-
   React.useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_GATEWAY_URL;
     if (!baseUrl) {
@@ -33,14 +5,26 @@ export function UserPopover({ anchorEl, onClose, open }) {
       return;
     }
 
-    // 👉 Adjust these keys if your app stores staff/qc id differently
-    const staffId =
-      window.localStorage.getItem("staff_id") ||
-      window.localStorage.getItem("qcid") ||
-      window.localStorage.getItem("qc_id");
+    // Read staff ID from localStorage "user" object
+    let staffId = null;
+    try {
+      const rawUser = window.localStorage.getItem("user");
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        // adjust these field names if needed
+        staffId =
+          parsed.staff_id ||
+          parsed.staffId ||
+          parsed.qc_id ||
+          parsed.qcid ||
+          parsed.id; // fallback
+      }
+    } catch (e) {
+      console.error("Failed to parse localStorage.user", e);
+    }
 
     if (!staffId) {
-      console.warn("No staff_id/qcid found in localStorage – using default user.");
+      console.warn("No staff ID found in localStorage.user – using default user.");
       return;
     }
 
@@ -65,17 +49,6 @@ export function UserPopover({ anchorEl, onClose, open }) {
         }
 
         const data = await res.json();
-        // Expected shape from your curl:
-        // {
-        //   ok: true,
-        //   staff_id: "43226675",
-        //   profile: {
-        //     display_name: "Nikhil Sonowal",
-        //     email: "nikhil.sonowal@hsbc.co.in",
-        //     ...
-        //   },
-        //   ...
-        // }
 
         setUser((prev) => ({
           ...prev,
@@ -95,70 +68,3 @@ export function UserPopover({ anchorEl, onClose, open }) {
     fetchProfile();
     return () => controller.abort();
   }, []);
-
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  return (
-    <Popover
-      anchorEl={anchorEl}
-      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-      onClose={handleClose}
-      open={open}
-      slotProps={{ paper: { sx: { width: 280 } } }}
-      transformOrigin={{ horizontal: "right", vertical: "top" }}
-    >
-      <Box sx={{ p: 2 }}>
-        <Typography variant="subtitle1">
-          {loading ? "Loading..." : user.name}
-        </Typography>
-        <Typography color="text.secondary" variant="body2">
-          {loading ? "" : user.email}
-        </Typography>
-      </Box>
-
-      <Divider />
-
-      <Box sx={{ p: 1 }}>
-        <List>
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.profile.account}
-            onClick={handleClose}
-          >
-            <UserIcon style={{ marginRight: 8 }} />
-            Account
-          </ListItem>
-
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.profile.settings}
-            onClick={handleClose}
-          >
-            <LockKeyIcon style={{ marginRight: 8 }} />
-            Settings
-          </ListItem>
-
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.billing}
-            onClick={handleClose}
-          >
-            <CreditCardIcon style={{ marginRight: 8 }} />
-            Billing
-          </ListItem>
-        </List>
-      </Box>
-
-      <Divider />
-
-      <Box sx={{ p: 1 }}>
-        {/* Reuse your existing SignOut component */}
-        <SignOut />
-      </Box>
-    </Popover>
-  );
-}
