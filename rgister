@@ -3,18 +3,30 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import MenuItem from "@mui/material/MenuItem";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
-import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
-import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
+import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
 
 import { paths } from "@/paths";
 import { RouterLink } from "@/components/core/link";
-import { SignOut } from "./sign-out";
 
-// Staff ID from env; fallback to known ID (change if needed)
-const STAFF_ID = import.meta.env.VITE_STAFF_ID || "43226675";
+// Staff id from env (optional, no hardcoding)
+const STAFF_ID_FROM_ENV = import.meta.env.VITE_STAFF_ID || "";
+
+// ✅ Same sign-out behavior as original code
+function SignOutButton() {
+  return (
+    <MenuItem
+      component="a"
+      href="/sign-out"
+      sx={{ justifyContent: "center" }}
+    >
+      Sign out
+    </MenuItem>
+  );
+}
 
 const initialUser = {
   id: "",
@@ -35,11 +47,82 @@ export function UserPopover({ anchorEl, onClose, open }) {
       return;
     }
 
-    // remove trailing slash if present
     baseUrl = baseUrl.replace(/\/$/, "");
 
-    if (!STAFF_ID) {
-      console.error("[UserPopover] STAFF_ID is not set");
+    // ---- Dynamically resolve staffId ----
+    let staffId: string | null = null;
+
+    // 1) Highest priority: env (useful in local dev)
+    if (STAFF_ID_FROM_ENV) {
+      staffId = STAFF_ID_FROM_ENV;
+    }
+
+    // 2) Try localStorage.user
+    if (!staffId) {
+      try {
+        const rawUser = window.localStorage.getItem("user");
+        if (rawUser) {
+          const parsed = JSON.parse(rawUser);
+          staffId =
+            parsed.staff_id ||
+            parsed.staffId ||
+            parsed.qcid ||
+            parsed.qc_id ||
+            parsed.id ||
+            null;
+        }
+      } catch (e) {
+        console.error("[UserPopover] Failed to parse localStorage.user", e);
+      }
+    }
+
+    // 3) Try localStorage.session
+    if (!staffId) {
+      try {
+        const rawSession = window.localStorage.getItem("session");
+        if (rawSession) {
+          const parsed = JSON.parse(rawSession);
+          staffId =
+            parsed.staff_id ||
+            parsed.staffId ||
+            parsed.qcid ||
+            parsed.qc_id ||
+            parsed.id ||
+            null;
+        }
+      } catch (e) {
+        console.error("[UserPopover] Failed to parse localStorage.session", e);
+      }
+    }
+
+    // 4) Try decoding JWT token (access_token or token)
+    if (!staffId) {
+      try {
+        const jwt =
+          window.localStorage.getItem("access_token") ||
+          window.localStorage.getItem("token");
+        if (jwt && jwt.split(".").length === 3) {
+          const payloadPart = jwt.split(".")[1];
+          const jsonPayload = JSON.parse(
+            atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
+          );
+          staffId =
+            jsonPayload.staff_id ||
+            jsonPayload.staffId ||
+            jsonPayload.qcid ||
+            jsonPayload.qc_id ||
+            jsonPayload.sub ||
+            null;
+        }
+      } catch (e) {
+        console.error("[UserPopover] Failed to decode JWT for staff id", e);
+      }
+    }
+
+    console.log("[UserPopover] Resolved staffId =", staffId);
+
+    if (!staffId) {
+      // No staff id => we can't call the profile API safely
       return;
     }
 
@@ -49,14 +132,14 @@ export function UserPopover({ anchorEl, onClose, open }) {
       try {
         setLoading(true);
 
-        const url = `${baseUrl}/api/v1/users/${STAFF_ID}/profile`;
+        const url = `${baseUrl}/api/v1/users/${staffId}/profile`;
         console.log("[UserPopover] Fetching profile:", url);
 
         const token =
           window.localStorage.getItem("access_token") ||
           window.localStorage.getItem("token");
 
-        const headers = {
+        const headers: Record<string, string> = {
           accept: "application/json",
         };
 
@@ -83,7 +166,6 @@ export function UserPopover({ anchorEl, onClose, open }) {
         const data = await res.json();
         console.log("[UserPopover] profile response =", data);
 
-        // NOTE: display_name & email are TOP-LEVEL fields
         setUser({
           id: data?.staff_id ?? "",
           name: data?.display_name ?? "User",
@@ -118,6 +200,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
       slotProps={{ paper: { sx: { width: 280 } } }}
       transformOrigin={{ horizontal: "right", vertical: "top" }}
     >
+      {/* Top: name + email (same design) */}
       <Box sx={{ p: 2 }}>
         <Typography variant="subtitle1">
           {loading ? "Loading..." : user.name}
@@ -129,6 +212,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
 
       <Divider />
 
+      {/* Middle: Account + Settings */}
       <Box sx={{ p: 1 }}>
         <List>
           <ListItem
@@ -148,22 +232,14 @@ export function UserPopover({ anchorEl, onClose, open }) {
             <LockKeyIcon style={{ marginRight: 8 }} />
             Settings
           </ListItem>
-
-          <ListItem
-            component={RouterLink}
-            href={paths.dashboard.billing}
-            onClick={handleClose}
-          >
-            <CreditCardIcon style={{ marginRight: 8 }} />
-            Billing
-          </ListItem>
         </List>
       </Box>
 
       <Divider />
 
+      {/* Bottom: Sign out */}
       <Box sx={{ p: 1 }}>
-        <SignOut />
+        <SignOutButton />
       </Box>
     </Popover>
   );
