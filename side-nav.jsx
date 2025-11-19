@@ -19,345 +19,337 @@ import { WorkspacesSwitch } from "../workspaces-switch";
 import { navColorStyles } from "./styles";
 
 const logoColors = {
-  dark: { blend_in: "light", discrete: "light", evident: "light" },
-  light: { blend_in: "dark", discrete: "dark", evident: "light" },
+    dark: { blend_in: "light", discrete: "light", evident: "light" },
+    light: { blend_in: "dark", discrete: "dark", evident: "light" },
 };
 
+// Titles of menu items that must be admin-only
+// (we use the label text because nav config is not directly available here)
+const ADMIN_ONLY_TITLES = ["Access", "Environment", "Organization", "Project", "Audit"];
+
 export function SideNav({ color = "evident", items = [] }) {
-  const pathname = usePathName();
-  const { colorScheme = "light" } = useColorScheme();
+    const pathname = usePathName();
+    const { colorScheme = "light" } = useColorScheme();
 
-  const styles = navColorStyles[colorScheme][color];
-  const logoColor = logoColors[colorScheme][color];
+    const styles = navColorStyles[colorScheme][color];
+    const logoColor = logoColors[colorScheme][color];
 
-  return (
-    <Box
-      sx={{
-        ...styles,
-        bgcolor: "var(--SideNav-background)",
-        borderRight: "var(--SideNav-border)",
-        color: "var(--SideNav-color)",
-        display: { xs: "none", lg: "flex" },
-        flexDirection: "column",
-        height: "100%",
-        left: 0,
-        position: "fixed",
-        top: 0,
-        width: "var(--SideNav-width)",
-        zIndex: "var(--SideNav-zIndex)",
-      }}
-    >
-      <Stack spacing={2} sx={{ p: 2, pt: 1, pl: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box
-            component={RouterLink}
-            href={paths.home}
-            sx={{ display: "inline-flex" }}
-          >
-            <Logo color={logoColor} height={45} width={45} />
-          </Box>
-          <Typography variant="h5" sx={{ pt: 0.5 }}>
-            ChaosArmor
-          </Typography>
-        </Box>
-      </Stack>
+    // null  = loading / unknown
+    // true  = platform admin
+    // false = non-admin
+    const [isAdmin, setIsAdmin] = React.useState(null);
 
-      {/* Workspace switch (left as original, currently commented)
-      <Stack spacing={2} sx={{ p: 2, pt: 0 }}>
-        <WorkspacesSwitch 
-          caption="Organization" 
-          initialWorkspaceData={organizations} 
-          selectedWorkspace={selectedOrganization}
-          onWorkspaceChange={setSelectedOrganization}
-        />
-        <WorkspacesSwitch 
-          caption="Project" 
-          initialWorkspaceData={organizations} 
-          selectedWorkspace={selectedProject}
-          onWorkspaceChange={setSelectedProject}
-        />
-      </Stack>
-      */}
+    React.useEffect(() => {
+        // Simple fetch to /auth/me to read is_platform_admin from claims.
+        // If you already have a global auth hook (e.g. useUser / useAuth),
+        // you can replace this effect with that hook instead.
+        let isMounted = true;
 
-      <Box
-        component="nav"
-        sx={{
-          flex: "1 1 auto",
-          overflowY: "auto",
-          p: 2,
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
-        }}
-      >
-        {renderNavGroups({ items, pathname })}
-      </Box>
-    </Box>
-  );
-}
+        async function loadUser() {
+            try {
+                const res = await fetch("/auth/me", {
+                    credentials: "include", // important if backend uses cookies
+                });
 
-function renderNavGroups({ items, pathname }) {
-  const children = items.reduce((acc, curr) => {
-    acc.push(
-      <Stack component="li" key={curr.key} spacing={1.5}>
-        {curr.title ? (
-          <div>
-            <Typography
-              sx={{
-                color: "var(--NavGroup-title-color)",
-                fontSize: "0.875rem",
-                fontWeight: 500,
-              }}
+                if (!res.ok) {
+                    throw new Error("Failed to load /auth/me");
+                }
+
+                const data = await res.json();
+
+                if (!isMounted) return;
+
+                // data.claims.is_platform_admin === false  -> non admin
+                // data.claims.is_platform_admin === true   -> admin
+                const platformAdmin = Boolean(data?.claims?.is_platform_admin);
+                setIsAdmin(platformAdmin);
+            } catch (error) {
+                // On error we treat user as non-admin (defensive)
+                if (isMounted) {
+                    setIsAdmin(false);
+                }
+            }
+        }
+
+        loadUser();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    return (
+        <Box
+            sx={{
+                ...styles,
+                bgcolor: "var(--SideNav-background)",
+                borderRight: "var(--SideNav-border)",
+                color: "var(--SideNav-color)",
+                display: { xs: "none", lg: "flex" },
+                flexDirection: "column",
+                height: "100%",
+                left: 0,
+                position: "fixed",
+                top: 0,
+                width: "var(--SideNav-width)",
+                zIndex: "var(--SideNav-zIndex)",
+            }}
+        >
+            <Stack spacing={2} sx={{ p: 2, pt: 1, pl: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex" }}>
+                        <Logo color={logoColor} height={45} width={45} />
+                    </Box>
+                    <Typography variant="h5" sx={{ pt: 0.5 }}>
+                        ChaosArmor
+                    </Typography>
+                </Box>
+            </Stack>
+
+            <Box
+                component="nav"
+                sx={{
+                    flex: "1 1 auto",
+                    overflowY: "auto",
+                    p: 2,
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
+                }}
             >
-              {curr.title}
-            </Typography>
-          </div>
-        ) : null}
-        <div>{renderNavItems({ depth: 0, items: curr.items, pathname })}</div>
-      </Stack>
+                {/* 
+                  Pass isAdmin down so we can hide specific menu items for non-admins.
+                  While isAdmin === null (still loading), we DO NOT filter anything
+                  to avoid flicker for real admins.
+                */}
+                {renderNavGroups({ items, pathname, isAdmin })}
+            </Box>
+        </Box>
     );
-
-    return acc;
-  }, []);
-
-  return (
-    <Stack
-      component="ul"
-      spacing={2}
-      sx={{ listStyle: "none", m: 0, p: 0 }}
-    >
-      {children}
-    </Stack>
-  );
 }
 
-function renderNavItems({ depth = 0, items = [], pathname }) {
-  // ────────────────────────────────────────────
-  // Hide admin-only SETTINGS items for non-admins
-  // ────────────────────────────────────────────
-  let isPlatformAdmin = true;
-  if (typeof window !== "undefined") {
-    isPlatformAdmin = localStorage.getItem("is_platform_admin") === "true";
-  }
-
-  const restrictedSettingsPaths = [
-    "/dashboard/settings/access",
-    "/dashboard/settings/environment",
-    "/dashboard/settings/organization",
-    "/dashboard/settings/project",
-    "/dashboard/settings/audit",
-  ];
-
-  const effectiveItems = !isPlatformAdmin
-    ? items.filter((item) => {
-        if (!item?.href) return true; // keep groups / non-link nodes
-        return !restrictedSettingsPaths.some((p) =>
-          item.href?.startsWith(p)
+function renderNavGroups({ items, pathname, isAdmin }) {
+    const children = items.reduce((acc, curr) => {
+        acc.push(
+            <Stack component="li" key={curr.key} spacing={1.5}>
+                {curr.title ? (
+                    <div>
+                        <Typography
+                            sx={{
+                                color: "var(--NavGroup-title-color)",
+                                fontSize: "0.875rem",
+                                fontWeight: 500,
+                            }}
+                        >
+                            {curr.title}
+                        </Typography>
+                    </div>
+                ) : null}
+                <div>{renderNavItems({ depth: 0, items: curr.items, pathname, isAdmin })}</div>
+            </Stack>
         );
-      })
-    : items;
 
-  const children = effectiveItems.reduce((acc, curr) => {
-    const { items: childItems, key, ...item } = curr;
+        return acc;
+    }, []);
 
-    const forceOpen = childItems
-      ? childItems.some(
-          (childItem) => childItem.href && pathname.startsWith(childItem.href)
-        )
-      : false;
-
-    acc.push(
-      <NavItem
-        depth={depth}
-        forceOpen={forceOpen}
-        key={key}
-        pathname={pathname}
-        {...item}
-      >
-        {childItems
-          ? renderNavItems({
-              depth: depth + 1,
-              pathname,
-              items: childItems,
-            })
-          : null}
-      </NavItem>
+    return (
+        <Stack component="ul" spacing={2} sx={{ listStyle: "none", m: 0, p: 0 }}>
+            {children}
+        </Stack>
     );
+}
 
-    return acc;
-  }, []);
+function renderNavItems({ depth = 0, items = [], pathname, isAdmin }) {
+    const children = items.reduce((acc, curr) => {
+        const { items: childItems, key, ...item } = curr;
 
-  return (
-    <Stack
-      component="ul"
-      data-depth={depth}
-      spacing={1}
-      sx={{ listStyle: "none", m: 0, p: 0 }}
-    >
-      {children}
-    </Stack>
-  );
+        // Hide specific Settings options for NON-ADMINS only.
+        // When isAdmin === null (still loading), we skip this check so
+        // that admins don't see a “flash” of missing items.
+        if (isAdmin === false && ADMIN_ONLY_TITLES.includes(curr.title)) {
+            return acc;
+        }
+
+        const forceOpen = childItems
+            ? childItems.some((childItem) => childItem.href && pathname.startsWith(childItem.href))
+            : false;
+
+        acc.push(
+            <NavItem depth={depth} forceOpen={forceOpen} key={key} pathname={pathname} {...item}>
+                {childItems
+                    ? renderNavItems({
+                          depth: depth + 1,
+                          pathname,
+                          items: childItems,
+                          isAdmin,
+                      })
+                    : null}
+            </NavItem>
+        );
+
+        return acc;
+    }, []);
+
+    return (
+        <Stack
+            component="ul"
+            data-depth={depth}
+            spacing={1}
+            sx={{ listStyle: "none", m: 0, p: 0 }}
+        >
+            {children}
+        </Stack>
+    );
 }
 
 function NavItem({
-  children,
-  depth,
-  disabled,
-  external,
-  forceOpen = false,
-  href,
-  icon,
-  label,
-  matcher,
-  pathname,
-  title,
+    children,
+    depth,
+    disabled,
+    external,
+    forceOpen = false,
+    href,
+    icon,
+    label,
+    matcher,
+    pathname,
+    title,
 }) {
-  const [open, setOpen] = React.useState(forceOpen);
-  const active = isNavItemActive({ disabled, external, href, matcher, pathname });
-  const Icon = icon ? icons[icon] : null;
-  const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
-  const isBranch = children && !href;
-  const showChildren = Boolean(children && open);
+    const [open, setOpen] = React.useState(forceOpen);
+    const active = isNavItemActive({ disabled, external, href, matcher, pathname });
+    const Icon = icon ? icons[icon] : null;
+    const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
+    const isBranch = children && !href;
+    const showChildren = Boolean(children && open);
 
-  return (
-    <Box component="li" data-depth={depth} sx={{ userSelect: "none" }}>
-      <Box
-        {...(isBranch
-          ? {
-              onClick: () => setOpen(!open),
-              onKeyup: (event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  setOpen(!open);
-                }
-              },
-              role: "button",
-            }
-          : href
-          ? {
-              component: external ? "a" : RouterLink,
-              href,
-              target: external ? "_blank" : undefined,
-              rel: external ? "noreferrer" : undefined,
-            }
-          : { role: "button" })}
-        sx={{
-          alignItems: "center",
-          borderRadius: 1,
-          color: "var(--NavItem-color)",
-          cursor: "pointer",
-          display: "flex",
-          flex: "0 0 auto",
-          gap: 1,
-          p: "6px 16px",
-          position: "relative",
-          textDecoration: "none",
-          whiteSpace: "nowrap",
-          ...(disabled && {
-            bgcolor: "var(--NavItem-disabled-background)",
-            color: "var(--NavItem-disabled-color)",
-            cursor: "not-allowed",
-          }),
-          ...(active && {
-            bgcolor: "var(--NavItem-active-background)",
-            color: "var(--NavItem-active-color)",
-            ...(depth > 0 && {
-              "&::before": {
-                bgcolor: "var(--NavItem-children-indicator)",
-                borderRadius: "2px",
-                content: '" "',
-                height: "20px",
-                left: "-14px",
-                position: "absolute",
-                width: "3px",
-              },
-            }),
-          }),
-          ...(open && { color: "var(--NavItem-open-color)" }),
-          "&:hover": {
-            ...(!disabled &&
-              !active && {
-                bgcolor: "var(--NavItem-hover-background)",
-                color: "var(--NavItem-hover-color)",
-              }),
-          },
-        }}
-        tabIndex={0}
-      >
-        <Box
-          sx={{
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "center",
-            flex: "0 0 auto",
-          }}
-        >
-          {Icon ? (
-            <Icon
-              fill={
-                active
-                  ? "var(--NavItem-icon-active-color)"
-                  : "var(--NavItem-icon-color)"
-              }
-              fontSize="var(--icon-fontSize-md)"
-              weight={forceOpen || active ? "fill" : undefined}
-            />
-          ) : null}
+    return (
+        <Box component="li" data-depth={depth} sx={{ userSelect: "none" }}>
+            <Box
+                {...(isBranch
+                    ? {
+                          onClick: () => setOpen(!open),
+                          onKeyup: (event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                  setOpen(!open);
+                              }
+                          },
+                          role: "button",
+                      }
+                    : {
+                          ...(href
+                              ? {
+                                    component: external ? "a" : RouterLink,
+                                    href,
+                                    target: external ? "_blank" : undefined,
+                                    rel: external ? "noreferrer" : undefined,
+                                }
+                              : { role: "button" }),
+                      })}
+                sx={{
+                    alignItems: "center",
+                    borderRadius: 1,
+                    color: "var(--NavItem-color)",
+                    cursor: "pointer",
+                    display: "flex",
+                    flex: "0 0 auto",
+                    gap: 1,
+                    p: "6px 16px",
+                    position: "relative",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                    ...(disabled && {
+                        bgcolor: "var(--NavItem-disabled-background)",
+                        color: "var(--NavItem-disabled-color)",
+                        cursor: "not-allowed",
+                    }),
+                    ...(active && {
+                        bgcolor: "var(--NavItem-active-background)",
+                        color: "var(--NavItem-active-color)",
+                        ...(depth > 0 && {
+                            "&::before": {
+                                bgcolor: "var(--NavItem-children-indicator)",
+                                borderRadius: "2px",
+                                content: '" "',
+                                height: "20px",
+                                left: "-14px",
+                                position: "absolute",
+                                width: "3px",
+                            },
+                        }),
+                    }),
+                    ...(open && { color: "var(--NavItem-open-color)" }),
+                    "&:hover": {
+                        ...(!disabled &&
+                            !active && {
+                                bgcolor: "var(--NavItem-hover-background)",
+                                color: "var(--NavItem-hover-color)",
+                            }),
+                    },
+                }}
+                tabIndex={0}
+            >
+                <Box
+                    sx={{
+                        alignItems: "center",
+                        display: "flex",
+                        justifyContent: "center",
+                        flex: "0 0 auto",
+                    }}
+                >
+                    {Icon ? (
+                        <Icon
+                            fill={
+                                active
+                                    ? "var(--NavItem-icon-active-color)"
+                                    : "var(--NavItem-icon-color)"
+                            }
+                            fontSize="var(--icon-fontSize-md)"
+                            weight={forceOpen || active ? "fill" : undefined}
+                        />
+                    ) : null}
+                </Box>
+                <Box sx={{ flex: "1 1 auto" }}>
+                    <Typography
+                        component="span"
+                        sx={{
+                            color: "inherit",
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            lineHeight: "28px",
+                        }}
+                    >
+                        {title}
+                    </Typography>
+                </Box>
+                {label ? <Chip color="primary" label={label} size="small" /> : null}
+                {external ? (
+                    <Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+                        <ArrowSquareOutIcon
+                            color="var(--NavItem-icon-color)"
+                            fontSize="var(--icon-fontSize-sm)"
+                        />
+                    </Box>
+                ) : null}
+                {isBranch ? (
+                    <Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+                        <ExpandIcon
+                            color="var(--NavItem-expand-color)"
+                            fontSize="var(--icon-fontSize-sm)"
+                        />
+                    </Box>
+                ) : null}
+            </Box>
+            {showChildren ? (
+                <Box sx={{ pl: "24px" }}>
+                    <Box
+                        sx={{
+                            borderLeft: "1px solid var(--NavItem-children-border)",
+                            pl: "12px",
+                        }}
+                    >
+                        {children}
+                    </Box>
+                </Box>
+            ) : null}
         </Box>
-        <Box sx={{ flex: "1 1 auto" }}>
-          <Typography
-            component="span"
-            sx={{
-              color: "inherit",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              lineHeight: "28px",
-            }}
-          >
-            {title}
-          </Typography>
-        </Box>
-        {label ? <Chip color="primary" label={label} size="small" /> : null}
-        {external ? (
-          <Box
-            sx={{
-              alignItems: "center",
-              display: "flex",
-              flex: "0 0 auto",
-            }}
-          >
-            <ArrowSquareOutIcon
-              color="var(--NavItem-icon-color)"
-              fontSize="var(--icon-fontSize-sm)"
-            />
-          </Box>
-        ) : null}
-        {isBranch ? (
-          <Box
-            sx={{
-              alignItems: "center",
-              display: "flex",
-              flex: "0 0 auto",
-            }}
-          >
-            <ExpandIcon
-              color="var(--NavItem-expand-color)"
-              fontSize="var(--icon-fontSize-sm)"
-            />
-          </Box>
-        ) : null}
-      </Box>
-
-      {showChildren ? (
-        <Box sx={{ pl: "24px" }}>
-          <Box
-            sx={{
-              borderLeft: "1px solid var(--NavItem-children-border)",
-              pl: "12px",
-            }}
-          >
-            {children}
-          </Box>
-        </Box>
-      ) : null}
-    </Box>
-  );
+    );
 }
