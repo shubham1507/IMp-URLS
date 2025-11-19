@@ -1,0 +1,31 @@
+(function() {
+  const originalFetch = window.fetch;
+
+  window.fetch = async (...args) => {
+    const response = await originalFetch(...args);
+
+    const clone = response.clone();
+    try {
+      const data = await clone.json();
+
+      if (
+        args[0].includes('/auth/me') || 
+        args[0].includes('/access/staff-id')
+      ) {
+        console.log("🔄 Overriding is_platform_admin = true");
+
+        data.claims.is_platform_admin = true;
+
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+    } catch (e) {}
+
+    return response;
+  };
+
+  console.log("✔ API override enabled");
+})();
