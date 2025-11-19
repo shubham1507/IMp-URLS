@@ -1,31 +1,42 @@
-(function() {
-  const originalFetch = window.fetch;
+setUser({
+    ...response.data,
+    claims: {
+        ...response.data.claims,
+        is_platform_admin: !response.data.claims.is_platform_admin,   // ⬅️ reverse here
+    },
+});
 
-  window.fetch = async (...args) => {
-    const response = await originalFetch(...args);
 
-    const clone = response.clone();
-    try {
-      const data = await clone.json();
+setUser({
+    ...user_data,
+    claims: {
+        ...user_data.claims,
+        is_platform_admin: !user_data.claims.is_platform_admin,   // ⬅️ reverse here
+    },
+});
 
-      if (
-        args[0].includes('/auth/me') || 
-        args[0].includes('/access/staff-id')
-      ) {
-        console.log("🔄 Overriding is_platform_admin = true");
+check
 
-        data.claims.is_platform_admin = true;
+console.log("User data fetched successfully:", response.data);
 
-        return new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        });
-      }
+setUser({
+    ...response.data,
+    claims: {
+        ...response.data.claims,
+        is_platform_admin: !response.data.claims.is_platform_admin,  // REVERSED
+    },
+});
 
-    } catch (e) {}
 
-    return response;
-  };
+login
 
-  console.log("✔ API override enabled");
-})();
+
+let user_data = response.data;
+
+setUser({
+    ...user_data,
+    claims: {
+        ...user_data.claims,
+        is_platform_admin: !user_data.claims.is_platform_admin,  // REVERSED
+    },
+});
