@@ -18,7 +18,10 @@ import { icons } from "../nav-icons";
 import { WorkspacesSwitch } from "../workspaces-switch";
 import { navColorStyles } from "./styles";
 
-// …imports stay as in your reference file…
+const logoColors = {
+  dark: { blend_in: "light", discrete: "light", evident: "light" },
+  light: { blend_in: "dark", discrete: "dark", evident: "light" },
+};
 
 export function SideNav({ color = "evident", items = [] }) {
   const pathname = usePathName();
@@ -46,7 +49,11 @@ export function SideNav({ color = "evident", items = [] }) {
     >
       <Stack spacing={2} sx={{ p: 2, pt: 1, pl: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex" }}>
+          <Box
+            component={RouterLink}
+            href={paths.home}
+            sx={{ display: "inline-flex" }}
+          >
             <Logo color={logoColor} height={45} width={45} />
           </Box>
           <Typography variant="h5" sx={{ pt: 0.5 }}>
@@ -54,6 +61,23 @@ export function SideNav({ color = "evident", items = [] }) {
           </Typography>
         </Box>
       </Stack>
+
+      {/* Workspace switch (left as original, currently commented)
+      <Stack spacing={2} sx={{ p: 2, pt: 0 }}>
+        <WorkspacesSwitch 
+          caption="Organization" 
+          initialWorkspaceData={organizations} 
+          selectedWorkspace={selectedOrganization}
+          onWorkspaceChange={setSelectedOrganization}
+        />
+        <WorkspacesSwitch 
+          caption="Project" 
+          initialWorkspaceData={organizations} 
+          selectedWorkspace={selectedProject}
+          onWorkspaceChange={setSelectedProject}
+        />
+      </Stack>
+      */}
 
       <Box
         component="nav"
@@ -88,7 +112,7 @@ function renderNavGroups({ items, pathname }) {
             </Typography>
           </div>
         ) : null}
-        <div>{renderNavItems({ depth: 0, items: curr.items, pathname, groupKey: curr.key })}</div>
+        <div>{renderNavItems({ depth: 0, items: curr.items, pathname })}</div>
       </Stack>
     );
 
@@ -96,35 +120,41 @@ function renderNavGroups({ items, pathname }) {
   }, []);
 
   return (
-    <Stack component="ul" spacing={2} sx={{ listStyle: "none", m: 0, p: 0 }}>
+    <Stack
+      component="ul"
+      spacing={2}
+      sx={{ listStyle: "none", m: 0, p: 0 }}
+    >
       {children}
     </Stack>
   );
 }
 
-function renderNavItems({ depth = 0, items = [], pathname, groupKey }) {
-  let effectiveItems = items;
-
-  // Only filter inside SETTINGS group, and only for non-admin
+function renderNavItems({ depth = 0, items = [], pathname }) {
+  // ────────────────────────────────────────────
+  // Hide admin-only SETTINGS items for non-admins
+  // ────────────────────────────────────────────
   let isPlatformAdmin = true;
   if (typeof window !== "undefined") {
     isPlatformAdmin = localStorage.getItem("is_platform_admin") === "true";
   }
 
-  if (!isPlatformAdmin && groupKey === "settings") {
-    const restrictedSettingsPaths = [
-      "/dashboard/settings/access",
-      "/dashboard/settings/environment",
-      "/dashboard/settings/organization",
-      "/dashboard/settings/project",
-      "/dashboard/settings/audit",
-    ];
+  const restrictedSettingsPaths = [
+    "/dashboard/settings/access",
+    "/dashboard/settings/environment",
+    "/dashboard/settings/organization",
+    "/dashboard/settings/project",
+    "/dashboard/settings/audit",
+  ];
 
-    effectiveItems = items.filter((item) => {
-      if (!item?.href) return true;
-      return !restrictedSettingsPaths.some((p) => item.href?.startsWith(p));
-    });
-  }
+  const effectiveItems = !isPlatformAdmin
+    ? items.filter((item) => {
+        if (!item?.href) return true; // keep groups / non-link nodes
+        return !restrictedSettingsPaths.some((p) =>
+          item.href?.startsWith(p)
+        );
+      })
+    : items;
 
   const children = effectiveItems.reduce((acc, curr) => {
     const { items: childItems, key, ...item } = curr;
@@ -148,7 +178,6 @@ function renderNavItems({ depth = 0, items = [], pathname, groupKey }) {
               depth: depth + 1,
               pathname,
               items: childItems,
-              groupKey,
             })
           : null}
       </NavItem>
@@ -169,4 +198,166 @@ function renderNavItems({ depth = 0, items = [], pathname, groupKey }) {
   );
 }
 
-// NavItem stays exactly as in your reference file
+function NavItem({
+  children,
+  depth,
+  disabled,
+  external,
+  forceOpen = false,
+  href,
+  icon,
+  label,
+  matcher,
+  pathname,
+  title,
+}) {
+  const [open, setOpen] = React.useState(forceOpen);
+  const active = isNavItemActive({ disabled, external, href, matcher, pathname });
+  const Icon = icon ? icons[icon] : null;
+  const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
+  const isBranch = children && !href;
+  const showChildren = Boolean(children && open);
+
+  return (
+    <Box component="li" data-depth={depth} sx={{ userSelect: "none" }}>
+      <Box
+        {...(isBranch
+          ? {
+              onClick: () => setOpen(!open),
+              onKeyup: (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  setOpen(!open);
+                }
+              },
+              role: "button",
+            }
+          : href
+          ? {
+              component: external ? "a" : RouterLink,
+              href,
+              target: external ? "_blank" : undefined,
+              rel: external ? "noreferrer" : undefined,
+            }
+          : { role: "button" })}
+        sx={{
+          alignItems: "center",
+          borderRadius: 1,
+          color: "var(--NavItem-color)",
+          cursor: "pointer",
+          display: "flex",
+          flex: "0 0 auto",
+          gap: 1,
+          p: "6px 16px",
+          position: "relative",
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+          ...(disabled && {
+            bgcolor: "var(--NavItem-disabled-background)",
+            color: "var(--NavItem-disabled-color)",
+            cursor: "not-allowed",
+          }),
+          ...(active && {
+            bgcolor: "var(--NavItem-active-background)",
+            color: "var(--NavItem-active-color)",
+            ...(depth > 0 && {
+              "&::before": {
+                bgcolor: "var(--NavItem-children-indicator)",
+                borderRadius: "2px",
+                content: '" "',
+                height: "20px",
+                left: "-14px",
+                position: "absolute",
+                width: "3px",
+              },
+            }),
+          }),
+          ...(open && { color: "var(--NavItem-open-color)" }),
+          "&:hover": {
+            ...(!disabled &&
+              !active && {
+                bgcolor: "var(--NavItem-hover-background)",
+                color: "var(--NavItem-hover-color)",
+              }),
+          },
+        }}
+        tabIndex={0}
+      >
+        <Box
+          sx={{
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            flex: "0 0 auto",
+          }}
+        >
+          {Icon ? (
+            <Icon
+              fill={
+                active
+                  ? "var(--NavItem-icon-active-color)"
+                  : "var(--NavItem-icon-color)"
+              }
+              fontSize="var(--icon-fontSize-md)"
+              weight={forceOpen || active ? "fill" : undefined}
+            />
+          ) : null}
+        </Box>
+        <Box sx={{ flex: "1 1 auto" }}>
+          <Typography
+            component="span"
+            sx={{
+              color: "inherit",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              lineHeight: "28px",
+            }}
+          >
+            {title}
+          </Typography>
+        </Box>
+        {label ? <Chip color="primary" label={label} size="small" /> : null}
+        {external ? (
+          <Box
+            sx={{
+              alignItems: "center",
+              display: "flex",
+              flex: "0 0 auto",
+            }}
+          >
+            <ArrowSquareOutIcon
+              color="var(--NavItem-icon-color)"
+              fontSize="var(--icon-fontSize-sm)"
+            />
+          </Box>
+        ) : null}
+        {isBranch ? (
+          <Box
+            sx={{
+              alignItems: "center",
+              display: "flex",
+              flex: "0 0 auto",
+            }}
+          >
+            <ExpandIcon
+              color="var(--NavItem-expand-color)"
+              fontSize="var(--icon-fontSize-sm)"
+            />
+          </Box>
+        ) : null}
+      </Box>
+
+      {showChildren ? (
+        <Box sx={{ pl: "24px" }}>
+          <Box
+            sx={{
+              borderLeft: "1px solid var(--NavItem-children-border)",
+              pl: "12px",
+            }}
+          >
+            {children}
+          </Box>
+        </Box>
+      ) : null}
+    </Box>
+  );
+}
