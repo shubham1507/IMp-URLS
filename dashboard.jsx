@@ -2,6 +2,26 @@ import { Outlet } from "react-router-dom";
 
 import DashboardLayout from "@/components/dashboard/layout/dashboard-layout";
 
+// Small helper to guard admin-only routes
+const guardAdmin = (loader) => {
+  return async () => {
+    const isPlatformAdmin =
+      typeof window !== "undefined" &&
+      localStorage.getItem("is_platform_admin") === "true";
+
+    if (!isPlatformAdmin) {
+      const { default: AccessDenied } = await import(
+        "@/pages/dashboard/access-denied.jsx"
+      );
+      return { Component: AccessDenied };
+    }
+
+    const module = await loader();
+    const Page = module.default;
+    return { Component: Page };
+  };
+};
+
 export const route = {
   path: "dashboard",
   element: (
@@ -10,6 +30,9 @@ export const route = {
     </DashboardLayout>
   ),
   children: [
+    // ────────────────────────────────────────────
+    // DASHBOARD OVERVIEW  (NO ADMIN GUARD)
+    // ────────────────────────────────────────────
     {
       index: true,
       lazy: async () => {
@@ -21,7 +44,7 @@ export const route = {
     },
 
     // ────────────────────────────────────────────
-    // EXPERIMENTS (NO ADMIN GUARD HERE)
+    // EXPERIMENTS (ALL ACCESSIBLE TO NON-ADMIN)
     // ────────────────────────────────────────────
     {
       path: "experiments",
@@ -80,111 +103,48 @@ export const route = {
     },
 
     // ────────────────────────────────────────────
-    // SETTINGS (ADMIN-GUARDED ROUTES ONLY)
+    // SETTINGS
     // ────────────────────────────────────────────
     {
       path: "settings",
       children: [
+        // ADMIN-ONLY
         {
           path: "organization",
-          lazy: async () => {
-            const isPlatformAdmin =
-              typeof window !== "undefined" &&
-              localStorage.getItem("is_platform_admin") === "true";
-
-            if (!isPlatformAdmin) {
-              const { default: AccessDenied } = await import(
-                "@/pages/dashboard/access-denied.jsx"
-              );
-              return { Component: AccessDenied };
-            }
-
-            const { default: SettingsOrganizationPage } = await import(
-              "@/pages/dashboard/settings/organization"
-            );
-            return { Component: SettingsOrganizationPage };
-          },
+          lazy: guardAdmin(() =>
+            import("@/pages/dashboard/settings/organization")
+          ),
         },
+        // ADMIN-ONLY
         {
           path: "project",
-          lazy: async () => {
-            const isPlatformAdmin =
-              typeof window !== "undefined" &&
-              localStorage.getItem("is_platform_admin") === "true";
-
-            if (!isPlatformAdmin) {
-              const { default: AccessDenied } = await import(
-                "@/pages/dashboard/access-denied.jsx"
-              );
-              return { Component: AccessDenied };
-            }
-
-            const { default: SettingsProjectPage } = await import(
-              "@/pages/dashboard/settings/project"
-            );
-            return { Component: SettingsProjectPage };
-          },
+          lazy: guardAdmin(() =>
+            import("@/pages/dashboard/settings/project")
+          ),
         },
+        // ADMIN-ONLY
         {
           path: "audit",
-          lazy: async () => {
-            const isPlatformAdmin =
-              typeof window !== "undefined" &&
-              localStorage.getItem("is_platform_admin") === "true";
-
-            if (!isPlatformAdmin) {
-              const { default: AccessDenied } = await import(
-                "@/pages/dashboard/access-denied.jsx"
-              );
-              return { Component: AccessDenied };
-            }
-
-            const { default: AuditPage } = await import(
-              "@/pages/dashboard/settings/audit"
-            );
-            return { Component: AuditPage };
-          },
+          lazy: guardAdmin(() =>
+            import("@/pages/dashboard/settings/audit")
+          ),
         },
+        // ADMIN-ONLY
         {
           path: "access",
-          lazy: async () => {
-            const isPlatformAdmin =
-              typeof window !== "undefined" &&
-              localStorage.getItem("is_platform_admin") === "true";
-
-            if (!isPlatformAdmin) {
-              const { default: AccessDenied } = await import(
-                "@/pages/dashboard/access-denied.jsx"
-              );
-              return { Component: AccessDenied };
-            }
-
-            const { default: AccessPage } = await import(
-              "@/pages/dashboard/settings/access.jsx"
-            );
-            return { Component: AccessPage };
-          },
+          lazy: guardAdmin(() =>
+            import("@/pages/dashboard/settings/access.jsx")
+          ),
         },
+        // ADMIN-ONLY
         {
           path: "environment",
-          lazy: async () => {
-            const isPlatformAdmin =
-              typeof window !== "undefined" &&
-              localStorage.getItem("is_platform_admin") === "true";
-
-            if (!isPlatformAdmin) {
-              const { default: AccessDenied } = await import(
-                "@/pages/dashboard/access-denied.jsx"
-              );
-              return { Component: AccessDenied };
-            }
-
-            const { default: EnvironmentPage } = await import(
-              "@/pages/dashboard/settings/environment.jsx"
-            );
-            return { Component: EnvironmentPage };
-          },
+          lazy: guardAdmin(() =>
+            import("@/pages/dashboard/settings/environment.jsx")
+          ),
         },
+
+        // These are accessible to everyone
         {
           path: "team-and-member-role",
           lazy: async () => {
