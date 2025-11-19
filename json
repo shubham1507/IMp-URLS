@@ -1,142 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
-
-const AuthContext = createContext(undefined);
-
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const APIS_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL;
-
-    // Helper: reverse is_platform_admin (false => treated as admin, true => non-admin)
-    const reversePlatformAdmin = (rawUser) => {
-        if (!rawUser) return rawUser;
-
-        // top-level is_platform_admin (your actual API)
-        if (typeof rawUser.is_platform_admin !== "undefined") {
-            return {
-                ...rawUser,
-                is_platform_admin: !rawUser.is_platform_admin,
-            };
-        }
-
-        // if it ever comes nested in future, just in case
-        if (
-            rawUser.claims &&
-            typeof rawUser.claims.is_platform_admin !== "undefined"
-        ) {
-            return {
-                ...rawUser,
-                claims: {
-                    ...rawUser.claims,
-                    is_platform_admin: !rawUser.claims.is_platform_admin,
-                },
-            };
-        }
-
-        return rawUser;
-    };
-
-    // On mount: check if cookie already exists by calling /auth/me.
-    const checkAuth = async () => {
-        try {
-            const response = await axios.get(
-                `${APIS_GATEWAY_URL}/auth/me`,
-                { withCredentials: true },
-            );
-            console.log("User data fetched successfully:", response.data);
-
-            // 🔁 reverse admin logic for testing
-            const reversedUser = reversePlatformAdmin(response.data);
-            setUser(reversedUser);
-        } catch (error) {
-            if (error.response && error.response.status === 401) {
-                console.warn(
-                    "User is not authenticated. Redirecting to login page.",
-                );
-                setUser(null);
-                if (window.location.pathname !== "/auth/login") {
-                    window.location.href = "/auth/login";
-                }
-            } else {
-                console.error("Failed to fetch user data:", error);
-                setUser(null);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    // Function to log in the user
-    const login = async (staff_id, password) => {
-        setLoading(true);
-        const encodedPassword = btoa(password);
-        try {
-            const response = await axios.post(
-                `${APIS_GATEWAY_URL}/auth/login`,
-                {
-                    staff_id: staff_id,
-                    password: encodedPassword,
-                },
-                {
-                    withCredentials: true,
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                },
-            );
-
-            let user_data = response.data;
-
-            // 🔁 reverse admin logic for testing
-            const reversedUser = reversePlatformAdmin(user_data);
-
-            setUser(reversedUser);
-            return reversedUser;
-        } catch (error) {
-            console.error("Login failed:", error);
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Function to log out the user
-    const logout = async () => {
-        setLoading(true);
-        try {
-            await axios.post(
-                `${APIS_GATEWAY_URL}/auth/logout`,
-                {},
-                { withCredentials: true },
-            );
-            setUser(null);
-        } catch (error) {
-            console.error("Logout failed:", error);
-            throw error;
-        } finally {
-            setUser(null);
-            setLoading(false);
-        }
-    };
-
-    return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
-
-// Custom hook to use the AuthContext
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
+{
+  "ok": true,
+  "staff_id": "45429656",
+  "organizations": [
+    {
+      "id": "687b29cad35450a9cbf7f40e",
+      "name": "Testing Tools",
+      "projects": [
+        { "id": "687b29cad35450a9cbf7f418", "name": "ChaosArmor DEV" },
+        { "id": "687b29cad35450a9cbf7f419", "name": "ChaosArmor UAT" },
+        { "id": "687b29cad35450a9cbf7f41a", "name": "ChaosArmor PROD" }
+      ]
     }
-    return context;
-};
+  ],
+  "count": 1,
+  "offset": 0,
+  "limit": 100,
+  "message": null
+}
