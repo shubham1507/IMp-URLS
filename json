@@ -8,6 +8,35 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const APIS_GATEWAY_URL = import.meta.env.VITE_API_GATEWAY_URL;
 
+    // Helper: reverse is_platform_admin (false => treated as admin, true => non-admin)
+    const reversePlatformAdmin = (rawUser) => {
+        if (!rawUser) return rawUser;
+
+        // top-level is_platform_admin (your actual API)
+        if (typeof rawUser.is_platform_admin !== "undefined") {
+            return {
+                ...rawUser,
+                is_platform_admin: !rawUser.is_platform_admin,
+            };
+        }
+
+        // if it ever comes nested in future, just in case
+        if (
+            rawUser.claims &&
+            typeof rawUser.claims.is_platform_admin !== "undefined"
+        ) {
+            return {
+                ...rawUser,
+                claims: {
+                    ...rawUser.claims,
+                    is_platform_admin: !rawUser.claims.is_platform_admin,
+                },
+            };
+        }
+
+        return rawUser;
+    };
+
     // On mount: check if cookie already exists by calling /auth/me.
     const checkAuth = async () => {
         try {
@@ -17,22 +46,15 @@ export const AuthProvider = ({ children }) => {
             );
             console.log("User data fetched successfully:", response.data);
 
-            // ⬅️ REVERSE is_platform_admin HERE
-            const reversedUser = {
-                ...response.data,
-                claims: {
-                    ...response.data.claims,
-                    is_platform_admin: !response.data.claims.is_platform_admin,
-                },
-            };
-
+            // 🔁 reverse admin logic for testing
+            const reversedUser = reversePlatformAdmin(response.data);
             setUser(reversedUser);
-
         } catch (error) {
             if (error.response && error.response.status === 401) {
-                console.warn("User is not authenticated. Redirecting to login page.");
+                console.warn(
+                    "User is not authenticated. Redirecting to login page.",
+                );
                 setUser(null);
-
                 if (window.location.pathname !== "/auth/login") {
                     window.location.href = "/auth/login";
                 }
@@ -53,7 +75,6 @@ export const AuthProvider = ({ children }) => {
     const login = async (staff_id, password) => {
         setLoading(true);
         const encodedPassword = btoa(password);
-
         try {
             const response = await axios.post(
                 `${APIS_GATEWAY_URL}/auth/login`,
@@ -72,18 +93,11 @@ export const AuthProvider = ({ children }) => {
 
             let user_data = response.data;
 
-            // ⬅️ REVERSE is_platform_admin HERE
-            const reversedUser = {
-                ...user_data,
-                claims: {
-                    ...user_data.claims,
-                    is_platform_admin: !user_data.claims.is_platform_admin,
-                },
-            };
+            // 🔁 reverse admin logic for testing
+            const reversedUser = reversePlatformAdmin(user_data);
 
             setUser(reversedUser);
             return reversedUser;
-
         } catch (error) {
             console.error("Login failed:", error);
             throw error;
