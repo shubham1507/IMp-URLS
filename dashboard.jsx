@@ -1,8 +1,6 @@
-import { lazy } from "react";
 import { Outlet } from "react-router-dom";
 
 import DashboardLayout from "@/components/dashboard/layout/dashboard-layout";
-import Environment from "@/pages/dashboard/settings/environment";
 
 export const route = {
   path: "dashboard",
@@ -23,7 +21,7 @@ export const route = {
     },
 
     // ────────────────────────────────────────────
-    // EXPERIMENTS
+    // EXPERIMENTS (NO ADMIN GUARD HERE)
     // ────────────────────────────────────────────
     {
       path: "experiments",
@@ -37,7 +35,6 @@ export const route = {
             return { Component: ExperimentsBrowsePage };
           },
         },
-
         {
           path: "create",
           lazy: async () => {
@@ -47,7 +44,6 @@ export const route = {
             return { Component: ExperimentsCreatePage };
           },
         },
-
         {
           path: "execute",
           lazy: async () => {
@@ -57,7 +53,6 @@ export const route = {
             return { Component: ExperimentsExecutePage };
           },
         },
-
         {
           path: "status",
           children: [
@@ -85,12 +80,11 @@ export const route = {
     },
 
     // ────────────────────────────────────────────
-    // SETTINGS
+    // SETTINGS (ADMIN-GUARDED ROUTES ONLY)
     // ────────────────────────────────────────────
     {
       path: "settings",
       children: [
-        // ORGANIZATION (admin only)
         {
           path: "organization",
           lazy: async () => {
@@ -111,8 +105,6 @@ export const route = {
             return { Component: SettingsOrganizationPage };
           },
         },
-
-        // PROJECT (admin only)
         {
           path: "project",
           lazy: async () => {
@@ -133,8 +125,6 @@ export const route = {
             return { Component: SettingsProjectPage };
           },
         },
-
-        // AUDIT (admin only)
         {
           path: "audit",
           lazy: async () => {
@@ -155,8 +145,6 @@ export const route = {
             return { Component: AuditPage };
           },
         },
-
-        // ACCESS (admin only)
         {
           path: "access",
           lazy: async () => {
@@ -177,8 +165,6 @@ export const route = {
             return { Component: AccessPage };
           },
         },
-
-        // ENVIRONMENT (admin only)
         {
           path: "environment",
           lazy: async () => {
@@ -199,8 +185,6 @@ export const route = {
             return { Component: EnvironmentPage };
           },
         },
-
-        // TEAM & MEMBER ROLE (still visible for now)
         {
           path: "team-and-member-role",
           lazy: async () => {
@@ -210,8 +194,6 @@ export const route = {
             return { Component: TeamAndMemberRolePage };
           },
         },
-
-        // NOTIFICATION (accessible to all)
         {
           path: "notification",
           lazy: async () => {
@@ -221,8 +203,6 @@ export const route = {
             return { Component: Notification };
           },
         },
-
-        // GENERAL (accessible to all)
         {
           path: "general",
           lazy: async () => {
