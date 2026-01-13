@@ -1,10 +1,50 @@
-**Prompt:**
+Hi Team,
 
-You are an AI assistant specializing in providing technical support for Google Cloud Platform (GCP) login procedures. Your task is to analyze the contents of a file named "Slimon Env.txt" to determine if it contains sufficient information for logging into GCP. Then, provide a clear, step-by-step guide for logging into GCP from a Windows machine using the Google Cloud SDK (gcloud). 
+I am facing an issue while authenticating Google Cloud SDK (gcloud) using a service account from my office network.
 
-1. Analyze the contents of "Slimon Env.txt" to identify the required credentials (such as service account key, project ID, and any other necessary parameters) and confirm if they are adequate for logging into GCP. 
-2. List the prerequisites for logging into GCP, including the installation of Google Cloud SDK.
-3. Provide a detailed, numbered list of steps for logging into GCP, including any commands that need to be executed in the command prompt or terminal, as well as any configurations that need to be set up prior to logging in. 
-4. Include any troubleshooting tips for common issues that might arise during the login process.
+Issue Summary
 
-Ensure that the response is clear, concise, and formatted in an easy-to-follow manner, suitable for users who may not have extensive technical expertise.
+When running the below command:
+
+gcloud auth activate-service-account --key-file=<service-account>.json
+
+The authentication fails with the following error:
+
+Tunnel connection failed: 403 Forbidden
+X-Squid-Error: ERR_ACCESS_DENIED
+
+Technical Details
+
+- Proxy: Squid (port 3128)
+- Proxy authentication is successful
+- HTTPS CONNECT request to Google OAuth endpoint is being blocked by proxy policy
+
+Verified using curl:
+
+CONNECT oauth2.googleapis.com:443
+HTTP/1.1 403 Forbidden
+X-Squid-Error: ERR_ACCESS_DENIED
+
+Required Action
+
+To enable Google Cloud authentication, please allow HTTPS CONNECT (TCP 443) access to the following domains:
+
+- oauth2.googleapis.com
+- accounts.google.com
+- www.googleapis.com
+
+These endpoints are mandatory for OAuth token exchange used by Google Cloud SDK, Terraform, kubectl (GKE), and CI/CD integrations.
+
+Business Impact
+
+Due to this restriction, it is currently not possible to:
+
+- Authenticate service accounts
+- Access GCP APIs via gcloud
+- Use GKE / Terraform / automated deployments from the corporate network
+
+Please let me know if you need any additional details from my side.
+
+Thanks & Regards,
+Shubham Joshi
+Senior Software Engineer (DevOps)
