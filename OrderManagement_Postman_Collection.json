@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Order Management - Prod-Test (Full Suite)",
-    "_postman_id": "om-prodtest-collection-002",
-    "description": "Complete Postman collection built from:\n- GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml\n- OrderManagement.txt\n\nBase URL: https://prodtest-cbs.ecommerce.pb.com\n\nRun order:\n1. Get Auth Token  (saves token automatically)\n2. Get Quote\n3. Submit Order    (saves orderId automatically)\n4. Confirm Order\n5. Get Order Details - REST\n6. Get Order Details - SOAP",
+    "_postman_id": "om-prodtest-collection-003",
+    "description": "Complete Postman collection for Prod-Test environment.\n\nSources:\n- OrderManagement.txt\n- cpe.txt\n- CommandCentral_details.txt\n- GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml\n- OrderManagement_OPREST-Project-1-readyapi-project.xml\n\nRun order:\n1. Get Auth Token (saves token automatically)\n2. Get Quote\n3. Submit Order (saves orderId automatically)\n4. Confirm Order\n5. Get Order Details - REST\n6. Get Order Details - SOAP (CPE)\n7. Get Parcel Details - SOAP (CPE)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -28,6 +28,7 @@
         }
       ],
       "request": {
+        "auth": { "type": "noauth" },
         "method": "POST",
         "header": [
           { "key": "Content-Type",  "value": "application/x-www-form-urlencoded" },
@@ -44,7 +45,7 @@
           "host": ["{{base_url}}"],
           "path": ["auth", "token"]
         },
-        "description": "Fetches OAuth2 Bearer token via client_credentials grant.\n\nThe Authorization header is pre-built as Basic base64(client_id:client_secret).\n{{encoded_credentials}} is pre-set in the environment as:\n  Basic cHJvZHRlc3QtdGVzdG1lcmNoYW50OlRlc3RtZXJjaGFudDEyMw==\n(= prodtest-testmerchant:Testmerchant123)\n\nOn success the Tests script auto-saves the token to {{access_token}}."
+        "description": "Fetches OAuth2 Bearer token.\nCredentials: prodtest-testmerchant / Testmerchant123\nAuto-saves access_token to environment on success."
       }
     },
     {
@@ -149,8 +150,7 @@
           "raw": "{{base_url}}/checkout/services/v1/orders/{{order_id_response}}/confirm",
           "host": ["{{base_url}}"],
           "path": ["checkout", "services", "v1", "orders", "{{order_id_response}}", "confirm"]
-        },
-        "description": "{{order_id_response}} is auto-populated from the Submit Order Tests script.\nAlternatively set it manually in the environment."
+        }
       }
     },
     {
@@ -179,11 +179,11 @@
           "host": ["{{base_url}}"],
           "path": ["order-mgmt", "services", "v2", "orders", "{{order_number}}", "data"]
         },
-        "description": "From OrderManagement.txt.\n{{order_number}} = OREUKA210276773204GR (pre-set in environment)."
+        "description": "order_number = OREUKA210276773204GR (from OrderManagement.txt)"
       }
     },
     {
-      "name": "6. Get Order Details (SOAP)",
+      "name": "6. Get Order Details (SOAP - CPE)",
       "event": [
         {
           "listen": "test",
@@ -198,22 +198,58 @@
         }
       ],
       "request": {
+        "auth": { "type": "noauth" },
         "method": "POST",
         "header": [
           { "key": "Content-Type",  "value": "text/xml; charset=utf-8" },
           { "key": "SOAPAction",    "value": "\"getOrderDetails\"" },
-          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+          { "key": "Authorization", "value": "Basic {{cpe_encoded_credentials}}" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_19.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getOrderDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <orderNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{order_number}}</orderNumber>\n      </v9:getOrderDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
+          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_12.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getOrderDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <orderNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{order_number}}</orderNumber>\n      </v9:getOrderDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
           "options": { "raw": { "language": "xml" } }
         },
         "url": {
-          "raw": "{{soap_endpoint}}",
-          "host": ["{{soap_endpoint}}"]
+          "raw": "{{cpe_soap_endpoint}}",
+          "host": ["{{cpe_soap_endpoint}}"]
         },
-        "description": "SOAP getOrderDetails call.\nNamespace: http://v9_19.service.api.clearpath.pb.com\n\nThe SOAP endpoint is NOT in this project XML (it is a REST project).\nCheck OrderManagement_OPREST-Project-1-readyapi-project.xml for the WSDL/endpoint,\nor ask your team for the SOAP service URL.\n\nSet {{soap_endpoint}} in the environment once known.\nExample: https://prodtest-cbs.ecommerce.pb.com/clearpath/services/OrderService"
+        "description": "CPE SOAP getOrderDetails.\nEndpoint: https://s1-ext-k8s.prodtest-cbs-ecommerce-pb.com/api/services/hubAPI_v1_15\nAuth: Basic hub / NQ)sB.3mUEg9HVNJ (pre-encoded in {{cpe_encoded_credentials}})\nNamespace: http://v9_12.service.api.clearpath.pb.com (from cpe.txt)"
+      }
+    },
+    {
+      "name": "7. Get Parcel Details (SOAP - CPE)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });",
+              "pm.test('Response contains SOAP Envelope', function() { pm.expect(pm.response.text()).to.include('Envelope'); });",
+              "pm.test('No SOAP Fault in response', function() { pm.expect(pm.response.text()).to.not.include('Fault'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction",    "value": "\"getParcelDetails\"" },
+          { "key": "Authorization", "value": "Basic {{cpe_encoded_credentials}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_12.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getParcelDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <parcelNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{parcel_number}}</parcelNumber>\n      </v9:getParcelDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
+        "url": {
+          "raw": "{{cpe_soap_endpoint}}",
+          "host": ["{{cpe_soap_endpoint}}"]
+        },
+        "description": "CPE SOAP getParcelDetails.\nEndpoint: https://s1-ext-k8s.prodtest-cbs-ecommerce-pb.com/api/services/hubAPI_v1_15\nAuth: Basic hub / NQ)sB.3mUEg9HVNJ\nNamespace: http://v9_12.service.api.clearpath.pb.com (from cpe.txt)"
       }
     }
   ]
