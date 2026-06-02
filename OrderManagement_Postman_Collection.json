@@ -1,170 +1,220 @@
 {
   "info": {
-    "name": "Order Management - Prod-Test",
-    "_postman_id": "om-prodtest-collection-001",
-    "description": "Collection for Order Management API (REST + SOAP) on Prod-Test environment.\n\nIncludes:\n1. Get Auth Token (OAuth2 client_credentials)\n2. Get Order Details via REST\n3. Get Order Details via SOAP (getOrderDetails)\n\nCredentials are stored in the 'OrderManagement ProdTest' environment.",
+    "name": "Order Management - Prod-Test (Full Suite)",
+    "_postman_id": "om-prodtest-collection-002",
+    "description": "Complete Postman collection built from:\n- GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml\n- OrderManagement.txt\n\nBase URL: https://prodtest-cbs.ecommerce.pb.com\n\nRun order:\n1. Get Auth Token  (saves token automatically)\n2. Get Quote\n3. Submit Order    (saves orderId automatically)\n4. Confirm Order\n5. Get Order Details - REST\n6. Get Order Details - SOAP",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [],
-  "auth": {
-    "type": "noauth"
   },
   "item": [
     {
       "name": "1. Get Auth Token",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/x-www-form-urlencoded"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/auth/token",
-          "host": ["{{base_url}}"],
-          "path": ["auth", "token"]
-        },
-        "body": {
-          "mode": "urlencoded",
-          "urlencoded": [
-            {
-              "key": "grant_type",
-              "value": "client_credentials",
-              "type": "text"
-            },
-            {
-              "key": "client_id",
-              "value": "{{client_id}}",
-              "type": "text"
-            },
-            {
-              "key": "client_secret",
-              "value": "{{client_secret}}",
-              "type": "text"
-            }
-          ]
-        },
-        "description": "Fetches OAuth2 Bearer token using client_credentials grant.\n\nAuto-saves the token to the 'access_token' environment variable via the Tests script — subsequent requests use it automatically."
-      },
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "var jsonData = pm.response.json();",
-              "if (jsonData.access_token) {",
-              "    pm.environment.set('access_token', jsonData.access_token);",
-              "    console.log('Token saved:', jsonData.access_token);",
-              "    pm.test('Token retrieved successfully', function () {",
-              "        pm.response.to.have.status(200);",
-              "    });",
+              "var json = pm.response.json();",
+              "if (json.access_token) {",
+              "    pm.environment.set('access_token', json.access_token);",
+              "    console.log('Token saved: ' + json.access_token);",
+              "    pm.test('Token retrieved - HTTP 200', function() { pm.response.to.have.status(200); });",
+              "    pm.test('access_token present in response', function() { pm.expect(json.access_token).to.not.be.null; });",
               "} else {",
-              "    console.error('No access_token in response:', JSON.stringify(jsonData));",
-              "    pm.test('Token retrieval failed - check response', function () {",
-              "        pm.expect(jsonData).to.have.property('access_token');",
-              "    });",
+              "    pm.test('FAILED - access_token missing in response', function() { pm.expect(json).to.have.property('access_token'); });",
               "}"
             ]
           }
         }
       ],
-      "response": []
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/x-www-form-urlencoded" },
+          { "key": "Authorization", "value": "Basic {{encoded_credentials}}" }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "client_credentials", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/token",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "token"]
+        },
+        "description": "Fetches OAuth2 Bearer token via client_credentials grant.\n\nThe Authorization header is pre-built as Basic base64(client_id:client_secret).\n{{encoded_credentials}} is pre-set in the environment as:\n  Basic cHJvZHRlc3QtdGVzdG1lcmNoYW50OlRlc3RtZXJjaGFudDEyMw==\n(= prodtest-testmerchant:Testmerchant123)\n\nOn success the Tests script auto-saves the token to {{access_token}}."
+      }
     },
     {
-      "name": "2. Get Order Details (REST)",
+      "name": "2. Get Quote",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 or 400', function() { pm.expect(pm.response.code).to.be.oneOf([200,400]); });",
+              "var json = pm.response.json();",
+              "pm.test('Response is not empty', function() { pm.expect(json).to.not.be.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"merchantId\": \"TESTMERCH_0001\",\n  \"basketCurrency\": \"USD\",\n  \"quoteCurrency\": \"USD\",\n  \"purchaserIPAddress\": \"1.1.1.1\",\n  \"basketLines\": [{\n    \"lineId\": 1,\n    \"currency\": \"USD\",\n    \"commodity\": { \"merchantComRefId\": \"18208270118\" },\n    \"quantity\": \"1\",\n    \"unitPrice\": { \"price\": { \"value\": \"1.00\" } }\n  }],\n  \"shippingAddress\": {\n    \"street1\": \"a\",\n    \"street2\": \"a\",\n    \"city\": \"aaa\",\n    \"provinceOrState\": \"ABW\",\n    \"country\": \"ABW\",\n    \"postalOrZipCode\": \"1234\"\n  },\n  \"consignee\": {\n    \"familyName\": \"aizhu\",\n    \"givenName\": \"lin\",\n    \"email\": \"LIUZHAOGUO1996@GMAIL.COM\",\n    \"phoneNumbers\": [\n      { \"number\": \"651652605\", \"type\": \"other\" },\n      { \"number\": \"651652605\", \"type\": \"other\" }\n    ]\n  },\n  \"transactionId\": \"58666439\",\n  \"toHubTransportations\": [{\n    \"merchantShippingIdentifier\": \"STANDARD\",\n    \"speed\": \"STANDARD\",\n    \"shipping\": { \"value\": 0 },\n    \"handling\": { \"value\": 0 },\n    \"total\": { \"value\": 0 },\n    \"minDays\": \"1\",\n    \"maxDays\": \"2\"\n  }]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/checkout/services/v1/quotes/",
+          "host": ["{{base_url}}"],
+          "path": ["checkout", "services", "v1", "quotes", ""]
+        }
+      }
+    },
+    {
+      "name": "3. Submit Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "pm.test('Response is not empty', function() { pm.expect(json).to.not.be.empty; });",
+              "if (json.order && json.order[0] && json.order[0].orderId) {",
+              "    pm.environment.set('order_id_response', json.order[0].orderId);",
+              "    console.log('orderId saved: ' + json.order[0].orderId);",
+              "    pm.test('orderId present in response', function() { pm.expect(json.order[0].orderId).to.not.be.null; });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"merchantId\": \"TESTMERCH_0001\",\n  \"basketCurrency\": \"USD\",\n  \"quoteCurrency\": \"USD\",\n  \"purchaserIPAddress\": \"1.1.1.1\",\n  \"basketLines\": [{\n    \"lineId\": 1,\n    \"currency\": \"USD\",\n    \"commodity\": { \"merchantComRefId\": \"18208270118\", \"coo\": \"USA\" },\n    \"quantity\": \"1\",\n    \"unitPrice\": { \"price\": { \"value\": \"1.00\" } }\n  }],\n  \"shippingAddress\": {\n    \"street1\": \"a\",\n    \"street2\": \"a\",\n    \"city\": \"aaa\",\n    \"provinceOrState\": \"ABW\",\n    \"country\": \"ABW\",\n    \"postalOrZipCode\": \"1234\"\n  },\n  \"consignee\": {\n    \"familyName\": \"aizhu\",\n    \"givenName\": \"lin\",\n    \"email\": \"LIUZHAOGUO1996@GMAIL.COM\",\n    \"phoneNumbers\": [\n      { \"number\": \"651652605\", \"type\": \"other\" },\n      { \"number\": \"651652605\", \"type\": \"other\" }\n    ]\n  },\n  \"transactionId\": \"58666439\",\n  \"toHubTransportations\": [{\n    \"merchantShippingIdentifier\": \"STANDARD\",\n    \"speed\": \"STANDARD\",\n    \"shipping\": { \"value\": 0 },\n    \"handling\": { \"value\": 0 },\n    \"total\": { \"value\": 0 },\n    \"minDays\": \"1\",\n    \"maxDays\": \"2\"\n  }]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/checkout/services/v1/orders/",
+          "host": ["{{base_url}}"],
+          "path": ["checkout", "services", "v1", "orders", ""]
+        }
+      }
+    },
+    {
+      "name": "4. Confirm Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.test('Result is SUCCESS', function() { pm.expect(json.result).to.equal('SUCCESS'); });",
+              "pm.test('Response is not empty', function() { pm.expect(json).to.not.be.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"merchantOrderNumber\": \"WM123456US\",\n  \"purchaser\": {\n    \"familyName\": \"Barney\",\n    \"givenName\": \"Fred\",\n    \"email\": \"fred@flintstone.com\",\n    \"phoneNumbers\": [{ \"number\": \"011551112345678\", \"type\": \"HOME\" }]\n  },\n  \"purchaserBillingAddress\": {\n    \"street1\": \"street1\",\n    \"city\": \"Bogota\",\n    \"postalOrZipCode\": \"110221\",\n    \"country\": \"COL\",\n    \"provinceOrState\": \"Bogota\"\n  }\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/checkout/services/v1/orders/{{order_id_response}}/confirm",
+          "host": ["{{base_url}}"],
+          "path": ["checkout", "services", "v1", "orders", "{{order_id_response}}", "confirm"]
+        },
+        "description": "{{order_id_response}} is auto-populated from the Submit Order Tests script.\nAlternatively set it manually in the environment."
+      }
+    },
+    {
+      "name": "5. Get Order Details (REST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.test('Response is not empty', function() { pm.expect(json).to.not.be.empty; });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type",  "value": "application/json" }
         ],
         "url": {
           "raw": "{{base_url}}/order-mgmt/services/v2/orders/{{order_number}}/data",
           "host": ["{{base_url}}"],
           "path": ["order-mgmt", "services", "v2", "orders", "{{order_number}}", "data"]
         },
-        "description": "Fetches order details for the given order number via REST.\n\nUses the Bearer token auto-saved by the 'Get Auth Token' request.\nOrder number is controlled by the 'order_number' environment variable."
-      },
+        "description": "From OrderManagement.txt.\n{{order_number}} = OREUKA210276773204GR (pre-set in environment)."
+      }
+    },
+    {
+      "name": "6. Get Order Details (SOAP)",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Status is 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "pm.test('Response has order data', function () {",
-              "    var json = pm.response.json();",
-              "    pm.expect(json).to.be.an('object');",
-              "});"
+              "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });",
+              "pm.test('Response contains SOAP Envelope', function() { pm.expect(pm.response.text()).to.include('Envelope'); });",
+              "pm.test('No SOAP Fault in response', function() { pm.expect(pm.response.text()).to.not.include('Fault'); });"
             ]
           }
         }
       ],
-      "response": []
-    },
-    {
-      "name": "3. Get Order Details (SOAP)",
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "text/xml; charset=utf-8"
-          },
-          {
-            "key": "SOAPAction",
-            "value": "\"getOrderDetails\""
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
+          { "key": "Content-Type",  "value": "text/xml; charset=utf-8" },
+          { "key": "SOAPAction",    "value": "\"getOrderDetails\"" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
         ],
+        "body": {
+          "mode": "raw",
+          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_19.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getOrderDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <orderNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{order_number}}</orderNumber>\n      </v9:getOrderDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
+          "options": { "raw": { "language": "xml" } }
+        },
         "url": {
           "raw": "{{soap_endpoint}}",
           "host": ["{{soap_endpoint}}"]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_19.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getOrderDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <orderNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{order_number}}</orderNumber>\n      </v9:getOrderDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
-          "options": {
-            "raw": {
-              "language": "xml"
-            }
-          }
-        },
-        "description": "SOAP call to getOrderDetails.\n\nEndpoint is stored in the 'soap_endpoint' environment variable (extract from GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml).\nOrder number is parameterised via {{order_number}}.\n\nNOTE: If the SOAP service does NOT use Bearer auth, remove the Authorization header and add Basic Auth under the Authorization tab instead."
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "pm.test('Response is SOAP Envelope', function () {",
-              "    pm.expect(pm.response.text()).to.include('Envelope');",
-              "});",
-              "pm.test('No SOAP Fault', function () {",
-              "    pm.expect(pm.response.text()).to.not.include('Fault');",
-              "});"
-            ]
-          }
-        }
-      ],
-      "response": []
+        "description": "SOAP getOrderDetails call.\nNamespace: http://v9_19.service.api.clearpath.pb.com\n\nThe SOAP endpoint is NOT in this project XML (it is a REST project).\nCheck OrderManagement_OPREST-Project-1-readyapi-project.xml for the WSDL/endpoint,\nor ask your team for the SOAP service URL.\n\nSet {{soap_endpoint}} in the environment once known.\nExample: https://prodtest-cbs.ecommerce.pb.com/clearpath/services/OrderService"
+      }
     }
   ]
 }
