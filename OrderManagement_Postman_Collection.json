@@ -1,0 +1,170 @@
+{
+  "info": {
+    "name": "Order Management - Prod-Test",
+    "_postman_id": "om-prodtest-collection-001",
+    "description": "Collection for Order Management API (REST + SOAP) on Prod-Test environment.\n\nIncludes:\n1. Get Auth Token (OAuth2 client_credentials)\n2. Get Order Details via REST\n3. Get Order Details via SOAP (getOrderDetails)\n\nCredentials are stored in the 'OrderManagement ProdTest' environment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "auth": {
+    "type": "noauth"
+  },
+  "item": [
+    {
+      "name": "1. Get Auth Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/token",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "token"]
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}",
+              "type": "text"
+            }
+          ]
+        },
+        "description": "Fetches OAuth2 Bearer token using client_credentials grant.\n\nAuto-saves the token to the 'access_token' environment variable via the Tests script — subsequent requests use it automatically."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.access_token) {",
+              "    pm.environment.set('access_token', jsonData.access_token);",
+              "    console.log('Token saved:', jsonData.access_token);",
+              "    pm.test('Token retrieved successfully', function () {",
+              "        pm.response.to.have.status(200);",
+              "    });",
+              "} else {",
+              "    console.error('No access_token in response:', JSON.stringify(jsonData));",
+              "    pm.test('Token retrieval failed - check response', function () {",
+              "        pm.expect(jsonData).to.have.property('access_token');",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "2. Get Order Details (REST)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/order-mgmt/services/v2/orders/{{order_number}}/data",
+          "host": ["{{base_url}}"],
+          "path": ["order-mgmt", "services", "v2", "orders", "{{order_number}}", "data"]
+        },
+        "description": "Fetches order details for the given order number via REST.\n\nUses the Bearer token auto-saved by the 'Get Auth Token' request.\nOrder number is controlled by the 'order_number' environment variable."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response has order data', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json).to.be.an('object');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "3. Get Order Details (SOAP)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/xml; charset=utf-8"
+          },
+          {
+            "key": "SOAPAction",
+            "value": "\"getOrderDetails\""
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{soap_endpoint}}",
+          "host": ["{{soap_endpoint}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v9=\"http://v9_19.service.api.clearpath.pb.com\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <v9:getOrderDetails soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n         <orderNumber xsi:type=\"soapenc:string\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\">{{order_number}}</orderNumber>\n      </v9:getOrderDetails>\n   </soapenv:Body>\n</soapenv:Envelope>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        },
+        "description": "SOAP call to getOrderDetails.\n\nEndpoint is stored in the 'soap_endpoint' environment variable (extract from GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml).\nOrder number is parameterised via {{order_number}}.\n\nNOTE: If the SOAP service does NOT use Bearer auth, remove the Authorization header and add Basic Auth under the Authorization tab instead."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response is SOAP Envelope', function () {",
+              "    pm.expect(pm.response.text()).to.include('Envelope');",
+              "});",
+              "pm.test('No SOAP Fault', function () {",
+              "    pm.expect(pm.response.text()).to.not.include('Fault');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ]
+}

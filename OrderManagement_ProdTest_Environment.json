@@ -1,0 +1,44 @@
+{
+  "id": "om-prodtest-environment-001",
+  "name": "OrderManagement ProdTest",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://cce.prodtest-cbs-ecommerce-pb.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "client_id",
+      "value": "prodtest-testmerchant",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "client_secret",
+      "value": "Testmerchant123",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "order_number",
+      "value": "OREUKA210276773204GR",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "soap_endpoint",
+      "value": "REPLACE_WITH_SOAP_URL_FROM_XML_PROJECT",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "description": "Environment for Order Management Prod-Test.\n\n- base_url, client_id, client_secret pre-filled from OrderManagement.txt\n- access_token is auto-populated when you run request #1 (Get Auth Token)\n- soap_endpoint: open GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml in a text editor, search for <con:endpoint> to find the SOAP URL, then paste it here"
+}
