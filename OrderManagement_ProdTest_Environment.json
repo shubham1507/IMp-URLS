@@ -1,44 +1,64 @@
 {
-  "id": "om-prodtest-environment-001",
+  "id": "om-prodtest-environment-002",
   "name": "OrderManagement ProdTest",
+  "_postman_variable_scope": "environment",
+  "description": "Environment for Order Management Prod-Test.\nAll values sourced from OrderManagement.txt and GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml.\n\nNOTE: soap_endpoint is not present in the provided XML files (that project is REST-only).\nCheck OrderManagement_OPREST-Project-1-readyapi-project.xml or ask your team for the SOAP URL.",
   "values": [
     {
       "key": "base_url",
-      "value": "https://cce.prodtest-cbs-ecommerce-pb.com",
+      "value": "https://prodtest-cbs.ecommerce.pb.com",
       "type": "default",
-      "enabled": true
+      "enabled": true,
+      "description": "From SoapUI project <con:endpoint> — all REST calls use this host"
     },
     {
       "key": "client_id",
       "value": "prodtest-testmerchant",
       "type": "default",
-      "enabled": true
+      "enabled": true,
+      "description": "From OrderManagement.txt"
     },
     {
       "key": "client_secret",
       "value": "Testmerchant123",
       "type": "secret",
-      "enabled": true
+      "enabled": true,
+      "description": "From OrderManagement.txt"
     },
     {
-      "key": "order_number",
-      "value": "OREUKA210276773204GR",
-      "type": "default",
-      "enabled": true
-    },
-    {
-      "key": "soap_endpoint",
-      "value": "REPLACE_WITH_SOAP_URL_FROM_XML_PROJECT",
-      "type": "default",
-      "enabled": true
+      "key": "encoded_credentials",
+      "value": "Basic cHJvZHRlc3QtdGVzdG1lcmNoYW50OlRlc3RtZXJjaGFudDEyMw==",
+      "type": "secret",
+      "enabled": true,
+      "description": "Pre-computed: Basic base64(prodtest-testmerchant:Testmerchant123). Used in Auth Token request header."
     },
     {
       "key": "access_token",
       "value": "",
       "type": "secret",
-      "enabled": true
+      "enabled": true,
+      "description": "Auto-populated by the Tests script in request #1 (Get Auth Token). Leave blank."
+    },
+    {
+      "key": "order_number",
+      "value": "OREUKA210276773204GR",
+      "type": "default",
+      "enabled": true,
+      "description": "From OrderManagement.txt. Used in REST Get Order Details and SOAP getOrderDetails."
+    },
+    {
+      "key": "order_id_response",
+      "value": "ORMUSP169205026AW",
+      "type": "default",
+      "enabled": true,
+      "description": "Sample value from OrderManagement.txt. Auto-overwritten by Submit Order Tests script after a successful order submission."
+    },
+    {
+      "key": "soap_endpoint",
+      "value": "REPLACE_WITH_SOAP_SERVICE_URL",
+      "type": "default",
+      "enabled": true,
+      "description": "Not found in GetToken_Checkout project (REST-only). Check OrderManagement_OPREST-Project-1-readyapi-project.xml or ask your team. Namespace hint: http://v9_19.service.api.clearpath.pb.com"
     }
-  ],
-  "_postman_variable_scope": "environment",
-  "description": "Environment for Order Management Prod-Test.\n\n- base_url, client_id, client_secret pre-filled from OrderManagement.txt\n- access_token is auto-populated when you run request #1 (Get Auth Token)\n- soap_endpoint: open GetToken_Checkout_OrderCaptureFunctionalTests-soapui-project.xml in a text editor, search for <con:endpoint> to find the SOAP URL, then paste it here"
+  ]
 }
