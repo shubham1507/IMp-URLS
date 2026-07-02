@@ -126,3 +126,4 @@ def ocr():
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
+#https://docs.google.com/document/d/1wZM4GvhhU3e3nbrbF6VqGfzRaVRfCiPVlnU7FuFzr-0/edit?tab=t.0
