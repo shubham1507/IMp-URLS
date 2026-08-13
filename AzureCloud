@@ -1,0 +1,847 @@
+ALAN RODRIGUES – AZURE & TERRAFORM COURSE SYLLABUS
+===================================================
+
+COURSE 1: AZ-104 – MICROSOFT AZURE ADMINISTRATOR CERTIFICATION
+==============================================================
+
+1. AZURE FUNDAMENTALS
+---------------------
+- Azure Cloud concepts
+- Azure subscriptions
+- Azure regions
+- Resource Groups
+- Azure Portal
+- Azure Resource Manager
+- Azure pricing and cost considerations
+
+2. MICROSOFT ENTRA ID / IDENTITY
+--------------------------------
+- Microsoft Entra ID (Azure AD)
+- Users
+- Groups
+- Group management
+- Administrative Units
+- Authentication
+- Authorization
+- Role-Based Access Control (RBAC)
+- Azure built-in roles
+- Custom access considerations
+- Resource permissions
+- Managed identities
+
+3. AZURE GOVERNANCE
+-------------------
+- Management Groups
+- Subscriptions
+- Resource Groups
+- Azure Policy
+- Policy assignments
+- Resource Locks
+- Resource Tags
+- Cost Management
+- Governance hierarchy
+
+4. AZURE VIRTUAL MACHINES
+-------------------------
+- Windows VMs
+- Linux VMs
+- VM sizing
+- VM deployment
+- RDP
+- SSH
+- SSH Keys
+- VM resizing
+- Managed disks
+- Data disks
+- Disk snapshots
+- Disk encryption
+- Server-side encryption
+- Disk Encryption Sets
+- Customer-managed keys
+- Azure Disk Encryption
+- Key Vault integration
+- VM extensions
+- Custom Script Extension
+- Cloud-init
+- Boot Diagnostics
+- VM troubleshooting
+
+5. HIGH AVAILABILITY
+--------------------
+- Availability Sets
+- Fault Domains
+- Update Domains
+- Availability Zones
+- Virtual Machine Scale Sets (VMSS)
+- Uniform orchestration
+- Flexible orchestration
+- Autoscaling
+- Scale-out
+- Scale-in
+
+6. AZURE APP SERVICE
+--------------------
+- Azure Web Apps
+- App Service Plans
+- Application deployment
+- Deployment Slots
+- Slot swapping
+- Autoscaling
+- VNet Integration
+- Custom Domains
+- HTTPS
+- Certificates
+
+7. CONTAINERS
+-------------
+- Docker fundamentals
+- Container concepts
+- Azure Container Registry (ACR)
+- Azure Container Instances (ACI)
+- Container Groups
+- Multi-container applications
+- Azure Container Apps
+- Web Apps for Containers
+
+8. AZURE NETWORKING
+-------------------
+- Networking fundamentals
+- IPv4
+- CIDR
+- Subnet masks
+- Virtual Networks (VNet)
+- Subnets
+- Public IP addresses
+- Private IP addresses
+- Network Interfaces (NIC)
+- Multiple NICs
+- Network Security Groups (NSG)
+- Inbound rules
+- Outbound rules
+- NSG priorities
+- NSG on subnet
+- NSG on NIC
+- Application Security Groups
+- VNet Peering
+- Azure Bastion
+- User Defined Routes (UDR)
+- Route Tables
+- IP Forwarding
+- Azure Load Balancer
+- Backend Pools
+- Health Probes
+- Inbound NAT
+- Load Balancer with VMSS
+- Azure Public DNS
+- Azure Private DNS
+- Custom DNS
+
+9. NETWORK WATCHER
+------------------
+- Network Watcher
+- Connection Troubleshoot
+- Connection Monitor
+- IP Flow Verify
+- Next Hop
+- NSG Diagnostics
+- Flow Logs
+- Network troubleshooting
+
+10. AZURE STORAGE
+-----------------
+- Storage Accounts
+- Storage Account types
+- Blob Storage
+- Blob Containers
+- Storage authorization
+- Storage Account Keys
+- Shared Access Signatures (SAS)
+- Stored Access Policies
+- Azure Storage Explorer
+- Immutable Blob Storage
+- Storage redundancy
+- LRS
+- ZRS
+- GRS
+- GZRS
+- Hot Tier
+- Cool Tier
+- Cold Tier
+- Archive Tier
+- Lifecycle Management
+- Blob Snapshots
+- Blob Versioning
+- Object Replication
+- Azure Files
+- File Shares
+- File Share Snapshots
+- Soft Delete
+- AzCopy
+- Premium Storage
+
+11. AZURE MONITORING
+--------------------
+- Azure Monitor
+- Metrics
+- Log Analytics
+- Diagnostic Settings
+- Alerts
+- Monitoring Azure resources
+- Activity Logs
+
+12. AZURE BACKUP
+----------------
+- Azure Backup
+- Recovery Services Vault
+- VM Backup
+- Backup Policies
+- VM Restore
+- Recovery concepts
+
+13. AZURE POWERSHELL
+--------------------
+- Azure PowerShell
+- Resource Groups
+- VNets
+- Subnets
+- NICs
+- Public IPs
+- NSGs
+- VMs
+- Data Disks
+- Storage Accounts
+- Web Apps
+
+14. AZURE CLI
+-------------
+- Azure CLI
+- az login
+- Resource Groups
+- VNets
+- Subnets
+- Public IPs
+- NICs
+- NSGs
+- Storage
+- VMs
+- Web Apps
+
+15. ARM TEMPLATES
+-----------------
+- Infrastructure as Code
+- ARM Templates
+- JSON structure
+- Parameters
+- Parameter Files
+- Secure Strings
+- Variables
+- Copy Loops
+- Dependencies
+- Resource deployment
+- VNets
+- Public IPs
+- NICs
+- NSGs
+- VMs
+- Data Disks
+- VM Extensions
+- Web Apps
+
+16. BICEP
+---------
+- Bicep fundamentals
+- Bicep files
+- Resource Groups
+- Storage Accounts
+- Resource loops
+- VNets
+- Public IPs
+- NICs
+- NSGs
+- Infrastructure deployment
+
+
+COURSE 2: AZ-400 – DESIGNING AND IMPLEMENTING DEVOPS
+====================================================
+
+1. DEVOPS FUNDAMENTALS
+----------------------
+- Software Development Lifecycle (SDLC)
+- Waterfall
+- Agile
+- Scrum
+- DevOps concepts
+- Development vs Operations
+- Continuous Integration (CI)
+- Continuous Delivery (CD)
+- Continuous Deployment
+- Azure DevOps
+- Organizations
+- Projects
+
+2. AZURE BOARDS
+---------------
+- Work Items
+- Epics
+- Features
+- User Stories
+- Tasks
+- Bugs
+- Backlogs
+- Sprints
+- Iterations
+- Dashboards
+- Queries
+- Permissions
+- Wiki
+- Delivery Plans
+- Microsoft Teams integration
+
+3. GIT
+------
+- Git fundamentals
+- Git installation
+- Repository creation
+- git init
+- git add
+- git commit
+- git status
+- git log
+- Remote repositories
+- GitHub
+- Branches
+- Branching
+- Merging
+- Merge conflicts
+- Rebase
+- Squash Merge
+- Pull Requests
+- Tags
+- .gitignore
+- Git LFS
+- Branching strategies
+- Branch protection
+
+4. AZURE REPOS
+--------------
+- Azure Repos
+- Git repositories
+- Repository management
+- Branches
+- Pull Requests
+- Import GitHub repositories
+- Branch Policies
+- Required Reviewers
+- Work Item Linking
+- Branch Security
+- Repository Permissions
+
+5. CONTINUOUS INTEGRATION
+-------------------------
+- CI concepts
+- Azure Pipelines
+- Build Pipelines
+- Build Agents
+- Microsoft-hosted Agents
+- Self-hosted Agents
+- Agent Pools
+- YAML Pipelines
+- Classic Pipelines
+- Pipeline Triggers
+- Variables
+- Variable Groups
+- Build Artifacts
+- Pipeline Caching
+- Parallel Jobs
+- Service Connections
+
+6. GITHUB ACTIONS
+-----------------
+- GitHub Actions
+- Workflows
+- CI Workflows
+- Repository Integration
+- Automated Builds
+
+7. JENKINS
+----------
+- Jenkins fundamentals
+- Jenkins installation
+- Jenkins on Azure VM
+- Jenkins configuration
+- Jenkins Build Pipelines
+- Jenkins Agents
+- GitHub Integration
+- Azure Repos Integration
+- Automated Build Triggers
+
+8. CODE QUALITY
+---------------
+- SonarCloud
+- Static Code Analysis concepts
+- Azure DevOps Integration
+- Pipeline-based Code Analysis
+- Quality feedback
+- Quality Gates
+
+9. CONTINUOUS DELIVERY
+----------------------
+- Continuous Delivery concepts
+- Release Pipelines
+- Azure Web App Deployment
+- Development Environment
+- Test Environment
+- Staging Environment
+- Production Environment
+- Deployment Slots
+- Slot Swapping
+- Release Approvals
+- Release Gates
+- Deployment Strategies
+- Application Configuration
+
+10. INFRASTRUCTURE AS CODE
+--------------------------
+- Infrastructure as Code concepts
+- ARM Templates
+- Terraform
+- Azure Infrastructure Deployment
+- Infrastructure Pipelines
+- Repeatable Deployments
+- Environment Management
+
+11. PACKAGE MANAGEMENT
+----------------------
+- Azure Artifacts
+- Package Management
+- Application Packages
+- Artifact Feeds
+
+12. TESTING
+-----------
+- Azure Test Plans
+- Application Testing
+- Pipeline Testing
+- Deployment Validation
+
+13. DEVSECOPS / SECURITY
+------------------------
+- DevSecOps concepts
+- Security in CI/CD
+- Secure Development Lifecycle
+- Pipeline Security
+- Repository Security
+- Branch Policies
+- Credentials
+- Secrets Management
+- Service Connections
+- Code Analysis
+- Security and Compliance
+- Secure deployment practices
+
+14. MONITORING & FEEDBACK
+-------------------------
+- Instrumentation Strategy
+- Azure Monitor
+- Application Insights
+- Logging
+- Metrics
+- Alerts
+- Application Performance Monitoring
+- DevOps Feedback Loops
+
+
+COURSE 3: AZ-305 – DESIGNING AZURE INFRASTRUCTURE SOLUTIONS
+===========================================================
+
+1. DESIGN MONITORING
+--------------------
+- Azure Monitor
+- Monitoring Architecture
+- Log Analytics
+- Application Insights
+- Diagnostic Settings
+- Metrics
+- Logs
+- Alerts
+- Azure Data Explorer
+- KQL concepts
+- Resource Tagging
+- Cost Monitoring
+- Azure Advisor
+- Cost Optimization
+- Azure Pricing Calculator
+
+2. DESIGN IDENTITY
+------------------
+- Authentication
+- Authorization
+- Microsoft Entra ID
+- Users
+- Groups
+- RBAC
+- Azure Roles
+- Management Groups
+- Subscriptions
+- Resource Groups
+- Identity Governance
+- Managed Identities
+- Application Identities
+
+3. DESIGN GOVERNANCE
+--------------------
+- Management Groups
+- Subscriptions
+- Resource Groups
+- Azure Policy
+- RBAC
+- Governance hierarchy
+- Resource organization
+- Cost governance
+
+4. DESIGN SECURITY
+------------------
+- Azure Key Vault
+- Secrets
+- Keys
+- Certificates
+- Managed Identities
+- Access Management
+- Network Security
+- Security architecture considerations
+
+5. DESIGN DATA STORAGE
+----------------------
+- Azure Storage Accounts
+- Blob Storage
+- Azure Files
+- Storage Authorization
+- Storage Account Keys
+- SAS
+- Entra ID Authorization
+- Storage Explorer
+- Storage Tiers
+- Lifecycle Management
+- Storage Encryption
+- Storage Redundancy
+- Replication
+
+6. AZURE SQL
+------------
+- Azure SQL Database
+- SQL Managed Instance
+- SQL Server on Azure VM
+- Database Security
+- Encryption
+- Performance
+- Pricing
+- High Availability
+- Backup
+- Geo-replication
+- Active Geo-replication
+- Auto-failover Groups
+
+7. COSMOS DB
+------------
+- Azure Cosmos DB
+- NoSQL
+- Partitioning
+- Replication
+- Availability
+- Global Distribution
+
+8. DATA & ANALYTICS
+-------------------
+- Azure Data Lake
+- Azure Data Factory
+- Azure Synapse Analytics
+- Data architecture selection
+
+9. BUSINESS CONTINUITY
+----------------------
+- Business Continuity
+- High Availability
+- Disaster Recovery
+- RPO
+- RTO
+- Availability Sets
+- Availability Zones
+- Azure Backup
+- Recovery Services Vault
+- Azure Site Recovery
+- Regional Resilience
+- Data Replication
+
+10. DESIGN COMPUTE
+------------------
+- Azure Virtual Machines
+- VM Scale Sets
+- Azure App Service
+- Containers
+- Azure Container Instances
+- Azure Kubernetes Service (AKS)
+- Compute architecture decisions
+- Scaling
+- High Availability
+
+11. DESIGN NETWORKING
+---------------------
+- VNets
+- Subnets
+- Network Security
+- Load Balancing
+- Azure Load Balancer
+- Application Gateway
+- Traffic Management
+- DNS
+- Connectivity
+- VPN
+- On-premises Connectivity
+- ExpressRoute
+- Network Architecture
+
+12. MIGRATION
+-------------
+- Azure Migrate
+- Migration Strategies
+- Workload Migration
+- Infrastructure Migration
+- Application Migration
+
+
+COURSE 4: TERRAFORM ON AZURE
+============================
+
+1. TERRAFORM FUNDAMENTALS
+-------------------------
+- Infrastructure as Code
+- Terraform concepts
+- Terraform Architecture
+- Terraform Workflow
+- Terraform Editions
+- Terraform Installation
+- VS Code Setup
+- AzureRM Provider
+- Azure Authentication
+- Azure CLI Authentication
+- Service Principals
+
+2. TERRAFORM COMMANDS
+---------------------
+- terraform init
+- terraform validate
+- terraform fmt
+- terraform plan
+- terraform apply
+- terraform destroy
+
+3. HCL / TERRAFORM CONFIGURATION
+--------------------------------
+- Terraform Blocks
+- Provider Blocks
+- Resource Blocks
+- Resource References
+- Dependencies
+- Input Variables
+- Output Values
+- Local Values
+- Variable Definition Files
+- Lists
+- Maps
+- Objects
+- Dynamic Configurations
+- Resource Tags
+- Multiple .tf files
+
+4. TERRAFORM STATE
+------------------
+- terraform.tfstate
+- State Management
+- Resource Tracking
+- Remote State
+- Azure Storage Backend
+- State Locking
+- Existing Resource Management
+
+5. TERRAFORM META-ARGUMENTS
+---------------------------
+- count
+- for_each
+- depends_on
+- lifecycle
+- Iteration
+- Conditional Deployments
+- Dynamic Deployments
+
+6. AZURE STORAGE WITH TERRAFORM
+-------------------------------
+- Resource Groups
+- Storage Accounts
+- Blob Containers
+- Blobs
+- Storage Configuration
+- Storage Security
+- Azure Storage Backend
+
+7. AZURE VMs WITH TERRAFORM
+---------------------------
+- VNets
+- Subnets
+- NICs
+- Public IPs
+- NSGs
+- Windows VMs
+- Linux VMs
+- Managed Disks
+- Data Disks
+- VM Extensions
+- Availability Sets
+- Availability Zones
+- Multiple VMs
+- Key Vault
+- Secrets
+- Azure Bastion
+
+8. AZURE WEB APPS WITH TERRAFORM
+--------------------------------
+- App Service Plans
+- Azure Web Apps
+- Web App Deployment
+- GitHub Integration
+- Deployment Slots
+- Slot Swapping
+- Application Logging
+- Resource Tags
+- Lifecycle Management
+
+9. AZURE SQL WITH TERRAFORM
+---------------------------
+- Azure SQL Server
+- Azure SQL Database
+- SQL Firewall Rules
+- Database Configuration
+- Multiple Databases
+- Auditing
+- SQL Server VM
+
+10. AZURE NETWORKING WITH TERRAFORM
+-----------------------------------
+- VNets
+- Subnets
+- NSGs
+- Public IPs
+- NICs
+- Azure Load Balancer
+- Backend Pools
+- Health Probes
+- VM Scale Sets
+- Public DNS Zones
+- VNet Peering
+- Application Gateway
+- Azure Firewall
+- Routing
+- NAT Rules
+- Application Rules
+
+11. TERRAFORM MODULES
+---------------------
+- Module Fundamentals
+- Reusable Infrastructure
+- Terraform Registry
+- Existing Modules
+- Custom Modules
+- Organizing Terraform Code
+- Modular Infrastructure Design
+
+12. IDENTITY & SECURITY
+-----------------------
+- Azure Identities
+- Managed Identities
+- RBAC
+- Azure Key Vault
+- Secrets Management
+- Access Control
+
+13. MONITORING & GOVERNANCE
+---------------------------
+- Azure Monitor
+- Log Analytics
+- Resource Tags
+- Governance
+- Monitoring Infrastructure
+
+
+RECOMMENDED LEARNING ORDER
+==========================
+
+1. AZ-104 Microsoft Azure Administrator
+             |
+             v
+2. Terraform on Azure
+             |
+             v
+3. AZ-400 Designing and Implementing DevOps
+             |
+             v
+4. AZ-305 Designing Azure Infrastructure Solutions
+
+
+MAIN SKILLS COVERED ACROSS ALL FOUR
+===================================
+
+AZURE
+- Compute
+- Networking
+- Storage
+- Identity
+- Entra ID
+- RBAC
+- Key Vault
+- Monitoring
+- Backup
+- Disaster Recovery
+- Governance
+- Security
+
+DEVOPS
+- Git
+- GitHub
+- Azure Repos
+- Azure Boards
+- Azure Pipelines
+- Jenkins
+- GitHub Actions
+- CI/CD
+- SonarCloud
+- Azure Artifacts
+
+DEVSECOPS
+- Secure SDLC
+- Pipeline Security
+- Code Analysis
+- Secrets Management
+- Repository Security
+- Branch Protection
+- Security Gates
+- Access Control
+
+INFRASTRUCTURE AS CODE
+- Terraform
+- ARM Templates
+- Bicep
+- HCL
+- Terraform State
+- Terraform Modules
+- Automated Infrastructure Deployment
+
+ARCHITECTURE
+- High Availability
+- Disaster Recovery
+- RPO/RTO
+- Identity Architecture
+- Network Architecture
+- Storage Architecture
+- Compute Architecture
+- Monitoring Architecture
+- Security Architecture
+- Migration
