@@ -1,0 +1,2173 @@
+================================================================================
+PROJECT NAME
+================================================================================
+
+GCP ENTERPRISE AI-NATIVE DEVSECOPS & SRE PLATFORM
+
+Repository name:
+
+gcp-enterprise-platform
+
+Possible resume/project name:
+
+"Production-Grade GCP Enterprise Platform using Terraform, GKE, GitOps,
+DevSecOps, SRE and AI-Assisted Operations"
+
+
+================================================================================
+WHY THIS PROJECT
+================================================================================
+
+This will NOT be:
+
+❌ Just create a VM
+❌ Just create GKE
+❌ Just write Terraform
+❌ Just create a CI/CD pipeline
+❌ Just certification labs
+❌ Just copy-paste code
+
+It WILL demonstrate:
+
+✅ GCP architecture
+✅ Terraform
+✅ Infrastructure as Code
+✅ Enterprise networking
+✅ IAM
+✅ Organization governance
+✅ GKE
+✅ Cloud Run
+✅ Microservices
+✅ CI/CD
+✅ GitOps
+✅ Argo CD
+✅ Artifact Registry
+✅ Cloud Build
+✅ Cloud Deploy
+✅ DevSecOps
+✅ Secret Manager
+✅ Cloud KMS
+✅ Binary Authorization
+✅ Supply-chain security
+✅ SLSA
+✅ Cloud Armor
+✅ VPC Service Controls
+✅ Security Command Center
+✅ Logging
+✅ Monitoring
+✅ Prometheus
+✅ SLI/SLO/SLA
+✅ Error budgets
+✅ Incident management
+✅ HA/DR
+✅ FinOps
+✅ Cost optimization
+✅ Chaos/failure testing
+✅ Production troubleshooting
+✅ Platform engineering
+✅ AI workload deployment
+✅ AI-assisted operations
+✅ Architecture documentation
+✅ Security documentation
+✅ Runbooks
+✅ ADRs
+✅ Interview preparation
+
+
+================================================================================
+REAL-WORLD BUSINESS SCENARIO
+================================================================================
+
+Imagine we are joining:
+
+        SecureBank Digital Services
+
+The company is modernizing a legacy banking platform to Google Cloud.
+
+Requirements:
+
+1. Highly available cloud infrastructure
+2. Multi-environment setup
+3. Secure enterprise networking
+4. Kubernetes-based application platform
+5. Serverless workloads
+6. Infrastructure entirely through Terraform
+7. Automated CI/CD
+8. GitOps deployments
+9. Secure software supply chain
+10. Centralized secrets
+11. Enterprise IAM
+12. Monitoring and alerting
+13. SRE practices
+14. Disaster recovery
+15. Security controls
+16. Cost governance
+17. AI-powered service
+18. Production troubleshooting capabilities
+
+
+================================================================================
+APPLICATION
+================================================================================
+
+We build a realistic microservices platform.
+
+                    Internet
+                       |
+                       v
+              Global HTTPS Load Balancer
+                       |
+                       v
+                  Cloud Armor
+                       |
+                       v
+               External Gateway
+                       |
+            +----------+----------+
+            |                     |
+            v                     v
+           GKE                 Cloud Run
+            |                     |
+     +------+------+        AI Service
+     |      |      |
+     v      v      v
+   User  Account Transaction
+ Service Service Service
+     |
+     +---------------+
+                     |
+                     v
+                 Cloud SQL
+                     |
+                     +--------> Memorystore
+
+Async processing:
+
+Transaction Service
+        |
+        v
+      Pub/Sub
+        |
+        v
+Worker Service
+
+
+Storage:
+
+Application
+     |
+     v
+Cloud Storage
+
+
+Analytics:
+
+Pub/Sub
+   |
+   v
+BigQuery
+
+
+AI:
+
+Application
+    |
+    v
+AI Service
+    |
+    v
+Vertex AI / Gemini APIs
+
+
+================================================================================
+ENTERPRISE GCP ARCHITECTURE
+================================================================================
+
+                         GCP ORGANIZATION
+                               |
+                 +-------------+-------------+
+                 |                           |
+              Folders                    Policies
+                 |
+        +--------+---------+
+        |                  |
+        v                  v
+   Non-Production       Production
+        |                  |
+   +----+----+        +----+----+
+   |         |        |         |
+ Dev      Staging    Prod     Shared
+                                |
+                             Network
+
+
+Projects:
+
+gcp-platform-shared
+gcp-platform-dev
+gcp-platform-stage
+gcp-platform-prod
+gcp-platform-security
+gcp-platform-observability
+
+
+================================================================================
+NETWORK ARCHITECTURE
+================================================================================
+
+                   Shared VPC Host Project
+                           |
+                  10.0.0.0/8
+                           |
+         +-----------------+-----------------+
+         |                 |                 |
+         v                 v                 v
+     Dev Subnet       Stage Subnet       Prod Subnet
+
+        |                  |                  |
+       GKE                GKE                GKE
+        |                  |                  |
+    Cloud SQL          Cloud SQL          Cloud SQL
+
+
+Security:
+
+Internet
+   |
+Cloud DNS
+   |
+Global HTTPS Load Balancer
+   |
+Cloud Armor
+   |
+Private GKE
+   |
+Private Cloud SQL
+
+
+Additional concepts:
+
+Cloud NAT
+Private Google Access
+Private Service Connect
+Firewall Policies
+Hierarchical Firewall Policies
+VPC Service Controls
+Cloud DNS
+Cloud Router
+HA VPN
+Interconnect concepts
+
+
+================================================================================
+TERRAFORM ARCHITECTURE
+================================================================================
+
+Terraform will be the backbone.
+
+terraform/
+│
+├── bootstrap/
+│
+├── modules/
+│   ├── project/
+│   ├── iam/
+│   ├── network/
+│   ├── subnet/
+│   ├── firewall/
+│   ├── nat/
+│   ├── dns/
+│   ├── gke/
+│   ├── cloudsql/
+│   ├── storage/
+│   ├── artifact-registry/
+│   ├── cloud-run/
+│   ├── pubsub/
+│   ├── secret-manager/
+│   ├── kms/
+│   ├── monitoring/
+│   ├── security/
+│   └── budgets/
+│
+├── environments/
+│   ├── dev/
+│   ├── stage/
+│   └── prod/
+│
+└── policies/
+
+
+================================================================================
+GITHUB/GIT REPOSITORY STRUCTURE
+================================================================================
+
+gcp-enterprise-platform/
+│
+├── README.md
+│
+├── docs/
+│   ├── architecture/
+│   ├── diagrams/
+│   ├── adr/
+│   ├── security/
+│   ├── sre/
+│   ├── troubleshooting/
+│   ├── interview-notes/
+│   └── daily-notes/
+│
+├── terraform/
+│
+├── applications/
+│   ├── frontend/
+│   ├── user-service/
+│   ├── account-service/
+│   ├── transaction-service/
+│   ├── worker-service/
+│   └── ai-service/
+│
+├── kubernetes/
+│
+├── helm/
+│
+├── gitops/
+│
+├── pipelines/
+│
+├── policies/
+│
+├── security/
+│
+├── monitoring/
+│
+├── scripts/
+│
+├── tests/
+│
+└── runbooks/
+
+
+================================================================================
+MOST IMPORTANT RULE
+================================================================================
+
+             ONE CONCEPT = ONE GIT COMMIT
+
+
+Example:
+
+Commit 001
+
+git commit -m "docs: initialize enterprise GCP platform architecture"
+
+
+Commit 002
+
+git commit -m "feat(terraform): configure Google Cloud provider"
+
+
+Commit 003
+
+git commit -m "feat(terraform): implement remote state backend"
+
+
+Commit 004
+
+git commit -m "feat(network): create custom VPC"
+
+
+Commit 005
+
+git commit -m "feat(network): create regional subnet"
+
+
+Commit 006
+
+git commit -m "feat(network): enable private Google access"
+
+
+Commit 007
+
+git commit -m "feat(network): configure Cloud NAT"
+
+
+Commit 008
+
+git commit -m "feat(security): implement least-privilege IAM"
+
+
+Every commit should answer:
+
+WHAT did I implement?
+
+WHY is this required?
+
+HOW does it work?
+
+WHAT production problem does it solve?
+
+WHAT security implications exist?
+
+WHAT alternatives exist?
+
+HOW would I troubleshoot it?
+
+HOW can interviewer ask about it?
+
+
+================================================================================
+DAILY DOCUMENTATION STANDARD
+================================================================================
+
+Every learning day:
+
+docs/daily-notes/
+
+day-001-gcp-foundation.md
+day-002-terraform-provider.md
+day-003-terraform-state.md
+day-004-vpc.md
+day-005-subnets.md
+...
+
+
+Each document:
+
+# Topic
+
+## Concept
+
+## Why it exists
+
+## Architecture
+
+## Implementation
+
+## Terraform resources
+
+## Commands used
+
+## Validation
+
+## Failure scenarios
+
+## Troubleshooting
+
+## Security considerations
+
+## Cost considerations
+
+## Production considerations
+
+## What I learned
+
+## Interview questions
+
+## Git commit
+
+
+================================================================================
+PROJECT PHASES
+================================================================================
+
+
+################################################################################
+PHASE 0 — ENGINEERING WORKSTATION
+################################################################################
+
+Concepts:
+
+Git
+GitHub
+gcloud
+Terraform
+Docker
+kubectl
+Helm
+Python
+VS Code
+authentication
+
+Commits:
+
+001 docs: initialize project
+
+002 chore: configure repository structure
+
+003 chore: configure gitignore
+
+004 chore: configure editor settings
+
+005 feat: configure gcloud CLI
+
+006 feat: configure Terraform CLI
+
+007 feat: configure kubectl
+
+008 feat: configure Helm
+
+
+################################################################################
+PHASE 1 — TERRAFORM FROM SCRATCH
+################################################################################
+
+Terraform concepts individually:
+
+provider
+resource
+variable
+output
+locals
+data source
+dependency graph
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+
+Then:
+
+state
+terraform.tfstate
+state locking
+remote state
+GCS backend
+state migration
+state security
+
+Then:
+
+modules
+module inputs
+module outputs
+module composition
+versioning
+
+Then:
+
+environments
+dev
+stage
+prod
+
+
+################################################################################
+PHASE 2 — GCP RESOURCE HIERARCHY
+################################################################################
+
+Organization
+
+Folders
+
+Projects
+
+Resources
+
+Labels
+
+Tags
+
+Billing
+
+APIs
+
+Service Usage
+
+Quotas
+
+
+Architecture:
+
+Organization
+     |
+     +-- Platform
+     |
+     +-- Security
+     |
+     +-- Sandbox
+     |
+     +-- Production
+
+
+################################################################################
+PHASE 3 — IAM
+################################################################################
+
+One commit per concept:
+
+IAM principals
+
+IAM permissions
+
+IAM roles
+
+Basic roles
+
+Predefined roles
+
+Custom roles
+
+IAM inheritance
+
+IAM conditions
+
+Least privilege
+
+Service accounts
+
+Service account impersonation
+
+Workload Identity Federation
+
+Separation of duties
+
+Organization policies
+
+
+################################################################################
+PHASE 4 — ENTERPRISE NETWORKING
+################################################################################
+
+VPC
+
+Subnet
+
+CIDR planning
+
+Routes
+
+Firewall rules
+
+Hierarchical firewall policies
+
+Shared VPC
+
+VPC peering
+
+Private Google Access
+
+Cloud NAT
+
+Cloud Router
+
+Private Service Connect
+
+Cloud DNS
+
+HA VPN
+
+Interconnect architecture
+
+Load balancing
+
+
+Example commits:
+
+feat(network): create custom VPC
+
+feat(network): implement subnet CIDR allocation
+
+feat(network): implement Cloud NAT
+
+feat(network): configure private Google access
+
+feat(network): configure DNS private zone
+
+
+################################################################################
+PHASE 5 — COMPUTE ENGINE
+################################################################################
+
+VM
+
+machine types
+
+images
+
+startup scripts
+
+persistent disks
+
+snapshots
+
+instance templates
+
+managed instance groups
+
+autoscaling
+
+autohealing
+
+health checks
+
+regional MIG
+
+spot VM
+
+
+################################################################################
+PHASE 6 — STORAGE
+################################################################################
+
+Cloud Storage
+
+bucket IAM
+
+storage classes
+
+versioning
+
+lifecycle policies
+
+retention
+
+encryption
+
+signed URLs
+
+CMEK
+
+
+################################################################################
+PHASE 7 — DATABASES
+################################################################################
+
+Cloud SQL
+
+private IP
+
+HA
+
+read replicas
+
+backups
+
+PITR
+
+database IAM
+
+Cloud Spanner concepts
+
+Firestore
+
+Bigtable
+
+BigQuery
+
+
+################################################################################
+PHASE 8 — DOCKER
+################################################################################
+
+Build our services.
+
+Dockerfile
+
+multi-stage builds
+
+non-root containers
+
+health checks
+
+.dockerignore
+
+image tagging
+
+image optimization
+
+container security
+
+
+################################################################################
+PHASE 9 — ARTIFACT REGISTRY
+################################################################################
+
+repositories
+
+Docker push
+
+authentication
+
+IAM
+
+vulnerability scanning
+
+image tagging strategy
+
+immutability
+
+cleanup policies
+
+
+################################################################################
+PHASE 10 — KUBERNETES
+################################################################################
+
+From basics:
+
+Pod
+
+ReplicaSet
+
+Deployment
+
+Service
+
+ConfigMap
+
+Secret
+
+Namespace
+
+Ingress
+
+Persistent Volume
+
+PVC
+
+RBAC
+
+Network Policy
+
+HPA
+
+PDB
+
+resource limits
+
+requests
+
+probes
+
+
+################################################################################
+PHASE 11 — GKE
+################################################################################
+
+GKE cluster
+
+private cluster
+
+regional cluster
+
+node pools
+
+autoscaling
+
+Workload Identity
+
+RBAC
+
+network policies
+
+private nodes
+
+Cloud NAT
+
+Ingress
+
+load balancing
+
+storage
+
+GKE observability
+
+GKE security
+
+
+################################################################################
+PHASE 12 — HELM
+################################################################################
+
+Chart
+
+values
+
+templates
+
+helpers
+
+environment values
+
+chart versioning
+
+release management
+
+
+################################################################################
+PHASE 13 — SERVERLESS
+################################################################################
+
+Cloud Run
+
+private services
+
+public services
+
+IAM
+
+autoscaling
+
+revision management
+
+traffic splitting
+
+Cloud Run + Secret Manager
+
+Cloud Run + VPC
+
+
+################################################################################
+PHASE 14 — EVENT-DRIVEN ARCHITECTURE
+################################################################################
+
+Pub/Sub
+
+topics
+
+subscriptions
+
+dead-letter queue
+
+retry policies
+
+push subscriptions
+
+pull subscriptions
+
+event processing
+
+
+################################################################################
+PHASE 15 — CI
+################################################################################
+
+Pipeline:
+
+Git Push
+   |
+   v
+Cloud Build
+   |
+   +--> lint
+   +--> unit test
+   +--> security scan
+   +--> Terraform validation
+   +--> Docker build
+   +--> image scan
+   |
+   v
+Artifact Registry
+
+
+Concepts:
+
+Cloud Build
+
+cloudbuild.yaml
+
+triggers
+
+substitutions
+
+private pools
+
+service accounts
+
+build caching
+
+
+################################################################################
+PHASE 16 — CD
+################################################################################
+
+Cloud Deploy
+
+dev
+
+stage
+
+prod
+
+approval
+
+promotion
+
+rollback
+
+canary
+
+blue-green
+
+progressive delivery
+
+
+################################################################################
+PHASE 17 — GITOPS
+################################################################################
+
+Argo CD
+
+GitOps repo
+
+desired state
+
+actual state
+
+sync
+
+auto-sync
+
+drift detection
+
+rollback
+
+
+Architecture:
+
+Developer
+   |
+Git
+   |
+CI
+   |
+Artifact Registry
+   |
+GitOps Repository
+   |
+ArgoCD
+   |
+GKE
+
+
+################################################################################
+PHASE 18 — SECRET MANAGEMENT
+################################################################################
+
+Secret Manager
+
+versions
+
+rotation
+
+IAM
+
+application integration
+
+Cloud KMS
+
+CMEK
+
+key rotation
+
+separation of duties
+
+
+################################################################################
+PHASE 19 — DEVSECOPS
+################################################################################
+
+Pipeline:
+
+Code
+ |
+ +--> Secret Scan
+ |
+ +--> SAST
+ |
+ +--> SCA
+ |
+ +--> IaC Scan
+ |
+ +--> Docker Scan
+ |
+ +--> Artifact Scan
+ |
+ +--> Policy Check
+ |
+ v
+Deploy
+
+
+Potential tools:
+
+Trivy
+Checkov
+tfsec
+Gitleaks
+Semgrep
+
+
+################################################################################
+PHASE 20 — SOFTWARE SUPPLY CHAIN
+################################################################################
+
+SBOM
+
+artifact provenance
+
+SLSA
+
+Binary Authorization
+
+trusted images
+
+image signing
+
+deployment policy
+
+
+################################################################################
+PHASE 21 — CLOUD SECURITY
+################################################################################
+
+Cloud Armor
+
+WAF
+
+DDoS
+
+rate limiting
+
+IAP
+
+VPC Service Controls
+
+Security Command Center
+
+Organization policies
+
+IAM security
+
+network isolation
+
+data protection
+
+
+################################################################################
+PHASE 22 — OBSERVABILITY
+################################################################################
+
+Cloud Logging
+
+Cloud Monitoring
+
+Cloud Audit Logs
+
+VPC Flow Logs
+
+metrics
+
+log-based metrics
+
+dashboards
+
+alerts
+
+Managed Prometheus
+
+application metrics
+
+distributed tracing
+
+Error Reporting
+
+
+################################################################################
+PHASE 23 — SRE
+################################################################################
+
+SLI
+
+SLO
+
+SLA
+
+error budget
+
+burn rate
+
+availability
+
+latency
+
+traffic
+
+errors
+
+saturation
+
+
+Example:
+
+SLO = 99.9%
+
+Error Budget = 0.1%
+
+
+Create real SLOs for our microservices.
+
+
+################################################################################
+PHASE 24 — INCIDENT MANAGEMENT
+################################################################################
+
+Generate real failures.
+
+Scenario:
+
+transaction-service latency > 2 seconds
+
+Then:
+
+Alert
+ |
+ v
+Incident
+ |
+ v
+Investigation
+ |
+ v
+Mitigation
+ |
+ v
+RCA
+ |
+ v
+Postmortem
+
+
+Create:
+
+runbook
+
+incident timeline
+
+RCA
+
+postmortem
+
+preventive actions
+
+
+################################################################################
+PHASE 25 — FAILURE ENGINEERING
+################################################################################
+
+Kill pod
+
+kill node
+
+database unavailable
+
+DNS issue
+
+wrong firewall
+
+IAM denied
+
+CPU exhaustion
+
+memory exhaustion
+
+network latency
+
+broken deployment
+
+bad Docker image
+
+expired secret
+
+
+For EVERY incident:
+
+diagnose
+
+repair
+
+document
+
+
+################################################################################
+PHASE 26 — HIGH AVAILABILITY
+################################################################################
+
+regional GKE
+
+regional MIG
+
+HA Cloud SQL
+
+multiple zones
+
+load balancing
+
+autoscaling
+
+health checks
+
+
+################################################################################
+PHASE 27 — DISASTER RECOVERY
+################################################################################
+
+RPO
+
+RTO
+
+backup
+
+restore
+
+failover
+
+regional failure
+
+database recovery
+
+application recovery
+
+
+Create actual DR runbook.
+
+
+################################################################################
+PHASE 28 — FINOPS
+################################################################################
+
+budgets
+
+alerts
+
+labels
+
+cost attribution
+
+Recommender
+
+rightsizing
+
+committed use discounts
+
+Spot VMs
+
+storage lifecycle
+
+logging cost optimization
+
+
+################################################################################
+PHASE 29 — AI WORKLOAD
+################################################################################
+
+This is important for the AI era.
+
+Add:
+
+AI assistant microservice
+
+Possible capabilities:
+
+incident summarization
+
+log summarization
+
+runbook recommendation
+
+deployment failure explanation
+
+natural-language platform queries
+
+
+Architecture:
+
+Cloud Monitoring
+      |
+      v
+Incident
+      |
+      v
+AI Operations Service
+      |
+      v
+Vertex AI / Gemini
+      |
+      v
+Suggested RCA
+
+
+IMPORTANT:
+
+AI must NOT blindly change production.
+
+AI:
+
+observes
+analyzes
+recommends
+
+Human/policy:
+
+approves production change
+
+
+################################################################################
+PHASE 30 — AI-ASSISTED SRE
+################################################################################
+
+Build an internal:
+
+              "SRE Copilot"
+
+Input:
+
+logs
+metrics
+alerts
+deployment history
+
+Output:
+
+probable root cause
+related deployment
+recommended runbook
+suggested remediation
+
+
+This becomes particularly impressive on a resume.
+
+
+################################################################################
+PHASE 31 — POLICY AS CODE
+################################################################################
+
+Implement policies:
+
+No public Cloud SQL
+
+No unrestricted SSH
+
+No public storage bucket
+
+Mandatory encryption
+
+Mandatory labels
+
+Approved regions only
+
+Required resource limits
+
+No privileged containers
+
+
+################################################################################
+PHASE 32 — PLATFORM ENGINEERING
+################################################################################
+
+Develop reusable Terraform modules.
+
+Then expose a standardized pattern:
+
+Developer asks for:
+
+"new microservice"
+
+Platform automatically provisions:
+
+namespace
+service account
+IAM
+secret access
+CI pipeline
+monitoring
+dashboard
+alerts
+deployment
+
+
+This turns the project from:
+
+"DevOps project"
+
+into:
+
+"Internal Developer Platform"
+
+
+################################################################################
+PHASE 33 — PRODUCTION TROUBLESHOOTING LAB
+################################################################################
+
+Create 20+ scenarios.
+
+Examples:
+
+1. Pod CrashLoopBackOff
+
+2. ImagePullBackOff
+
+3. Pending Pod
+
+4. OOMKilled
+
+5. GKE node unavailable
+
+6. DNS resolution failure
+
+7. Cloud SQL connection failure
+
+8. IAM permission denied
+
+9. Terraform state lock
+
+10. Terraform drift
+
+11. Cloud Build failure
+
+12. ArgoCD OutOfSync
+
+13. Secret access denied
+
+14. Load balancer unhealthy
+
+15. Cloud Armor blocked legitimate traffic
+
+16. CPU saturation
+
+17. memory leak
+
+18. SLO burn alert
+
+19. bad deployment
+
+20. database latency
+
+
+################################################################################
+PHASE 34 — ARCHITECTURE DECISION RECORDS
+################################################################################
+
+Create:
+
+docs/adr/
+
+
+Example:
+
+ADR-001-why-gke.md
+
+ADR-002-why-cloud-run.md
+
+ADR-003-shared-vpc.md
+
+ADR-004-private-gke.md
+
+ADR-005-gitops.md
+
+ADR-006-cloud-sql-vs-spanner.md
+
+ADR-007-regional-cluster.md
+
+
+This demonstrates SENIOR engineering thinking.
+
+
+################################################################################
+PHASE 35 — SECURITY THREAT MODEL
+################################################################################
+
+Create threat model.
+
+Cover:
+
+spoofing
+
+tampering
+
+repudiation
+
+information disclosure
+
+denial of service
+
+elevation of privilege
+
+
+Document controls.
+
+
+################################################################################
+PHASE 36 — PRODUCTION READINESS REVIEW
+################################################################################
+
+Before production deployment verify:
+
+Architecture
+
+Security
+
+Availability
+
+Scalability
+
+Observability
+
+SLO
+
+Backup
+
+DR
+
+Runbooks
+
+Capacity
+
+Cost
+
+Compliance
+
+Testing
+
+
+################################################################################
+PHASE 37 — FINAL CAPSTONE
+################################################################################
+
+Production deployment should demonstrate:
+
+                       Internet
+                          |
+                     Cloud Armor
+                          |
+                  HTTPS Load Balancer
+                          |
+                      Private GKE
+                          |
+             +------------+------------+
+             |            |            |
+           User        Account     Transaction
+          Service      Service       Service
+                                       |
+                                     Pub/Sub
+                                       |
+                                     Worker
+                          |
+                       Cloud SQL
+
+
+Platform layer:
+
+Terraform
+Git
+Cloud Build
+Artifact Registry
+ArgoCD
+Cloud Deploy
+
+
+Security layer:
+
+IAM
+KMS
+Secret Manager
+Cloud Armor
+VPC SC
+SCC
+Binary Authorization
+
+
+SRE layer:
+
+Logging
+Monitoring
+Prometheus
+SLO
+Error Budget
+Alerts
+Runbooks
+Incident Management
+
+
+AI layer:
+
+Vertex AI / Gemini
+       |
+       v
+SRE Copilot
+       |
+       +--> Log Analysis
+       +--> Incident Summary
+       +--> RCA Recommendation
+       +--> Runbook Recommendation
+
+
+================================================================================
+EACH COMMIT MUST CONTAIN
+================================================================================
+
+Example concept:
+
+Cloud NAT
+
+
+Code:
+
+terraform/modules/network/nat.tf
+
+
+Documentation:
+
+docs/daily-notes/day-014-cloud-nat.md
+
+
+Diagram update:
+
+docs/diagrams/network.md
+
+
+README update where relevant.
+
+
+Commit:
+
+git add .
+
+git commit -m "feat(network): enable private GKE egress using Cloud NAT"
+
+
+So Git history itself shows:
+
+concept
+      ↓
+implementation
+      ↓
+testing
+      ↓
+documentation
+
+
+================================================================================
+COMMIT MESSAGE STANDARD
+================================================================================
+
+feat(terraform):
+
+feat(network):
+
+feat(gke):
+
+feat(security):
+
+feat(cicd):
+
+feat(gitops):
+
+feat(sre):
+
+feat(observability):
+
+feat(finops):
+
+feat(ai):
+
+fix():
+
+test():
+
+docs():
+
+refactor():
+
+
+================================================================================
+EXAMPLE FIRST 20 COMMITS
+================================================================================
+
+001
+docs: initialize GCP enterprise platform project
+
+002
+chore: establish production repository structure
+
+003
+docs: define platform business requirements
+
+004
+docs: create initial architecture decision record
+
+005
+feat(terraform): configure Google Cloud provider
+
+006
+feat(terraform): implement provider version constraints
+
+007
+feat(terraform): introduce input variables
+
+008
+feat(terraform): introduce local values
+
+009
+feat(terraform): introduce Terraform outputs
+
+010
+feat(terraform): demonstrate Terraform data sources
+
+011
+feat(terraform): provision first GCP resource
+
+012
+feat(terraform): configure GCS remote state
+
+013
+feat(terraform): secure Terraform state bucket
+
+014
+feat(terraform): enable state versioning
+
+015
+refactor(terraform): create reusable project module
+
+016
+feat(network): provision custom mode VPC
+
+017
+feat(network): provision development subnet
+
+018
+feat(network): implement CIDR allocation strategy
+
+019
+feat(network): enable private Google access
+
+020
+feat(network): configure Cloud NAT
+
+
+Imagine after completion:
+
+git log --oneline
+
+shows 250-400 meaningful commits.
+
+That becomes evidence of actual hands-on progression.
+
+
+================================================================================
+DAILY WORKFLOW
+================================================================================
+
+Every day:
+
+STEP 1
+Understand one concept deeply.
+
+STEP 2
+Draw architecture.
+
+STEP 3
+Implement using Terraform.
+
+STEP 4
+terraform fmt
+
+STEP 5
+terraform validate
+
+STEP 6
+terraform plan
+
+STEP 7
+terraform apply
+
+STEP 8
+Validate through GCP CLI.
+
+STEP 9
+Break something intentionally.
+
+STEP 10
+Troubleshoot it.
+
+STEP 11
+Document learning.
+
+STEP 12
+Commit.
+
+STEP 13
+Push.
+
+
+================================================================================
+IMPORTANT RULE FOR OUR PROJECT
+================================================================================
+
+We will NOT simply do:
+
+"Here is 500 lines of Terraform."
+
+Instead:
+
+I give you:
+
+Concept
+↓
+Architecture
+↓
+Why enterprise needs it
+↓
+Folder/file to create
+↓
+Exact code
+↓
+Commands
+↓
+Expected output
+↓
+GCP Console verification
+↓
+Failure scenario
+↓
+Troubleshooting
+↓
+Security implication
+↓
+Interview explanation
+↓
+Documentation update
+↓
+Git commit
+
+Then:
+
+YOU execute it.
+
+You tell me:
+
+"done"
+
+Then we proceed to next concept.
+
+
+================================================================================
+DESTROY STRATEGY
+================================================================================
+
+To avoid unnecessary GCP bills:
+
+Learning resources:
+
+terraform apply
+      |
+      v
+experiment
+      |
+      v
+validate
+      |
+      v
+document
+      |
+      v
+terraform destroy
+
+
+For persistent foundation resources we keep only what is necessary.
+
+Cost-intensive components such as:
+
+GKE
+Cloud SQL
+Load Balancers
+NAT
+VMs
+
+should be destroyed when their learning session/phase is complete unless needed
+by the following phase.
+
+
+================================================================================
+WHAT WILL DISTINGUISH A 9-YEAR ENGINEER
+================================================================================
+
+Junior engineer:
+
+"I know how to create GKE."
+
+
+Mid-level engineer:
+
+"I can deploy applications to GKE."
+
+
+Senior engineer:
+
+"I designed a private regional GKE platform with workload identity,
+network policies, GitOps, SLOs, supply-chain controls, Terraform modules,
+DR strategy, cost governance and operational runbooks."
+
+
+THIS project targets the third answer.
+
+
+================================================================================
+AI ERA DIFFERENTIATOR
+================================================================================
+
+Don't compete with AI at:
+
+"Can you write Terraform?"
+
+AI can already do that.
+
+
+Your value becomes:
+
+Why this architecture?
+
+Why this service?
+
+What are the trade-offs?
+
+What happens when it fails?
+
+How do we secure it?
+
+How do we operate it?
+
+How much does it cost?
+
+How do we recover it?
+
+How do developers consume it?
+
+How do we automate it safely?
+
+How should AI participate in operations?
+
+
+AI writes:
+
+resource "google_container_cluster" ...
+
+
+YOU should understand:
+
+architecture
+security
+failure modes
+blast radius
+IAM
+network path
+SLO
+DR
+cost
+operations
+trade-offs
+
+
+================================================================================
+CERTIFICATION COVERAGE
+================================================================================
+
+This single project will simultaneously prepare for:
+
+Professional Cloud DevOps Engineer
+
+Professional Cloud Architect
+
+Professional Cloud Security Engineer
+
+
+Instead of:
+
+Certification → memorize → exam
+
+
+We follow:
+
+Concept
+   ↓
+Terraform
+   ↓
+GCP
+   ↓
+Application
+   ↓
+Failure
+   ↓
+Troubleshooting
+   ↓
+Security
+   ↓
+SRE
+   ↓
+Architecture
+   ↓
+Interview
+   ↓
+Certification
+
+
+================================================================================
+FINAL REPOSITORY VALUE
+================================================================================
+
+The repository becomes:
+
+1. Learning notebook
+2. Terraform portfolio
+3. GCP portfolio
+4. DevOps portfolio
+5. SRE portfolio
+6. Security portfolio
+7. Architecture portfolio
+8. Troubleshooting handbook
+9. Interview preparation repository
+10. Resume project
+11. GitHub showcase
+12. Certification preparation material
+
+
+================================================================================
+FINAL RESUME BULLET EXAMPLE
+================================================================================
+
+Designed and implemented a production-grade GCP enterprise application
+platform using Terraform, Shared VPC, private regional GKE, Cloud Run,
+Cloud SQL, Pub/Sub and Artifact Registry, implementing GitOps-based
+deployments, secure software supply-chain controls, Workload Identity,
+Secret Manager, Cloud KMS, Cloud Armor and policy-as-code.
+
+Established SRE practices including SLIs/SLOs, error-budget monitoring,
+Prometheus observability, automated alerting, production runbooks,
+incident simulations, root-cause analysis and disaster-recovery testing.
+
+Developed reusable Terraform platform modules and automated CI/CD and
+GitOps workflows with security scanning, artifact provenance and
+environment promotion across development, staging and production.
+
+Built an AI-assisted SRE capability to correlate logs, metrics, alerts
+and deployment history and generate incident summaries, probable root
+causes and runbook recommendations while retaining human approval for
+production changes.
+
+
+================================================================================
+END GOAL
+================================================================================
+
+We don't want to finish saying:
+
+"I completed a GCP course."
+
+We want to say:
+
+"I can design, provision, secure, deploy, observe, troubleshoot,
+recover and operate a production GCP platform."
+
+That is the level appropriate for a 9-year Cloud/DevOps/SRE engineer.
+================================================================================
