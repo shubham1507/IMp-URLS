@@ -1,1643 +1,1662 @@
 ================================================================================
- GCP PROFESSIONAL CERTIFICATION MASTER SYLLABUS
- DevOps Engineer + Cloud Architect + Cloud Security Engineer
+               GOOGLE CLOUD + DEVOPS COMPLETE CERTIFICATION SYLLABUS
 ================================================================================
 
-CERTIFICATIONS COVERED
-----------------------
-1. Google Professional Cloud DevOps Engineer
-2. Google Professional Cloud Architect
-3. Google Professional Cloud Security Engineer
-
-
-################################################################################
-# 1. PROFESSIONAL CLOUD DEVOPS ENGINEER
-################################################################################
-
-Primary Focus:
-- DevOps
-- CI/CD
-- Infrastructure as Code
-- Kubernetes
-- SRE
-- Observability
-- Production troubleshooting
-- Automation
-- Reliability
-- Security
-- Cost optimization
-
-
-===============================================================================
-SECTION 1: GOOGLE CLOUD ORGANIZATION & INFRASTRUCTURE
-===============================================================================
-
-1. Google Cloud Resource Hierarchy
-   - Organization
-   - Folders
-   - Projects
-   - Resources
-   - Project organization strategies
-   - Environment separation
-   - Dev/Test/Staging/Production
-   - Shared networking
-   - Shared VPC
-   - Multi-project architectures
-   - Application-centric resource organization
-   - App Hub
-
-2. IAM
-   - IAM concepts
-   - Principals
-   - Roles
-   - Permissions
-   - Basic roles
-   - Predefined roles
-   - Custom roles
-   - Least privilege
-   - Organization-level IAM
-   - Folder-level IAM
-   - Project-level IAM
-   - Resource-level IAM
-
-3. Service Accounts
-   - Creating service accounts
-   - Managing service accounts
-   - Service account permissions
-   - Service account impersonation
-   - Workload authentication
-   - Service account security
-
-4. Organization Policies
-   - Organization Policy Service
-   - Policy constraints
-   - Inherited policies
-   - Centralized governance
-
-5. Infrastructure as Code
-   - Terraform
-   - Terraform providers
-   - Resources
-   - Variables
-   - Outputs
-   - Modules
-   - State
-   - Remote state
-   - Infrastructure lifecycle
-   - Terraform CI/CD
-   - Google Cloud Foundation Toolkit
-   - Config Connector
-   - Helm
-
-6. Infrastructure Automation
-   - Python automation
-   - Go automation
-   - Shell scripting
-   - gcloud CLI
-   - Automated provisioning
-   - Google-recommended infrastructure blueprints
-
-
-===============================================================================
-SECTION 2: CI/CD ARCHITECTURE
-===============================================================================
-
-1. Source Control
-   - Git
-   - Branching strategies
-   - Pull requests
-   - Code reviews
-   - Git-based workflows
-
-2. Cloud Build
-   - Build configuration
-   - cloudbuild.yaml
-   - Build steps
-   - Build triggers
-   - Substitutions
-   - Build environments
-   - Private pools
-   - Service accounts
-   - Build security
-
-3. Artifact Registry
-   - Docker repositories
-   - Package repositories
-   - Artifact storage
-   - Image tagging
-   - Image versioning
-   - Artifact lifecycle
-   - Vulnerability scanning
-
-4. Cloud Deploy
-   - Delivery pipelines
-   - Targets
-   - Releases
-   - Rollouts
-   - Approvals
-   - Promotion between environments
-
-5. Deployment Tooling
-   - Skaffold
-   - Kustomize
-   - Helm
-   - Argo CD
-   - Jenkins
-   - GitOps
-   - Packer
-
-6. Hybrid/Multi-cloud CI/CD
-   - GKE Enterprise
-   - Hybrid deployments
-   - Multi-cloud deployments
-   - Third-party CI/CD integration
-
-7. CI/CD Security
-   - Pipeline IAM
-   - Service account security
-   - Secret protection
-   - Artifact validation
-   - Environment-specific permissions
-
-
-===============================================================================
-SECTION 3: BUILDING CI/CD PIPELINES
-===============================================================================
-
-1. Application Pipeline
-
-   Developer
-      |
-      v
-   Git Repository
-      |
-      v
-   Cloud Build
-      |
-      +--> Unit Test
-      +--> Integration Test
-      +--> Security Scan
-      +--> Build Container
-      |
-      v
-   Artifact Registry
-      |
-      v
-   Cloud Deploy
-      |
-      +--> Dev
-      +--> QA
-      +--> Staging
-      +--> Production
-
-
-2. Pipeline Triggers
-   - Push triggers
-   - Pull request triggers
-   - Tag triggers
-   - Manual triggers
-
-3. Testing
-   - Unit testing
-   - Integration testing
-   - Application testing
-   - Infrastructure testing
-   - Continuous testing
-
-4. Deployment Strategies
-   - Rolling deployment
-   - Blue/Green deployment
-   - Canary deployment
-   - Traffic splitting
-   - Progressive delivery
-   - Rollback
-
-5. Approval Workflows
-   - Manual approvals
-   - Production approval gates
-   - Environment promotion
-
-6. Infrastructure CI/CD
-   - Terraform pipelines
-   - terraform fmt
-   - terraform validate
-   - terraform plan
-   - terraform apply
-   - Infrastructure approval
-   - GKE infrastructure deployment
-   - Managed Instance Groups
-   - Service Mesh configuration
-
-7. Serverless CI/CD
-   - Cloud Run
-   - Functions
-   - Build/deploy automation
-
-8. Deployment Auditing
-   - Cloud Audit Logs
-   - Cloud Build history
-   - Cloud Deploy history
-   - Artifact Registry
-
-
-===============================================================================
-SECTION 4: SECRETS & SOFTWARE SUPPLY CHAIN SECURITY
-===============================================================================
-
-1. Secret Manager
-   - Secret creation
-   - Secret versions
-   - IAM
-   - Secret rotation
-   - Application secret retrieval
-
-2. Cloud KMS
-   - Encryption keys
-   - Key rings
-   - Key rotation
-   - IAM
-
-3. Certificate Manager
-
-4. Secret Injection
-   - Build-time secrets
-   - Runtime secrets
-   - Avoiding secrets in source code
-
-5. Artifact Security
-   - Vulnerability analysis
-   - Container scanning
-
-6. Binary Authorization
-   - Trusted container deployment
-   - Deployment policies
-
-7. Software Supply Chain Security
-   - SLSA
-   - Build provenance
-   - Artifact integrity
-   - Trusted builds
-
-
-===============================================================================
-SECTION 5: SITE RELIABILITY ENGINEERING — SRE
-===============================================================================
-
-1. SRE Fundamentals
-
-2. Service Level Indicators — SLI
-   Examples:
-   - Availability
-   - Latency
-   - Error rate
-   - Throughput
-
-3. Service Level Objectives — SLO
-
-   Example:
-   Availability >= 99.9%
-
-4. Service Level Agreements — SLA
-
-5. SLI vs SLO vs SLA
-
-6. Error Budgets
-
-   Error Budget = 100% - SLO
-
-   Example:
-
-   SLO = 99.9%
-   Error Budget = 0.1%
-
-7. Reliability vs Deployment Velocity
-
-8. Number of Nines
-   - 99%
-   - 99.9%
-   - 99.99%
-   - 99.999%
-
-9. Service Lifecycle
-   - Service onboarding
-   - Launch planning
-   - Deployment
-   - Maintenance
-   - Retirement
-
-10. Capacity Planning
-    - Quotas
-    - Limits
-    - Resource planning
-
-11. Autoscaling
-    - Managed Instance Groups
-    - GKE
-    - Cloud Run
-
-12. Incident Mitigation
-    - Traffic draining
-    - Traffic redirection
-    - Capacity increase
-    - Rollback
-
-
-===============================================================================
-SECTION 6: OBSERVABILITY
-===============================================================================
-
-1. Cloud Logging
-   - Log collection
-   - Log analysis
-   - Log Explorer
-   - Structured logging
-
-2. Cloud Audit Logs
-   - Admin Activity
-   - Data Access
-   - System Event
-   - Policy Denied
-
-3. VPC Flow Logs
-
-4. GKE/Application Logging
-
-5. Log Management
-   - Filters
-   - Sampling
-   - Exclusions
-   - Retention
-   - Cost optimization
-
-6. Log Export
-   - BigQuery
-   - Pub/Sub
-   - External SIEM
-
-7. Sensitive Log Data
-   - PII
-   - PHI
-   - Sensitive information handling
-
-8. Cloud Monitoring
-
-9. Metrics
-   - System metrics
-   - Application metrics
-   - Network metrics
-   - Custom metrics
-   - Log-based metrics
-
-10. Metrics Explorer
-
-11. Google Cloud Managed Service for Prometheus
-
-12. Synthetic Monitoring
-
-13. Dashboards
-    - Operational dashboards
-    - SRE dashboards
-    - SLO dashboards
-
-14. Alerting
-    - Alert policies
-    - Threshold alerts
-    - SLO alerts
-    - Cost alerts
-    - Notification channels
-
-
-===============================================================================
-SECTION 7: TROUBLESHOOTING & PERFORMANCE
-===============================================================================
-
-Troubleshoot:
-
-- Infrastructure failures
-- Application failures
-- Network failures
-- CI/CD failures
-- Deployment failures
-- Observability failures
-- Performance problems
-- Latency problems
-
-Tools:
-
-- Cloud Logging
-- Cloud Monitoring
-- Cloud Trace
-- Error Reporting
-- Application instrumentation
-
-Performance Optimization:
-
-- CPU
-- Memory
-- Network
-- Scaling
-- Application latency
-
-
-===============================================================================
-SECTION 8: COST OPTIMIZATION
-===============================================================================
-
-- Spot VMs
-- Committed Use Discounts
-- Sustained Use Discounts
-- Network tiers
-- Observability costs
-- Infrastructure sizing
-- Google Cloud Recommender
-
-Recommender areas:
-
-- Cost
-- Security
-- Performance
-- Reliability
-- Manageability
-
-
-################################################################################
-# 2. PROFESSIONAL CLOUD ARCHITECT
-################################################################################
-
-Primary Focus:
-
-- Enterprise architecture
-- Solution design
-- Networking
-- Compute
-- Storage
-- Databases
-- Security
-- HA/DR
-- Migration
-- Hybrid cloud
-- Multi-cloud
-- Cost optimization
-- Reliability
-
-
-===============================================================================
-SECTION 1: CLOUD ARCHITECTURE DESIGN
-===============================================================================
-
-Understand:
-
-- Business requirements
-- Technical requirements
-- Functional requirements
-- Non-functional requirements
-
-Architecture considerations:
-
+CERTIFICATION ROADMAP
+=====================
+
+1. Associate Cloud Engineer (ACE)
+        ↓
+2. Professional Cloud DevOps Engineer
+        ↓
+3. Professional Cloud Architect (PCA)
+        ↓
+4. Professional Cloud Security Engineer
+
+
+================================================================================
+PHASE 1 — GOOGLE CLOUD ASSOCIATE CLOUD ENGINEER (ACE)
+================================================================================
+
+GOAL:
+Build a strong hands-on GCP administration and operations foundation.
+
+-------------------------------------------------------------------------------
+1. CLOUD & GCP FUNDAMENTALS
+-------------------------------------------------------------------------------
+
+1.1 Cloud Computing Fundamentals
+- IaaS, PaaS, SaaS
+- Public, Private, Hybrid and Multi-cloud
+- Regions
+- Zones
+- Edge locations
+- High availability
 - Scalability
-- Availability
-- Reliability
-- Security
-- Performance
-- Maintainability
-- Cost
+- Elasticity
+- Fault tolerance
+- Disaster recovery
+- Shared responsibility model
 
-Business considerations:
+1.2 Google Cloud Architecture
+- Google Cloud global infrastructure
+- Regions and zones
+- Projects
+- Resources
+- Resource hierarchy
 
-- Business use cases
-- Product strategy
-- ROI
-- KPIs
-- Build vs Buy
-- Modify vs Replace
-- Cost optimization
+Organization
+    ↓
+Folders
+    ↓
+Projects
+    ↓
+Resources
 
+- Resource Manager
+- Project IDs
+- Project numbers
+- Billing accounts
+- Quotas and limits
+- Labels
+- Tags
 
-===============================================================================
-SECTION 2: COMPUTE
-===============================================================================
-
-Compute Engine
-
-- VM instances
-- Machine families
-- Machine types
-- Custom machine types
-- Images
-- Disks
-- Snapshots
-- Instance templates
-- Managed Instance Groups
-- Autoscaling
-- Autohealing
-- Load balancing
-- Spot VMs
-
-Containers
-
-- Docker
-- Artifact Registry
-- GKE
-
-Serverless
-
-- Cloud Run
-- Functions
-
-Choosing:
-
-VM vs GKE vs Cloud Run vs Functions
+1.3 Google Cloud Console and Tools
+- Google Cloud Console
+- Cloud Shell
+- gcloud CLI
+- gsutil
+- bq CLI
+- REST APIs
+- Cloud SDK
+- Application Default Credentials
+- Client libraries
 
 
-===============================================================================
-SECTION 3: GOOGLE KUBERNETES ENGINE
-===============================================================================
+-------------------------------------------------------------------------------
+2. IAM & ACCESS MANAGEMENT
+-------------------------------------------------------------------------------
 
-- Kubernetes architecture
-- GKE architecture
-- Clusters
-- Nodes
-- Node pools
-- Pods
-- Deployments
-- Services
-- Ingress
-- Load balancing
-- Autoscaling
-- Cluster Autoscaler
-- HPA
-- Workload Identity
-- RBAC
-- Network Policies
-- Secrets
-- Persistent storage
-- Regional clusters
-- GKE Enterprise
+2.1 IAM Fundamentals
+- Principals
+- Roles
+- Permissions
+- IAM policies
+
+2.2 IAM Roles
+- Basic roles
+- Predefined roles
+- Custom roles
+
+2.3 Identity Types
+- Google accounts
+- Google Groups
+- Service accounts
+- Workforce identities
+- Workload identities
+
+2.4 Service Accounts
+- Creating service accounts
+- Assigning roles
+- Service account impersonation
+- Service account keys
+- Key rotation
+- Avoiding long-lived keys
+
+2.5 IAM Best Practices
+- Least privilege
+- Separation of duties
+- Group-based access
+- Service account security
+- IAM troubleshooting
 
 
-===============================================================================
-SECTION 4: NETWORKING
-===============================================================================
+-------------------------------------------------------------------------------
+3. GOOGLE CLOUD NETWORKING
+-------------------------------------------------------------------------------
 
-VPC
-
+3.1 VPC Fundamentals
+- Virtual Private Cloud
 - Global VPC
 - Subnets
 - Regional subnets
-- Routes
-- Firewall rules
+- IP ranges
+- CIDR
+- Primary IP ranges
+- Secondary IP ranges
 
-Shared VPC
+3.2 IP Addressing
+- Internal IP
+- External IP
+- Static IP
+- Ephemeral IP
 
-VPC Peering
+3.3 Routes
+- System-generated routes
+- Custom routes
+- Route priority
 
-Private Google Access
+3.4 Firewall
+- VPC firewall rules
+- Ingress
+- Egress
+- Priority
+- Target tags
+- Service accounts
 
-Private Service Connect
+3.5 DNS
+- Cloud DNS
+- Public zones
+- Private zones
+- DNS records
 
-Cloud NAT
-
-Cloud Router
-
-DNS
-
-Load Balancing
-
-- Global load balancing
-- Regional load balancing
-- Application Load Balancer
-- Network Load Balancer
-
-Hybrid Connectivity
-
+3.6 Connectivity
+- VPC Peering
+- Shared VPC
 - Cloud VPN
 - HA VPN
 - Cloud Interconnect
-- Dedicated Interconnect
-- Partner Interconnect
+- Cloud Router
+- BGP
 
-Hybrid architecture:
+3.7 Internet Connectivity
+- Cloud NAT
+- Private Google Access
+- Private Service Access
 
-On-Prem
-   |
-VPN / Interconnect
-   |
-Google Cloud VPC
+3.8 Load Balancing
+- Application Load Balancer
+- Network Load Balancer
+- Internal vs external load balancing
+- Backend services
+- Health checks
 
 
-===============================================================================
-SECTION 5: STORAGE
-===============================================================================
+-------------------------------------------------------------------------------
+4. COMPUTE ENGINE
+-------------------------------------------------------------------------------
 
-Cloud Storage
+4.1 VM Fundamentals
+- VM instances
+- Machine families
+- Machine types
+- CPU
+- Memory
+- Images
 
-Storage classes:
+4.2 VM Storage
+- Persistent Disk
+- Hyperdisk
+- Local SSD
+- Boot disks
 
+4.3 VM Operations
+- Create
+- Start
+- Stop
+- Reset
+- Delete
+- Resize
+
+4.4 Instance Templates
+
+4.5 Managed Instance Groups
+
+4.6 Unmanaged Instance Groups
+
+4.7 Autoscaling
+
+4.8 Autohealing
+
+4.9 Spot VMs
+
+4.10 Startup scripts
+
+4.11 Metadata
+
+4.12 SSH access
+
+4.13 OS Login
+
+
+-------------------------------------------------------------------------------
+5. GOOGLE KUBERNETES ENGINE — GKE
+-------------------------------------------------------------------------------
+
+5.1 Kubernetes Fundamentals
+- Cluster
+- Control plane
+- Node
+- Pod
+- Deployment
+- ReplicaSet
+- Service
+- Namespace
+- ConfigMap
+- Secret
+
+5.2 GKE Architecture
+
+5.3 Standard GKE
+
+5.4 Autopilot GKE
+
+5.5 Regional vs zonal clusters
+
+5.6 Node pools
+
+5.7 Cluster autoscaling
+
+5.8 Horizontal Pod Autoscaling
+
+5.9 Workload deployment
+
+5.10 Services and ingress
+
+5.11 GKE networking basics
+
+5.12 GKE security basics
+
+5.13 Workload Identity Federation for GKE
+
+5.14 Cluster upgrades
+
+5.15 kubectl operations
+
+5.16 GKE troubleshooting
+
+
+-------------------------------------------------------------------------------
+6. SERVERLESS & APPLICATION SERVICES
+-------------------------------------------------------------------------------
+
+6.1 Cloud Run
+- Services
+- Containers
+- Revisions
+- Traffic splitting
+- Autoscaling
+- Authentication
+
+6.2 Cloud Functions / Cloud Run functions
+
+6.3 App Engine
+- Standard
+- Flexible
+
+6.4 Choosing between:
+- Compute Engine
+- GKE
+- Cloud Run
+- App Engine
+
+
+-------------------------------------------------------------------------------
+7. STORAGE
+-------------------------------------------------------------------------------
+
+7.1 Cloud Storage
+
+7.2 Buckets
+
+7.3 Objects
+
+7.4 Storage classes
 - Standard
 - Nearline
 - Coldline
 - Archive
 
-Understand:
+7.5 Lifecycle management
 
-- Lifecycle policies
-- Retention policies
-- Versioning
-- Encryption
-- IAM
-- Signed URLs
-- Data transfer
-- Data growth planning
+7.6 Object versioning
+
+7.7 Retention policies
+
+7.8 IAM permissions
+
+7.9 Signed URLs
+
+7.10 Encryption
 
 
-===============================================================================
-SECTION 6: DATABASES
-===============================================================================
+-------------------------------------------------------------------------------
+8. DATABASE SERVICES
+-------------------------------------------------------------------------------
 
-Know when to select:
-
-Cloud SQL
+8.1 Cloud SQL
 - MySQL
 - PostgreSQL
 - SQL Server
-
-Cloud Spanner
-
-Firestore
-
-Bigtable
-
-BigQuery
-
-Understand:
-
-- SQL vs NoSQL
-- Relational vs non-relational
-- Global scalability
-- Transactions
-- Analytics
-- Availability
-- Replication
-- Backup
-- DR
-
-
-===============================================================================
-SECTION 7: SECURITY ARCHITECTURE
-===============================================================================
-
-- IAM
-- Least privilege
-- Organization hierarchy
-- Organization policies
-- Separation of duties
-- Service accounts
-- KMS
-- Secret Manager
-- Encryption
-- VPC Service Controls
-- Context-Aware Access
-- Auditing
-- Remote access
-
-
-===============================================================================
-SECTION 8: HIGH AVAILABILITY & DISASTER RECOVERY
-===============================================================================
-
-Understand:
-
-- Availability zones
-- Regions
-- Multi-zone
-- Multi-region
-- Regional architectures
-
-HA patterns
-
-Active/Active
-
-Region A <------> Region B
- ACTIVE            ACTIVE
-
-
-Active/Passive
-
-Region A --------> Region B
- ACTIVE             STANDBY
-
-
-DR concepts:
-
-- RTO
-- RPO
-- Backup
-- Restore
-- Replication
-- Failover
-- Failback
-
-Design for:
-
-- Zonal failure
-- Regional failure
-- Application failure
-- Database failure
-
-
-===============================================================================
-SECTION 9: MIGRATION
-===============================================================================
-
-Migration strategies
-
-- Rehost
-- Replatform
-- Refactor
-- Repurchase
-- Retain
-- Retire
-
-Plan:
-
-- Application migration
-- VM migration
-- Database migration
-- Data migration
-- Network migration
-
-Hybrid migration architectures
-
-
-===============================================================================
-SECTION 10: DEVOPS & SDLC ARCHITECTURE
-===============================================================================
-
-- SDLC
-- CI/CD
-- Cloud Build
-- Artifact Registry
-- Cloud Deploy
-- Testing
-- Infrastructure as Code
-- Terraform
-- Deployment strategies
-- Root Cause Analysis
-
-
-===============================================================================
-SECTION 11: BUSINESS CONTINUITY
-===============================================================================
-
-- Business continuity
-- Disaster recovery
-- Backup strategies
-- Multi-region deployment
-- Resilience testing
-- Chaos engineering
-- Penetration testing
-
-
-===============================================================================
-SECTION 12: PROGRAMMATIC GCP MANAGEMENT
-===============================================================================
-
-- Cloud Shell
-- gcloud
-- gsutil
-- bq
-- APIs
-- SDKs
-- Automation
-
-
-===============================================================================
-SECTION 13: ARCHITECT EXAM CASE STUDIES
-===============================================================================
-
-Study architecture decision-making using Google's current exam case studies,
-such as:
-
-- EHR Healthcare
-- Helicopter Racing League
-- Mountkirk Games
-- TerramEarth
-
-Focus on:
-
-- Business requirements
-- Technical requirements
-- Existing architecture
-- Migration
-- Scalability
-- Security
-- Reliability
-- Cost
-- Recommended GCP services
-
-
-################################################################################
-# 3. PROFESSIONAL CLOUD SECURITY ENGINEER
-################################################################################
-
-Primary Focus:
-
-- IAM
-- Network security
-- Data protection
-- Encryption
-- Security monitoring
-- Threat detection
-- Compliance
-- Container security
-- Cloud security architecture
-- Software supply-chain security
-
-
-===============================================================================
-SECTION 1: IAM & ACCESS CONTROL
-===============================================================================
-
-IAM
-
-- Principals
-- Permissions
-- Roles
-- Policies
-
-Roles
-
-- Basic
-- Predefined
-- Custom
-
-IAM hierarchy
-
-Organization
-   |
-Folder
-   |
-Project
-   |
-Resource
-
-Understand:
-
-- Policy inheritance
-- Least privilege
-- Separation of duties
-- IAM Conditions
-- Privileged access
-- Service accounts
-
-
-===============================================================================
-SECTION 2: SERVICE ACCOUNT SECURITY
-===============================================================================
-
-- Service accounts
-- Service account IAM
-- Service account impersonation
-- Short-lived credentials
-- Workload Identity
-- Workload Identity Federation
-- Avoiding service account keys
-- Key rotation
-
-
-===============================================================================
-SECTION 3: IDENTITY
-===============================================================================
-
-- Cloud Identity
-- Google Workspace integration
-- Workforce Identity Federation
-- Workload Identity Federation
-- SSO
-- Federation
-- MFA
-- Context-Aware Access
-- Identity-Aware Proxy
-
-
-===============================================================================
-SECTION 4: NETWORK SECURITY
-===============================================================================
-
-VPC Security
-
-- Firewall rules
-- Hierarchical firewall policies
-- Network segmentation
-- Private networking
-- Shared VPC
-
-Secure connectivity
-
-- VPN
-- Interconnect
-- Private Google Access
-- Private Service Connect
-- Cloud NAT
-
-Boundary protection
-
-- VPC Service Controls
-- Service perimeters
-- Restricted services
-- Data exfiltration protection
-
-
-===============================================================================
-SECTION 5: WEB & EDGE SECURITY
-===============================================================================
-
-Cloud Armor
-
-- WAF
-- DDoS protection
-- IP filtering
-- Rate limiting
-- Security policies
-
-Load Balancer Security
-
-TLS
-
-Certificates
-
-Certificate Manager
-
-
-===============================================================================
-SECTION 6: DATA PROTECTION
-===============================================================================
-
-Encryption at rest
-
-Encryption in transit
-
-Google-managed encryption keys
-
-Customer-managed encryption keys — CMEK
-
-Cloud KMS
-
-- Key rings
-- Keys
-- Key versions
-- Rotation
-- IAM
-- Audit
-
-Cloud HSM
-
-External Key Manager where applicable
-
-
-===============================================================================
-SECTION 7: SECRET MANAGEMENT
-===============================================================================
-
-Secret Manager
-
-- Store secrets
-- Retrieve secrets
-- Secret versions
-- IAM
-- Rotation
-- Audit
-
-Protect:
-
-- Passwords
-- API keys
-- Database credentials
-- Tokens
-- Certificates
-
-
-===============================================================================
-SECTION 8: STORAGE SECURITY
-===============================================================================
-
-Cloud Storage
-
-- IAM
-- Bucket access
-- Uniform bucket-level access
-- Signed URLs
-- Retention policies
-- Object versioning
-- Encryption
-- Public access prevention
-
-Database security
-
-- IAM
-- Private IP
-- TLS
-- Encryption
+- HA
 - Backups
-- Audit
+- Read replicas
+
+8.2 Cloud Spanner
+
+8.3 Firestore
+
+8.4 Bigtable
+
+8.5 Choosing appropriate database services
 
 
-===============================================================================
-SECTION 9: GKE & CONTAINER SECURITY
-===============================================================================
+-------------------------------------------------------------------------------
+9. DATA & MESSAGING
+-------------------------------------------------------------------------------
 
-- GKE security
-- Kubernetes RBAC
-- IAM integration
-- Workload Identity
-- Network Policies
-- Pod security
-- Secret management
-- Private clusters
-- Container image security
-- Vulnerability scanning
+9.1 BigQuery fundamentals
 
-Binary Authorization
+9.2 Datasets
 
-Artifact Registry security
+9.3 Tables
 
-Software supply-chain security
+9.4 Queries
 
-SLSA
+9.5 Pub/Sub
+- Topics
+- Subscriptions
+- Publishers
+- Subscribers
+
+9.6 Event-driven architectures
 
 
-===============================================================================
-SECTION 10: SECURITY MONITORING
-===============================================================================
+-------------------------------------------------------------------------------
+10. MONITORING & OPERATIONS
+-------------------------------------------------------------------------------
 
-Cloud Audit Logs
+10.1 Cloud Monitoring
 
-Cloud Logging
+10.2 Cloud Logging
 
-Cloud Monitoring
+10.3 Metrics
 
-Security Command Center
+10.4 Logs Explorer
 
-Understand:
+10.5 Dashboards
 
-- Asset inventory
-- Security findings
-- Vulnerabilities
-- Misconfigurations
-- Threat detection
-- Security posture
+10.6 Alerting policies
 
+10.7 Uptime checks
 
-===============================================================================
-SECTION 11: THREAT DETECTION
-===============================================================================
+10.8 Log-based metrics
 
-Security Command Center
+10.9 Audit Logs
 
-Event Threat Detection
+10.10 Error Reporting
 
-Container Threat Detection
-
-Detect:
-
-- Suspicious IAM activity
-- Credential misuse
-- Malware
-- Crypto mining
-- Network attacks
-- Container attacks
-- Data exfiltration
+10.11 Troubleshooting GCP resources
 
 
-===============================================================================
-SECTION 12: SECURITY OPERATIONS
-===============================================================================
+-------------------------------------------------------------------------------
+11. BILLING & COST MANAGEMENT
+-------------------------------------------------------------------------------
 
-Security lifecycle:
+11.1 Billing accounts
 
-Prevent
-   |
-Detect
-   |
-Investigate
-   |
-Respond
-   |
-Recover
+11.2 Budgets
 
-Study:
+11.3 Billing alerts
 
-- Incident response
-- Security monitoring
-- Investigation
-- Log analysis
-- Threat detection
-- Remediation
-- Security automation
+11.4 Cost reports
+
+11.5 Labels
+
+11.6 Resource optimization
+
+11.7 Committed use discounts
+
+11.8 Cost troubleshooting
 
 
-===============================================================================
-SECTION 13: COMPLIANCE
-===============================================================================
+-------------------------------------------------------------------------------
+12. INFRASTRUCTURE AS CODE
+-------------------------------------------------------------------------------
 
-Understand cloud compliance concepts involving:
+12.1 Terraform fundamentals
 
-- PCI DSS
-- HIPAA
-- GDPR
-- SOC
-- ISO 27001
+12.2 Providers
 
-Know:
+12.3 Resources
 
-- Shared responsibility model
-- Data residency
-- Data sovereignty
-- Data retention
-- Audit requirements
-- Regulatory requirements
+12.4 Variables
 
+12.5 Outputs
 
-===============================================================================
-SECTION 14: SECURITY GOVERNANCE
-===============================================================================
+12.6 State
 
-Organization Policies
+12.7 Remote state
 
-IAM governance
+12.8 Modules
 
-Resource hierarchy
+12.9 GCP Terraform provider
 
-Centralized security
-
-Security policies
-
-Policy inheritance
-
-Separation of duties
-
-Least privilege
-
-
-===============================================================================
-SECTION 15: DEVSECOPS
-===============================================================================
-
-Secure pipeline:
-
-Developer
-   |
-Git
-   |
-SAST / SCA / Secret Scan
-   |
-Cloud Build
-   |
-Container Scan
-   |
-Artifact Registry
-   |
-Binary Authorization
-   |
-Cloud Deploy
-   |
-GKE / Cloud Run
-
-Understand:
-
-- Shift-left security
-- Dependency scanning
-- Container scanning
-- Secret scanning
-- Artifact signing
-- Provenance
-- SLSA
-- Binary Authorization
-- CI/CD IAM security
-
-
-===============================================================================
-SECTION 16: AI WORKLOAD SECURITY
-===============================================================================
-
-The current Security Engineer scope also includes securing AI workloads.
-
-Understand:
-
-- AI workload identities
+12.10 Provision:
+- VPC
+- Subnets
+- Firewall
+- Compute Engine
+- GKE
+- Storage
 - IAM
-- Data access
-- Sensitive data
-- Network isolation
-- Model/API access
-- Logging
-- Monitoring
-- Secrets
-- Supply-chain security
-- Least privilege
 
 
-################################################################################
-# COMMON SYLLABUS ACROSS ALL THREE
-################################################################################
+================================================================================
+PHASE 2 — PROFESSIONAL CLOUD DEVOPS ENGINEER
+================================================================================
 
-The certifications overlap significantly.
-
-MASTER COMMON TOPICS:
-
-1. IAM
-2. Service Accounts
-3. Organization / Folder / Project hierarchy
-4. Organization Policies
-5. VPC
-6. Shared VPC
-7. Firewall
-8. Load Balancing
-9. VPN
-10. Interconnect
-11. Compute Engine
-12. Managed Instance Groups
-13. GKE
-14. Cloud Run
-15. Cloud Storage
-16. Cloud SQL
-17. Cloud Spanner
-18. BigQuery
-19. Cloud Build
-20. Artifact Registry
-21. Cloud Deploy
-22. Terraform
-23. Git
-24. CI/CD
-25. Secret Manager
-26. Cloud KMS
-27. Cloud Logging
-28. Cloud Monitoring
-29. Cloud Audit Logs
-30. Security Command Center
-31. High Availability
-32. Disaster Recovery
-33. Autoscaling
-34. Cost Optimization
-35. Troubleshooting
-36. SRE
-37. SLI/SLO/SLA
-38. Error Budgets
-39. DevSecOps
-40. Software Supply Chain Security
+GOAL:
+Master CI/CD, GKE, automation, SRE, observability and reliable production
+operations.
 
 
-################################################################################
-# DEVOPS / CLOUD / SRE ENGINEER — CONSOLIDATED LEARNING MAP
-################################################################################
+-------------------------------------------------------------------------------
+13. DEVOPS FUNDAMENTALS
+-------------------------------------------------------------------------------
 
-Instead of learning the three certifications independently, study in this
-order:
+13.1 DevOps principles
+
+13.2 Agile and DevOps
+
+13.3 CALMS
+
+13.4 CI
+
+13.5 Continuous Delivery
+
+13.6 Continuous Deployment
+
+13.7 Infrastructure as Code
+
+13.8 GitOps
+
+13.9 DevSecOps
+
+13.10 Platform engineering
 
 
-PHASE 1 — GCP FOUNDATION
-------------------------
+-------------------------------------------------------------------------------
+14. SOURCE CONTROL
+-------------------------------------------------------------------------------
 
-GCP Resource Hierarchy
-IAM
-Service Accounts
-Cloud Shell
+14.1 Git fundamentals
+
+14.2 Branching
+
+14.3 Pull requests
+
+14.4 Code reviews
+
+14.5 Branch protection
+
+14.6 Trunk-based development
+
+14.7 GitFlow
+
+14.8 Release strategies
+
+
+-------------------------------------------------------------------------------
+15. CI/CD ON GOOGLE CLOUD
+-------------------------------------------------------------------------------
+
+15.1 Cloud Build
+
+15.2 Build triggers
+
+15.3 cloudbuild.yaml
+
+15.4 Build steps
+
+15.5 Build artifacts
+
+15.6 Substitutions
+
+15.7 Private pools
+
+15.8 Artifact Registry
+
+15.9 Container image management
+
+15.10 Vulnerability scanning
+
+15.11 Cloud Deploy
+
+15.12 Delivery pipelines
+
+15.13 Targets
+
+15.14 Releases
+
+15.15 Rollouts
+
+15.16 Approvals
+
+15.17 Rollbacks
+
+
+-------------------------------------------------------------------------------
+16. DEPLOYMENT STRATEGIES
+-------------------------------------------------------------------------------
+
+16.1 Rolling deployment
+
+16.2 Recreate deployment
+
+16.3 Blue-Green deployment
+
+16.4 Canary deployment
+
+16.5 Traffic splitting
+
+16.6 Progressive delivery
+
+16.7 Feature flags
+
+16.8 Rollback strategies
+
+
+-------------------------------------------------------------------------------
+17. ADVANCED GKE
+-------------------------------------------------------------------------------
+
+17.1 Production cluster architecture
+
+17.2 Regional clusters
+
+17.3 Private clusters
+
+17.4 Node pools
+
+17.5 Autoscaling
+
+17.6 Pod disruption budgets
+
+17.7 Resource requests
+
+17.8 Resource limits
+
+17.9 Affinity
+
+17.10 Anti-affinity
+
+17.11 Taints
+
+17.12 Tolerations
+
+17.13 Network policies
+
+17.14 Ingress
+
+17.15 Gateway API
+
+17.16 Persistent storage
+
+17.17 Stateful workloads
+
+17.18 Workload Identity
+
+17.19 RBAC
+
+17.20 Cluster upgrades
+
+17.21 Release channels
+
+17.22 Backup and recovery
+
+17.23 GKE troubleshooting
+
+
+-------------------------------------------------------------------------------
+18. GITOPS
+-------------------------------------------------------------------------------
+
+18.1 GitOps principles
+
+18.2 Declarative infrastructure
+
+18.3 Git as source of truth
+
+18.4 Argo CD
+
+18.5 Applications
+
+18.6 ApplicationSets
+
+18.7 Sync
+
+18.8 Auto-sync
+
+18.9 Drift detection
+
+18.10 Rollback
+
+18.11 Helm
+
+18.12 Kustomize
+
+18.13 Environment promotion
+
+
+-------------------------------------------------------------------------------
+19. SITE RELIABILITY ENGINEERING — SRE
+-------------------------------------------------------------------------------
+
+19.1 SRE principles
+
+19.2 SLI
+
+19.3 SLO
+
+19.4 SLA
+
+19.5 Error budgets
+
+19.6 Reliability targets
+
+19.7 Toil
+
+19.8 Toil reduction
+
+19.9 Automation
+
+19.10 Capacity planning
+
+19.11 Availability
+
+19.12 Latency
+
+19.13 Reliability
+
+19.14 Performance
+
+
+-------------------------------------------------------------------------------
+20. OBSERVABILITY
+-------------------------------------------------------------------------------
+
+20.1 Metrics
+
+20.2 Logs
+
+20.3 Traces
+
+20.4 Cloud Monitoring
+
+20.5 Cloud Logging
+
+20.6 Cloud Trace
+
+20.7 Error Reporting
+
+20.8 Profiler concepts
+
+20.9 OpenTelemetry
+
+20.10 Dashboards
+
+20.11 Alerting
+
+20.12 Log-based metrics
+
+20.13 Custom metrics
+
+20.14 Application monitoring
+
+20.15 GKE monitoring
+
+
+-------------------------------------------------------------------------------
+21. INCIDENT MANAGEMENT
+-------------------------------------------------------------------------------
+
+21.1 Incident lifecycle
+
+21.2 Detection
+
+21.3 Alerting
+
+21.4 Triage
+
+21.5 Mitigation
+
+21.6 Resolution
+
+21.7 Root Cause Analysis
+
+21.8 Postmortems
+
+21.9 Blameless postmortems
+
+21.10 MTTR
+
+21.11 MTTD
+
+21.12 Runbooks
+
+21.13 Playbooks
+
+
+-------------------------------------------------------------------------------
+22. DEVOPS AUTOMATION
+-------------------------------------------------------------------------------
+
+22.1 Terraform
+
+22.2 Reusable modules
+
+22.3 Environment management
+
+22.4 Remote state
+
+22.5 CI/CD integration
+
+22.6 Infrastructure pipelines
+
+22.7 Policy validation
+
+22.8 Automated testing
+
+22.9 Configuration management
+
+22.10 Secret management
+
+
+================================================================================
+PHASE 3 — PROFESSIONAL CLOUD ARCHITECT (PCA)
+================================================================================
+
+GOAL:
+Design secure, scalable, reliable, cost-effective enterprise GCP architectures.
+
+
+-------------------------------------------------------------------------------
+23. ENTERPRISE CLOUD ARCHITECTURE
+-------------------------------------------------------------------------------
+
+23.1 Requirements gathering
+
+23.2 Functional requirements
+
+23.3 Non-functional requirements
+
+23.4 Architecture trade-offs
+
+23.5 Scalability
+
+23.6 Availability
+
+23.7 Reliability
+
+23.8 Performance
+
+23.9 Security
+
+23.10 Cost optimization
+
+23.11 Operational excellence
+
+
+-------------------------------------------------------------------------------
+24. GCP RESOURCE ORGANIZATION
+-------------------------------------------------------------------------------
+
+24.1 Organization
+
+24.2 Folders
+
+24.3 Projects
+
+24.4 Resource hierarchy
+
+24.5 Organization policies
+
+24.6 IAM architecture
+
+24.7 Billing architecture
+
+24.8 Environment separation
+
+DEV
+TEST
+UAT
+PROD
+
+
+-------------------------------------------------------------------------------
+25. LANDING ZONE ARCHITECTURE
+-------------------------------------------------------------------------------
+
+25.1 Enterprise landing zones
+
+25.2 Resource hierarchy
+
+25.3 Shared VPC
+
+25.4 Central networking
+
+25.5 Central security
+
+25.6 Central logging
+
+25.7 IAM governance
+
+25.8 Organization policies
+
+25.9 Project provisioning
+
+25.10 Terraform-based landing zones
+
+
+-------------------------------------------------------------------------------
+26. ENTERPRISE NETWORK ARCHITECTURE
+-------------------------------------------------------------------------------
+
+26.1 Shared VPC
+
+26.2 Hub-and-spoke
+
+26.3 VPC Peering
+
+26.4 Cloud VPN
+
+26.5 HA VPN
+
+26.6 Cloud Interconnect
+
+26.7 Dedicated Interconnect
+
+26.8 Partner Interconnect
+
+26.9 Cloud Router
+
+26.10 BGP
+
+26.11 Cloud NAT
+
+26.12 Private Service Connect
+
+26.13 Private Google Access
+
+26.14 DNS architecture
+
+26.15 Load balancing architecture
+
+
+-------------------------------------------------------------------------------
+27. HYBRID & MULTI-CLOUD
+-------------------------------------------------------------------------------
+
+27.1 Hybrid cloud
+
+27.2 Multi-cloud
+
+27.3 On-premises connectivity
+
+27.4 VPN
+
+27.5 Interconnect
+
+27.6 DNS integration
+
+27.7 Identity integration
+
+27.8 Workload migration
+
+27.9 Data migration
+
+27.10 GKE multi-environment concepts
+
+
+-------------------------------------------------------------------------------
+28. COMPUTE ARCHITECTURE
+-------------------------------------------------------------------------------
+
+28.1 Compute Engine
+
+28.2 Managed Instance Groups
+
+28.3 GKE
+
+28.4 Cloud Run
+
+28.5 Serverless architecture
+
+28.6 Autoscaling
+
+28.7 Load balancing
+
+28.8 Choosing appropriate compute platforms
+
+
+-------------------------------------------------------------------------------
+29. DATA ARCHITECTURE
+-------------------------------------------------------------------------------
+
+29.1 Cloud Storage
+
+29.2 Cloud SQL
+
+29.3 Spanner
+
+29.4 Bigtable
+
+29.5 Firestore
+
+29.6 BigQuery
+
+29.7 Pub/Sub
+
+29.8 Dataflow concepts
+
+29.9 Dataproc concepts
+
+29.10 Data lifecycle
+
+29.11 Data residency
+
+29.12 Backup architecture
+
+
+-------------------------------------------------------------------------------
+30. HIGH AVAILABILITY
+-------------------------------------------------------------------------------
+
+30.1 Zonal architecture
+
+30.2 Regional architecture
+
+30.3 Multi-region architecture
+
+30.4 Load balancing
+
+30.5 Autoscaling
+
+30.6 Database HA
+
+30.7 GKE HA
+
+30.8 Failure-domain design
+
+
+-------------------------------------------------------------------------------
+31. DISASTER RECOVERY
+-------------------------------------------------------------------------------
+
+31.1 RPO
+
+31.2 RTO
+
+31.3 Backup
+
+31.4 Restore
+
+31.5 Pilot light
+
+31.6 Warm standby
+
+31.7 Active-passive
+
+31.8 Active-active
+
+31.9 Cross-region DR
+
+31.10 DR testing
+
+
+-------------------------------------------------------------------------------
+32. MIGRATION
+-------------------------------------------------------------------------------
+
+32.1 Migration assessment
+
+32.2 Discovery
+
+32.3 Dependency analysis
+
+32.4 Rehost
+
+32.5 Replatform
+
+32.6 Refactor
+
+32.7 Repurchase
+
+32.8 Retire
+
+32.9 Retain
+
+32.10 Database migration
+
+32.11 Application migration
+
+32.12 Migration validation
+
+
+-------------------------------------------------------------------------------
+33. COST ARCHITECTURE
+-------------------------------------------------------------------------------
+
+33.1 TCO
+
+33.2 Rightsizing
+
+33.3 Autoscaling
+
+33.4 Storage lifecycle
+
+33.5 Committed use discounts
+
+33.6 Spot VMs
+
+33.7 Cost attribution
+
+33.8 Budgets
+
+33.9 Quotas
+
+33.10 FinOps principles
+
+
+================================================================================
+PHASE 4 — PROFESSIONAL CLOUD SECURITY ENGINEER
+================================================================================
+
+GOAL:
+Add enterprise GCP security, DevSecOps, IAM, network security, data protection,
+threat detection and compliance.
+
+
+-------------------------------------------------------------------------------
+34. CLOUD SECURITY FUNDAMENTALS
+-------------------------------------------------------------------------------
+
+34.1 Shared responsibility
+
+34.2 Defense in depth
+
+34.3 Zero Trust
+
+34.4 Least privilege
+
+34.5 Separation of duties
+
+34.6 Threat modeling
+
+34.7 Risk management
+
+34.8 Security governance
+
+
+-------------------------------------------------------------------------------
+35. ADVANCED IAM
+-------------------------------------------------------------------------------
+
+35.1 IAM architecture
+
+35.2 Predefined roles
+
+35.3 Custom roles
+
+35.4 IAM Conditions
+
+35.5 Service accounts
+
+35.6 Service account impersonation
+
+35.7 Workload Identity Federation
+
+35.8 Workforce Identity Federation
+
+35.9 Privileged access
+
+35.10 Least privilege
+
+35.11 IAM troubleshooting
+
+
+-------------------------------------------------------------------------------
+36. ORGANIZATION SECURITY
+-------------------------------------------------------------------------------
+
+36.1 Organization Policy Service
+
+36.2 Policy constraints
+
+36.3 Resource hierarchy
+
+36.4 Security guardrails
+
+36.5 Project isolation
+
+36.6 Environment separation
+
+36.7 Policy enforcement
+
+
+-------------------------------------------------------------------------------
+37. NETWORK SECURITY
+-------------------------------------------------------------------------------
+
+37.1 Firewall policies
+
+37.2 Hierarchical firewall policies
+
+37.3 VPC isolation
+
+37.4 Private Google Access
+
+37.5 Private Service Connect
+
+37.6 Cloud NAT
+
+37.7 Cloud Armor
+
+37.8 WAF
+
+37.9 DDoS protection
+
+37.10 VPC Service Controls
+
+37.11 Network segmentation
+
+37.12 Zero-trust networking
+
+
+-------------------------------------------------------------------------------
+38. DATA SECURITY
+-------------------------------------------------------------------------------
+
+38.1 Encryption at rest
+
+38.2 Encryption in transit
+
+38.3 Google-managed encryption
+
+38.4 Customer-managed encryption keys
+
+38.5 Cloud KMS
+
+38.6 Cloud HSM
+
+38.7 Key rotation
+
+38.8 Key lifecycle
+
+38.9 Secret Manager
+
+38.10 Secret rotation
+
+38.11 Sensitive Data Protection
+
+38.12 Data classification
+
+38.13 Data Loss Prevention concepts
+
+
+-------------------------------------------------------------------------------
+39. SECURITY MONITORING
+-------------------------------------------------------------------------------
+
+39.1 Cloud Audit Logs
+
+39.2 Admin Activity logs
+
+39.3 Data Access logs
+
+39.4 System Event logs
+
+39.5 Policy Denied logs
+
+39.6 Security Command Center
+
+39.7 Security findings
+
+39.8 Event Threat Detection
+
+39.9 Vulnerability findings
+
+39.10 Centralized logging
+
+39.11 SIEM integration
+
+39.12 Security alerting
+
+
+-------------------------------------------------------------------------------
+40. CONTAINER & GKE SECURITY
+-------------------------------------------------------------------------------
+
+40.1 GKE security architecture
+
+40.2 Private clusters
+
+40.3 Workload Identity
+
+40.4 Kubernetes RBAC
+
+40.5 NetworkPolicy
+
+40.6 Pod security
+
+40.7 Image security
+
+40.8 Artifact Registry security
+
+40.9 Vulnerability scanning
+
+40.10 Binary Authorization
+
+40.11 Software supply-chain security
+
+40.12 Admission controls
+
+40.13 Secret management
+
+
+-------------------------------------------------------------------------------
+41. DEVSECOPS
+-------------------------------------------------------------------------------
+
+41.1 Secure SDLC
+
+41.2 Shift-left security
+
+41.3 SAST
+
+41.4 SCA
+
+41.5 DAST
+
+41.6 Secrets scanning
+
+41.7 Container scanning
+
+41.8 IaC scanning
+
+41.9 Pipeline security
+
+41.10 Security gates
+
+41.11 Artifact signing
+
+41.12 Binary Authorization
+
+41.13 Supply-chain security
+
+41.14 Policy as Code
+
+41.15 Terraform security scanning
+
+
+-------------------------------------------------------------------------------
+42. APPLICATION & API SECURITY
+-------------------------------------------------------------------------------
+
+42.1 Application security fundamentals
+
+42.2 API authentication
+
+42.3 API authorization
+
+42.4 OAuth/OIDC concepts
+
+42.5 TLS
+
+42.6 Certificate management
+
+42.7 Secret management
+
+42.8 Rate limiting
+
+42.9 WAF protection
+
+42.10 Cloud Armor
+
+42.11 API exposure controls
+
+
+-------------------------------------------------------------------------------
+43. COMPLIANCE & GOVERNANCE
+-------------------------------------------------------------------------------
+
+43.1 Security governance
+
+43.2 Compliance fundamentals
+
+43.3 Audit requirements
+
+43.4 Data residency
+
+43.5 Data retention
+
+43.6 Logging requirements
+
+43.7 Access reviews
+
+43.8 Policy enforcement
+
+43.9 Security posture management
+
+
+================================================================================
+MASTER HANDS-ON PROJECT
+================================================================================
+
+PROJECT:
+ENTERPRISE GCP DEVSECOPS / INTERNAL DEVELOPER PLATFORM
+
+
+ARCHITECTURE
+============
+
+                    GCP ORGANIZATION
+                           │
+                    Organization Policy
+                           │
+                   ┌───────┴────────┐
+                   │                │
+               Folders          Central IAM
+                   │
+          ┌────────┼─────────┐
+          │        │         │
+         DEV      UAT       PROD
+          │        │         │
+          └────────┼─────────┘
+                   │
+                Shared VPC
+                   │
+       ┌───────────┼────────────┐
+       │           │            │
+   Private GKE   Cloud Run   Data Services
+       │
+       │
+       ▼
+   Kubernetes Platform
+       │
+   ┌───┼─────────────┐
+   │   │             │
+ Helm Kustomize    Argo CD
+       │
+       ▼
+      GitOps
+       ▲
+       │
+ GitHub / Repository
+       │
+       ▼
+     CI Pipeline
+       │
+       ├── Unit Tests
+       ├── SAST
+       ├── SCA
+       ├── Secrets Scan
+       ├── IaC Scan
+       ├── Container Scan
+       │
+       ▼
+ Artifact Registry
+       │
+       ▼
+ Binary Authorization
+       │
+       ▼
+ Cloud Deploy / Argo CD
+       │
+       ▼
+ DEV → UAT → PROD
+       │
+       ▼
+ Cloud Monitoring
+ Cloud Logging
+ Cloud Trace
+ Security Command Center
+       │
+       ▼
+ Alerts / SLO / Incident Management
+
+
+================================================================================
+TOOLS TO MASTER ACROSS THE FOUR PHASES
+================================================================================
+
+GCP
+---
 gcloud
-Projects
-Billing
-APIs
-Organization Policies
-
-
-PHASE 2 — NETWORKING
---------------------
-
-VPC
-Subnet
-Routes
-Firewall
-Cloud NAT
-Cloud DNS
-Shared VPC
-VPC Peering
-Private Google Access
-Private Service Connect
-VPN
-Interconnect
-Load Balancing
-
-
-PHASE 3 — COMPUTE
------------------
-
+Cloud Shell
+IAM
 Compute Engine
-Instance Templates
-Managed Instance Groups
-Autoscaling
-Autohealing
-Spot VMs
-
-
-PHASE 4 — STORAGE & DATABASE
-----------------------------
-
 Cloud Storage
-Persistent Disk
 Cloud SQL
-Spanner
-Firestore
-Bigtable
-BigQuery
-
-
-PHASE 5 — CONTAINERS
---------------------
-
-Docker
-Artifact Registry
-Kubernetes
 GKE
-RBAC
-Workload Identity
-Network Policies
-Autoscaling
-GKE Security
-
-
-PHASE 6 — SERVERLESS
---------------------
-
 Cloud Run
-Functions
-Event-driven architecture
-
-
-PHASE 7 — TERRAFORM
--------------------
-
-Terraform fundamentals
-Providers
-Resources
-Variables
-Outputs
-State
-Remote State
-Modules
-Workspaces
-Terraform GCP Provider
-Terraform CI/CD
-
-
-PHASE 8 — CI/CD
----------------
-
-Git
 Cloud Build
-Artifact Registry
 Cloud Deploy
-Jenkins
+Artifact Registry
+Cloud Monitoring
+Cloud Logging
+Cloud Trace
+Cloud DNS
+Cloud Load Balancing
+Cloud NAT
+Cloud VPN
+Cloud Interconnect
+Cloud Armor
+Cloud KMS
+Secret Manager
+Security Command Center
+VPC Service Controls
+
+
+DEVOPS
+------
+Git
+GitHub
+Docker
+Kubernetes
+Terraform
+Helm
+Kustomize
 Argo CD
+CI/CD
 GitOps
 
-Blue/Green
-Canary
-Rolling deployments
-Traffic splitting
 
-
-PHASE 9 — SECURITY
-------------------
-
-IAM
-Organization Policies
-Secret Manager
-KMS
-Cloud Armor
-VPC Service Controls
-IAP
-Security Command Center
-Audit Logs
-Workload Identity
-Binary Authorization
-
-
-PHASE 10 — OBSERVABILITY
-------------------------
-
-Cloud Logging
-Cloud Monitoring
-Metrics
-Prometheus
-Dashboards
-Alerts
-Cloud Trace
-Error Reporting
-VPC Flow Logs
-
-
-PHASE 11 — SRE
---------------
-
+SRE
+---
 SLI
 SLO
 SLA
-Error Budget
-Availability
-Latency
-Capacity Planning
+Error Budgets
+Monitoring
+Logging
+Tracing
+Alerting
 Incident Management
-Root Cause Analysis
 Postmortems
-Reliability
-Toil
-Automation
+Capacity Planning
 
 
-PHASE 12 — HA & DR
-------------------
-
-Multi-zone
-Regional architecture
-Multi-region architecture
-RTO
-RPO
-Backup
-Replication
-Failover
-Disaster Recovery
-
-
-PHASE 13 — DEVSECOPS
---------------------
-
+DEVSECOPS
+---------
 SAST
 SCA
-Secret scanning
-Container scanning
-Artifact scanning
+DAST
+Secret Scanning
+Container Scanning
+IaC Scanning
+Policy as Code
 Binary Authorization
-SLSA
-Supply-chain security
-Secure CI/CD
-
-
-PHASE 14 — PRODUCTION TROUBLESHOOTING
--------------------------------------
-
-Application troubleshooting
-GKE troubleshooting
-VM troubleshooting
-Network troubleshooting
-IAM troubleshooting
-CI/CD troubleshooting
-Performance troubleshooting
-Logging/Monitoring troubleshooting
-
-
-PHASE 15 — ARCHITECTURE
------------------------
-
-3-tier architecture
-Microservices
-Event-driven architecture
-Hybrid cloud
-Multi-cloud
-Highly available architecture
-Disaster recovery architecture
-Secure architecture
-Scalable architecture
-Cost-optimized architecture
-
-
-================================================================================
-TARGET END STATE
-================================================================================
-
-After covering this combined syllabus, you should be capable of designing and
-explaining an end-to-end environment such as:
-
-                         USERS
-                           |
-                    Cloud Load Balancer
-                           |
-                      Cloud Armor
-                           |
-                  +--------+--------+
-                  |                 |
-              Cloud Run            GKE
-                                    |
-                            Microservices
-                                    |
-                       +------------+------------+
-                       |                         |
-                   Cloud SQL                  Pub/Sub
-                       |
-                  Cloud Storage
-
-DEVOPS:
-
-Developer
-   |
-   v
-Git Repository
-   |
-   v
-Cloud Build
-   |
-   +--> Tests
-   +--> Security Scans
-   +--> Docker Build
-   |
-   v
-Artifact Registry
-   |
-   v
-Binary Authorization
-   |
-   v
-Cloud Deploy
-   |
-   +--> DEV
-   +--> QA
-   +--> STAGING
-   +--> PRODUCTION
-
-
-INFRASTRUCTURE:
-
-Terraform
-   |
-   +--> VPC
-   +--> IAM
-   +--> GKE
-   +--> Cloud SQL
-   +--> Load Balancer
-   +--> Monitoring
-   +--> Security
-
-
-OBSERVABILITY:
-
-Applications
-     |
-     +--> Logs ------> Cloud Logging
-     |
-     +--> Metrics ---> Cloud Monitoring
-     |
-     +--> Traces ----> Cloud Trace
-                         |
-                         v
-                    Dashboards
-                         |
-                         v
-                       Alerts
-
-
-SECURITY:
-
+Supply-chain Security
 IAM
- |
- +--> Least Privilege
- +--> Workload Identity
- +--> Secret Manager
- +--> Cloud KMS
- +--> Cloud Armor
- +--> VPC Service Controls
- +--> Security Command Center
- +--> Audit Logs
- +--> Binary Authorization
-
-
-SRE:
-
-SLI
- |
- v
-SLO
- |
- v
-Error Budget
- |
- +---- Healthy ----> Continue deployments
- |
- +---- Exhausted --> Prioritize reliability
+KMS
+Secret Manager
+Cloud Armor
+Security Command Center
 
 
 ================================================================================
-CERTIFICATION ORDER
+RECOMMENDED LEARNING ORDER
 ================================================================================
 
-Recommended:
+PHASE 1
+ACE
+↓
+GCP Fundamentals
+↓
+IAM
+↓
+Networking
+↓
+Compute
+↓
+Storage
+↓
+Databases
+↓
+GKE
+↓
+Serverless
+↓
+Monitoring
+↓
+Terraform
+↓
+ACE EXAM
 
-1. Professional Cloud DevOps Engineer
-             |
-             v
-2. Professional Cloud Architect
-             |
-             v
-3. Professional Cloud Security Engineer
+
+PHASE 2
+Professional Cloud DevOps Engineer
+↓
+Git
+↓
+Docker
+↓
+Advanced Kubernetes/GKE
+↓
+Cloud Build
+↓
+Artifact Registry
+↓
+Cloud Deploy
+↓
+Terraform
+↓
+GitOps / Argo CD
+↓
+Observability
+↓
+SRE
+↓
+Incident Management
+↓
+DEVOPS EXAM
+
+
+PHASE 3
+Professional Cloud Architect
+↓
+Enterprise Architecture
+↓
+Landing Zone
+↓
+Networking Architecture
+↓
+Hybrid Connectivity
+↓
+Compute Architecture
+↓
+Data Architecture
+↓
+HA
+↓
+DR
+↓
+Migration
+↓
+Cost Optimization
+↓
+PCA EXAM
+
+
+PHASE 4
+Professional Cloud Security Engineer
+↓
+IAM
+↓
+Organization Policies
+↓
+Network Security
+↓
+Cloud Armor
+↓
+VPC Service Controls
+↓
+KMS
+↓
+Secret Manager
+↓
+Security Command Center
+↓
+GKE Security
+↓
+DevSecOps
+↓
+Security Monitoring
+↓
+Governance
+↓
+SECURITY ENGINEER EXAM
 
 
 ================================================================================
-END OF MASTER SYLLABUS
+FINAL TARGET SKILL PROFILE
 ================================================================================
+
+Google Cloud
++
+Terraform
++
+Linux
++
+Git
++
+Docker
++
+Kubernetes / GKE
++
+Helm / Kustomize
++
+Argo CD / GitOps
++
+Cloud Build / Cloud Deploy
++
+Networking
++
+IAM
++
+Observability
++
+SRE
++
+Cloud Architecture
++
+Cloud Security
++
+DevSecOps
+
+
+TARGET ROLES
+============
+
+Senior GCP DevOps Engineer
+Senior Cloud Engineer
+GCP Platform Engineer
+Site Reliability Engineer
+DevSecOps Engineer
+Cloud Security Engineer
+Cloud Platform Engineer
+Platform/SRE Lead
+Cloud Solutions Architect
+Cloud/Platform Architect
