@@ -1,19 +1,121 @@
-{
-  "ok": true,
-  "staff_id": "45429656",
-  "organizations": [
-    {
-      "id": "687b29cad35450a9cbf7f40e",
-      "name": "Testing Tools",
-      "projects": [
-        { "id": "687b29cad35450a9cbf7f418", "name": "ChaosArmor DEV" },
-        { "id": "687b29cad35450a9cbf7f419", "name": "ChaosArmor UAT" },
-        { "id": "687b29cad35450a9cbf7f41a", "name": "ChaosArmor PROD" }
-      ]
-    }
-  ],
-  "count": 1,
-  "offset": 0,
-  "limit": 100,
-  "message": null
-}
+# Frontend repository: ChaosArmor/chaos-armor-frontend-ui
+# Branch: dev-45429656
+# Draft: replace all REPLACE_ values before use.
+
+eim: REPLACE_WITH_CHAOSARMOR_EIM
+appname: 'REPLACE_WITH_REGISTERED_FRONTEND_COMPONENT_NAME'
+application_version: '0.1.0'
+
+log_trace:
+  enabled: false
+
+build_metadata:
+  enabled: true
+
+parameters:
+  - name: package_name
+    type: string
+    default: chaos-armor-frontend-ui
+    description: Frontend artifact name
+
+  - name: package_version
+    type: string
+    default: '0.1.0-demo.1'
+    description: Unique artifact version; increment for each published build
+
+tools:
+  nodejs: 'REPLACE_WITH_APPROVED_NODE_INSTALLATION_PATH'
+
+build:
+  enabled: true
+  override_build_order: true
+
+  npm:
+    steps:
+      - package_json_path: 'client/package.json'
+        command:
+          - 'npm ci --include=dev'
+          - 'npm run lint'
+
+          # Temporary CI config: preserve React and @/ alias.
+          # Avoid loading development HTTPS certificate files.
+          - >-
+              node -e "const fs = require('node:fs');
+              fs.writeFileSync('vite.ci.config.mjs',
+              'import path from \"node:path\";\n'
+              + 'import { defineConfig } from \"vite\";\n'
+              + 'import react from \"@vitejs/plugin-react\";\n'
+              + 'export default defineConfig({\n'
+              + '  plugins: [react()],\n'
+              + '  resolve: { alias: { \"@\": path.resolve(process.cwd(), \"src\") } },\n'
+              + '  build: { outDir: \"build\" }\n'
+              + '});\n');"
+
+          - 'npm run build -- --config vite.ci.config.mjs'
+
+          # Fail if the expected output is missing.
+          - >-
+              node -e "require('node:fs').accessSync('build/index.html');"
+
+          - >-
+              node -e "require('node:fs').unlinkSync('vite.ci.config.mjs');"
+
+        enabled: true
+
+      - package_json_path: 'server/package.json'
+        command:
+          # No server lockfile currently exists.
+          # Generated dependency files remain in the CI workspace.
+          - 'npm install --omit=dev'
+          - 'node --check server.js'
+
+          # Stage client output and server source, preserving paths.
+          # Runtime dependencies are installed when deploying.
+          - >-
+              node -e "const fs = require('node:fs');
+              const path = require('node:path');
+              const root = path.resolve('..');
+              const stage = path.join(root, 'ci-artifact');
+              fs.mkdirSync(path.join(stage, 'client'), { recursive: true });
+              fs.mkdirSync(path.join(stage, 'server'), { recursive: true });
+              fs.cpSync(path.join(root, 'client', 'build'),
+              path.join(stage, 'client', 'build'), { recursive: true });
+              for (const name of ['package.json', 'package-lock.json',
+              'server.js', 'ssl-config.js',
+              '.chaos-armor-app-ecosystem.json',
+              'startChaosArmorAppServer.sh',
+              'stopChaosArmorAppServer.sh']) {
+              fs.copyFileSync(name, path.join(stage, 'server', name));
+              }"
+
+        enabled: true
+
+    authentication: auth
+    nexus:
+      id: REPLACE_WITH_NEXUS_INSTANCE_ID
+      jenkins_credential_id: REPLACE_WITH_NEXUS_CREDENTIAL_ID
+
+  zip:
+    nexus:
+      id: REPLACE_WITH_NEXUS_INSTANCE_ID
+      jenkins_credential_id: REPLACE_WITH_NEXUS_CREDENTIAL_ID
+      repository: REPLACE_WITH_ARTIFACT_REPOSITORY
+
+    artifacts:
+      - artifact_path: 'REPLACE_WITH_CHAOSARMOR_ARTIFACT_PATH'
+        artifact_name: "${params.package_name}"
+        artifact_version: "${params.package_version}"
+        source_path: './ci-artifact'
+        include:
+          - "**"
+
+# Keep enterprise controls enabled.
+# Add the required ChaosArmor scanner configuration before running.
+controls:
+  enabled: true
+
+cr_minion:
+  enabled: false
+
+deploy:
+  enabled: false
