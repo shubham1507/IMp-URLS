@@ -1,19 +1,41 @@
-# Start from the frontend repository root
-Set-Location client
+$ErrorActionPreference = "Stop"
 
-# Build into the directory expected by server.js
-npm run build -- --outDir build
-if ($LASTEXITCODE -ne 0) { throw "Build failed. Share the error." }
+# Check the existing local development certificate files.
+$keyFile = Join-Path $PWD "client\certs\localhost.key"
+$certFile = Join-Path $PWD "client\certs\localhost.crt"
 
-if (-not (Test-Path build/index.html)) {
-    throw "client/build/index.html is missing"
+if (!(Test-Path $keyFile) -or !(Test-Path $certFile)) {
+    throw "Local certificate files not found. Stop and share this error."
 }
 
-# Prepare and start the actual Express server
-Set-Location ../server
+# Resolve the same absolute path used by ssl-config.js.
+$pemFile = node -p "require('node:path').resolve('/opt/charm/charm-core/certs/chaos-armor/chaosarmor-dev.uk.hsbc.pem')"
+if ($LASTEXITCODE -ne 0) { throw "Could not resolve certificate path" }
 
-npm install --omit=dev
-if ($LASTEXITCODE -ne 0) { throw "Server dependency installation failed" }
+# Do not overwrite an existing certificate bundle.
+if (Test-Path $pemFile) {
+    throw "Target PEM already exists. Stop and inspect before replacing it."
+}
+
+New-Item -ItemType Directory -Force `
+    -Path (Split-Path $pemFile) | Out-Null
+
+# Combine the local key and certificate without printing their contents.
+$pemContents = [IO.File]::ReadAllText($keyFile).TrimEnd() +
+    "`n" + [IO.File]::ReadAllText($certFile).TrimEnd() + "`n"
+
+[IO.File]::WriteAllText(
+    $pemFile,
+    $pemContents,
+    [Text.Encoding]::ASCII
+)
+Remove-Variable pemContents
+
+# Validate the TLS configuration before starting the server.
+Set-Location server
+
+node -e "const s=require('./ssl-config'); require('node:tls').createSecureContext({key:s.privateKey,cert:s.certificate}); console.log('TLS configuration loaded successfully');"
+if ($LASTEXITCODE -ne 0) { throw "TLS validation failed. Share the error." }
 
 $env:PORT = "8080"
 node server.js
