@@ -1,29 +1,12 @@
-$ErrorActionPreference = "Stop"
+git branch --show-current
+# Expected: dev-45429656
 
-Set-Location "C:\Users\45429656\Documents\my-work\chaos-armor-frontend-ui"
+git status --short
 
-$pemFile = "C:\opt\charm\charm-core\certs\chaos-armor\chaosarmor-dev.uk.hsbc.pem"
+# Stage only the CI configuration
+git add -- ci-config.yaml
 
-if (Test-Path $pemFile) {
-    throw "PEM already exists. Stop here and share this message."
-}
-
-# Create the directory for the local development bundle
-New-Item -ItemType Directory -Force `
-    -Path (Split-Path $pemFile) | Out-Null
-
-# Combine without displaying key/certificate contents
-Get-Content -Path ".\client\certs\localhost.key", ".\client\certs\localhost.crt" |
-    Set-Content -Path $pemFile -Encoding ascii
-
-# Validate the existing server TLS configuration
-Set-Location ".\server"
-
-node -e "const s=require('./ssl-config'); require('node:tls').createSecureContext({key:s.privateKey,cert:s.certificate}); console.log('TLS configuration loaded successfully');"
-if ($LASTEXITCODE -ne 0) {
-    throw "TLS validation failed. Share the error."
-}
-
-# Start Express
-$env:PORT = "8080"
-node server.js
+# Check for whitespace errors and review exactly what is staged
+git diff --cached --check
+git diff --cached --stat
+git diff --cached -- ci-config.yaml
