@@ -1,19 +1,29 @@
-# Start from the frontend repository root
-Set-Location client
+$ErrorActionPreference = "Stop"
 
-# Build into the directory expected by server.js
-npm run build -- --outDir build
-if ($LASTEXITCODE -ne 0) { throw "Build failed. Share the error." }
+Set-Location "C:\Users\45429656\Documents\my-work\chaos-armor-frontend-ui"
 
-if (-not (Test-Path build/index.html)) {
-    throw "client/build/index.html is missing"
+$pemFile = "C:\opt\charm\charm-core\certs\chaos-armor\chaosarmor-dev.uk.hsbc.pem"
+
+if (Test-Path $pemFile) {
+    throw "PEM already exists. Stop here and share this message."
 }
 
-# Prepare and start the actual Express server
-Set-Location ../server
+# Create the directory for the local development bundle
+New-Item -ItemType Directory -Force `
+    -Path (Split-Path $pemFile) | Out-Null
 
-npm install --omit=dev
-if ($LASTEXITCODE -ne 0) { throw "Server dependency installation failed" }
+# Combine without displaying key/certificate contents
+Get-Content -Path ".\client\certs\localhost.key", ".\client\certs\localhost.crt" |
+    Set-Content -Path $pemFile -Encoding ascii
 
+# Validate the existing server TLS configuration
+Set-Location ".\server"
+
+node -e "const s=require('./ssl-config'); require('node:tls').createSecureContext({key:s.privateKey,cert:s.certificate}); console.log('TLS configuration loaded successfully');"
+if ($LASTEXITCODE -ne 0) {
+    throw "TLS validation failed. Share the error."
+}
+
+# Start Express
 $env:PORT = "8080"
 node server.js
