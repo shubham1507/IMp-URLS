@@ -1,11 +1,5 @@
-# Confirm branch: dev-45429656
-git branch --show-current
+Hi [Manager’s Name], the ChaosArmor Jenkins pipeline is blocked during repository scanning with 403: “Resource not accessible by integration” when fetching pull requests.
 
-# Must list ONLY ci-config.yaml
-git diff --cached --name-only
+Could you help coordinate with the GitHub App owner to verify that App ID 2947, used by Jenkins credential ChaosArmorApp, has access to ChaosArmor/chaos-armor-frontend-ui and Pull requests: Read permission, including approval of any pending permission changes?
 
-git commit -m "ci: configure frontend DevX build and artifact packaging"
-if ($LASTEXITCODE -ne 0) { throw "Commit failed" }
-
-git push origin dev-45429656
-if ($LASTEXITCODE -ne 0) { throw "Push failed" }
+This is blocking the first pipeline build for Friday’s demo.
