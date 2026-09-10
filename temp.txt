@@ -1,68 +1,19 @@
-# STEP 1 — Verify branch and tools
-git branch --show-current
-# Expected: dev-45429656
-
-node --version
-npm --version
-
-# STEP 2 — Install client dependencies
+# Start from the frontend repository root
 Set-Location client
 
-npm ci --include=dev
-if ($LASTEXITCODE -ne 0) { throw "Client dependency installation failed" }
-
-# STEP 3 — Run existing lint checks
-npm run lint
-if ($LASTEXITCODE -ne 0) { throw "Lint failed. Share the errors before continuing." }
-
-# STEP 4 — Create a temporary local build configuration
-# Matches the CI approach; existing vite.config.js stays unchanged.
-# Avoids reading development HTTPS certificate files.
-
-@'
-import path from "node:path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(process.cwd(), "src")
-    }
-  },
-  build: {
-    outDir: "build"
-  }
-});
-'@ | Set-Content -Encoding utf8 vite.ci.config.mjs
-
-# STEP 5 — Build the frontend
-npm run build -- --config vite.ci.config.mjs
-if ($LASTEXITCODE -ne 0) { throw "Frontend build failed" }
+# Build into the directory expected by server.js
+npm run build -- --outDir build
+if ($LASTEXITCODE -ne 0) { throw "Build failed. Share the error." }
 
 if (-not (Test-Path build/index.html)) {
-    throw "Expected client/build/index.html is missing"
+    throw "client/build/index.html is missing"
 }
 
-Remove-Item vite.ci.config.mjs
-
-# STEP 6 — Install server dependencies
+# Prepare and start the actual Express server
 Set-Location ../server
 
 npm install --omit=dev
 if ($LASTEXITCODE -ne 0) { throw "Server dependency installation failed" }
-
-# Check syntax and dependency resolution
-node --check server.js
-if ($LASTEXITCODE -ne 0) { throw "Server syntax check failed" }
-
-node -e "for (const name of ['express','body-parser','jsonwebtoken','cors']) { console.log(name + ': ' + require.resolve(name)); }"
-if ($LASTEXITCODE -ne 0) { throw "A server dependency could not be resolved" }
-
-# STEP 7 — Start the actual server
-# Requires ssl-config.js to successfully load its key/certificate.
-# Leave this terminal running. Ctrl+C stops the server.
 
 $env:PORT = "8080"
 node server.js
