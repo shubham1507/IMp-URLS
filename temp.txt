@@ -1,41 +1,12 @@
-$ErrorActionPreference = "Stop"
+# Go directly to your repository root
+Set-Location "C:\Users\45429656\Documents\my-work\chaos-armor-frontend-ui"
 
-# Check the existing local development certificate files.
-$keyFile = Join-Path $PWD "client\certs\localhost.key"
-$certFile = Join-Path $PWD "client\certs\localhost.crt"
+# Confirm location
+Get-Location
 
-if (!(Test-Path $keyFile) -or !(Test-Path $certFile)) {
-    throw "Local certificate files not found. Stop and share this error."
-}
+# Check the correct certificate paths
+Test-Path ".\client\certs\localhost.key"
+Test-Path ".\client\certs\localhost.crt"
 
-# Resolve the same absolute path used by ssl-config.js.
-$pemFile = node -p "require('node:path').resolve('/opt/charm/charm-core/certs/chaos-armor/chaosarmor-dev.uk.hsbc.pem')"
-if ($LASTEXITCODE -ne 0) { throw "Could not resolve certificate path" }
-
-# Do not overwrite an existing certificate bundle.
-if (Test-Path $pemFile) {
-    throw "Target PEM already exists. Stop and inspect before replacing it."
-}
-
-New-Item -ItemType Directory -Force `
-    -Path (Split-Path $pemFile) | Out-Null
-
-# Combine the local key and certificate without printing their contents.
-$pemContents = [IO.File]::ReadAllText($keyFile).TrimEnd() +
-    "`n" + [IO.File]::ReadAllText($certFile).TrimEnd() + "`n"
-
-[IO.File]::WriteAllText(
-    $pemFile,
-    $pemContents,
-    [Text.Encoding]::ASCII
-)
-Remove-Variable pemContents
-
-# Validate the TLS configuration before starting the server.
-Set-Location server
-
-node -e "const s=require('./ssl-config'); require('node:tls').createSecureContext({key:s.privateKey,cert:s.certificate}); console.log('TLS configuration loaded successfully');"
-if ($LASTEXITCODE -ne 0) { throw "TLS validation failed. Share the error." }
-
-$env:PORT = "8080"
-node server.js
+# Confirm the production build exists
+Test-Path ".\client\build\index.html"
