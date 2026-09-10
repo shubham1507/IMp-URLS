@@ -1,12 +1,19 @@
-# Go directly to your repository root
-Set-Location "C:\Users\45429656\Documents\my-work\chaos-armor-frontend-ui"
+# Start from the frontend repository root
+Set-Location client
 
-# Confirm location
-Get-Location
+# Build into the directory expected by server.js
+npm run build -- --outDir build
+if ($LASTEXITCODE -ne 0) { throw "Build failed. Share the error." }
 
-# Check the correct certificate paths
-Test-Path ".\client\certs\localhost.key"
-Test-Path ".\client\certs\localhost.crt"
+if (-not (Test-Path build/index.html)) {
+    throw "client/build/index.html is missing"
+}
 
-# Confirm the production build exists
-Test-Path ".\client\build\index.html"
+# Prepare and start the actual Express server
+Set-Location ../server
+
+npm install --omit=dev
+if ($LASTEXITCODE -ne 0) { throw "Server dependency installation failed" }
+
+$env:PORT = "8080"
+node server.js
