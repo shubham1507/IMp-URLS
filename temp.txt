@@ -1,12 +1,11 @@
+# Confirm branch: dev-45429656
 git branch --show-current
-# Expected: dev-45429656
 
-git status --short
+# Must list ONLY ci-config.yaml
+git diff --cached --name-only
 
-# Stage only the CI configuration
-git add -- ci-config.yaml
+git commit -m "ci: configure frontend DevX build and artifact packaging"
+if ($LASTEXITCODE -ne 0) { throw "Commit failed" }
 
-# Check for whitespace errors and review exactly what is staged
-git diff --cached --check
-git diff --cached --stat
-git diff --cached -- ci-config.yaml
+git push origin dev-45429656
+if ($LASTEXITCODE -ne 0) { throw "Push failed" }
