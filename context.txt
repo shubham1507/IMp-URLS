@@ -1,0 +1,170 @@
+You are continuing work on an HSBC ChaosArmor Jenkins CI pipeline. Use the context below and help step by step.
+
+GOAL
+Build the existing chaos-armor-frontend-ui application through the internal DevX Jenkins framework.
+
+CURRENT SCOPE
+The user most recently requested npm build only.
+Keep frontend build and server dependency installation/syntax validation.
+ZIP packaging and artifact upload were removed.
+Deployment remains disabled.
+Do not reintroduce ZIP packaging or deployment unless requested.
+Do not change application source code without discussing the need.
+
+COMMUNICATION
+Give simple, actionable instructions, preferably one step at a time.
+Provide complete YAML/commands in one copyable code block.
+The user shares screenshots and executes actions on a corporate laptop.
+Do not claim you accessed or modified their repository or Jenkins.
+Distinguish confirmed results from assumptions.
+
+PROJECT
+GitHub Enterprise organisation: ChaosArmor
+Repository: chaos-armor-frontend-ui
+Working branch: dev-45429656
+Configuration file: ci-config.yaml at repository root
+
+Structure:
+client/
+  package.json
+  package-lock.json
+  vite.config.js
+  src/
+  certs/localhost.key
+  certs/localhost.crt
+server/
+  package.json
+  server.js
+  ssl-config.js
+  .chaos-armor-app-ecosystem.json
+  startChaosArmorAppServer.sh
+  stopChaosArmorAppServer.sh
+
+FRONTEND
+React + Vite.
+client/package.json scripts:
+  dev: vite
+  build: vite build
+  lint: eslint .
+  preview: vite preview
+
+Dependencies include React 19.
+Declared dev dependencies included Vite ^6.3.5 and
+@vitejs/plugin-react ^4.4.1.
+
+Existing vite.config.js eagerly reads local HTTPS certificate files.
+It also defines React support and the @/ source alias.
+CI creates a temporary vite.ci.config.mjs to avoid certificate reads,
+preserve React and the alias, and output to client/build/.
+
+SERVER
+Node.js/Express, CommonJS.
+server/package.json has dependencies but no build script.
+Originally no committed server/package-lock.json.
+Server serves ../client/build and provides GET /ping -> pong.
+HTTPS port: process.env.PORT || 8080.
+ssl-config.js reads both key and certificate from:
+  /opt/charm/charm-core/certs/chaos-armor/chaosarmor-dev.uk.hsbc.pem
+
+Do not put private keys/certificates into Git or build artifacts.
+
+LOCAL VALIDATION ALREADY COMPLETED
+Frontend production build succeeded locally.
+Server dependencies installed.
+A local combined PEM was created outside the repository using the existing
+localhost key/certificate.
+TLS configuration validation succeeded.
+Express started on port 8080.
+https://localhost:8080/ping returned pong.
+https://localhost:8080 displayed the ChaosArmor UI.
+Browser certificate trust warning remained.
+This confirmed basic frontend serving, not full backend/login functionality.
+
+LOCAL ENVIRONMENT
+Windows, VS Code, corporate PowerShell.
+PowerShell has execution-policy restrictions and Constrained Language Mode.
+Use npm.cmd if npm.ps1 is blocked.
+Do not suggest bypassing corporate restrictions.
+Some .NET method calls such as [IO.File]::ReadAllText were blocked.
+
+LOCAL CHANGES AND GIT
+The user committed/pushed ci-config.yaml earlier.
+Other local changes were excluded:
+- client/package.json added a rollup override of 4.63.1
+- client/package-lock.json had substantial changes
+- untracked client/build/
+- untracked root package-lock.json
+- untracked server/package-lock.json
+
+Therefore the successful local build may not use exactly the same dependencies
+as the committed Jenkins build.
+
+The latest npm-only YAML below was provided in chat.
+It has NOT been confirmed saved, committed, pushed, or tested.
+
+JENKINS
+Internal DevX-generated custom multibranch pipeline.
+Do not add a Jenkinsfile without checking framework requirements.
+
+Job path:
+hsbc-10862889-gcp-gke-pipeline/
+GCP_GKE_pipeline/
+ChaosArmor/
+chaos-armor-frontend-ui-build
+
+GitHub App displayed ID: 2947
+Credential description: GitHub App Credential for Chaos Armor Application
+
+Initial repository scan failed:
+  HTTP 403: Resource not accessible by integration
+when listing repository pull requests.
+
+Later scan succeeded:
+  10 branches processed
+  2 pull requests processed
+  Finished: SUCCESS
+
+Original Source to build regex had spaces:
+  ^dev-45429656 | main
+
+It was corrected to:
+  ^dev-45429656$
+
+The branch job dev-45429656 then appeared.
+Latest Jenkins screenshot:
+  Stage View: "This Pipeline has not yet run."
+  Builds: "No builds"
+  "Build Now" available.
+
+Next instruction at that time:
+Click Build Now once, open the new build number, then Console Output.
+
+No Jenkins build result or console output has been supplied.
+Repository scan SUCCESS does not mean application build SUCCESS.
+
+CONFIRMED CONFIGURATION VALUES
+eim: 11092881
+appname: chaos-arm-ui
+application_version: 0.1.0
+Node path: /usr/lib/nodejs/24.18.0
+The internal installed-tools screenshot listed this Node path.
+
+NPM DEPENDENCIES
+Existing client lockfile URLs point to:
+https://nexus303.systems.uk.hsbc:8081/nexus/repository/npm-group/
+
+Current npm Nexus instance ID:
+  nexus303
+
+Jenkins Nexus credential ID:
+  ChaosArmorNexusSecret
+
+Credential ID was identified from the Jenkins credential URL.
+Credential permissions have not been tested.
+Do not confuse nexus.id with jenkins_credential_id.
+
+PREVIOUS ZIP CONFIGURATION — OUT OF CURRENT SCOPE
+Previously planned:
+  Nexus instance: nexus302
+  Repository: raw-alm-dev_n3p
+  Proposed artifact path: com/hsbc/chaos
