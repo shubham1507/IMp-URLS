@@ -1,5 +1,73 @@
-Hi [Manager’s Name], the ChaosArmor Jenkins pipeline is blocked during repository scanning with 403: “Resource not accessible by integration” when fetching pull requests.
+eim: 11092881
+appname: 'chaos-arm-ui'
+application_version: '0.1.0'
 
-Could you help coordinate with the GitHub App owner to verify that App ID 2947, used by Jenkins credential ChaosArmorApp, has access to ChaosArmor/chaos-armor-frontend-ui and Pull requests: Read permission, including approval of any pending permission changes?
+log_trace:
+  enabled: false
 
-This is blocking the first pipeline build for Friday’s demo.
+build_metadata:
+  enabled: true
+
+tools:
+  nodejs: '/usr/lib/nodejs/24.18.0'
+
+build:
+  enabled: true
+  override_build_order: true
+
+  npm:
+    steps:
+      - package_json_path: 'client/package.json'
+        command:
+          - 'pwd'
+          - 'node --version'
+          - 'npm ci --include=dev'
+          - 'npm run lint'
+
+          # Build without loading local HTTPS certificates.
+          - >-
+            node -e "const fs = require('node:fs');
+            fs.writeFileSync('vite.ci.config.mjs',
+            'import path from \"node:path\";\n'
+            + 'import { defineConfig } from \"vite\";\n'
+            + 'import react from \"@vitejs/plugin-react\";\n'
+            + 'export default defineConfig({\n'
+            + '  plugins: [react()],\n'
+            + '  resolve: { alias: { \"@\": path.resolve(process.cwd(), \"src\") } },\n'
+            + '  build: { outDir: \"build\" }\n'
+            + '});\n');"
+
+          - 'npm run build -- --config vite.ci.config.mjs'
+
+          # Verify the frontend build output.
+          - >-
+            node -e "require('node:fs').accessSync('build/index.html');"
+
+          - >-
+            node -e "require('node:fs').unlinkSync('vite.ci.config.mjs');"
+
+        enabled: true
+
+      - package_json_path: 'server/package.json'
+        command:
+          - 'pwd'
+          - 'node --version'
+          - 'npm install --omit=dev'
+          - 'node --check server.js'
+
+        enabled: true
+
+    # Nexus authentication for downloading npm dependencies.
+    authentication: auth
+    nexus:
+      id: nexus303
+      jenkins_credential_id: ChaosArmorNexusSecret
+
+controls:
+  enabled: true
+
+cr_minion:
+  enabled: false
+
+deploy:
+  enabled: false
