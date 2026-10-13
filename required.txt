@@ -1,0 +1,23 @@
+Give them these details to create the ChaosArmor frontend DEV AAP template:
+
+Detail	Value / what to confirm
+
+Suggested template name	ChaosArmor-Frontend-DEV-Deploy
+AAP environment	Non-production controller already accessed
+Deployment purpose	Download frontend ZIP from Nexus and deploy to the DEV website
+Nexus server	https://nexus302.systems.uk.hsbc:8081/nexus
+Nexus repository	raw-alm-dev_n3p
+Artifact name	chaos-armor-frontend-ui
+Artifact path pattern	com/hsbc/chaosarmor/<artifact-name>/<version>/<artifact-name>-<version>.zip
+Existing version for testing	0.1.2-demo.6
+ZIP contents	index.html, assets/, favicon.ico directly at root
+Target server	Hostname, OS, and AAP inventory — required
+Hosting details	Web server, website directory, and application URL — required
+Playbook source	Git repository, branch, and deployment playbook path — create or confirm
+Credentials	AAP target-server credential, Nexus read credential, and SCM credential if needed
+Execution environment	Approved AAP execution environment supporting the playbook
+Jenkins access	Service account allowed to launch and monitor the template
+Deployment inputs	Package name, version, and target host; agree exact variable names with the playbook author
+
+
+Ask them to return: the template ID, required extra_vars, Jenkins AAP credential ID/type, and DEV application URL, so we can finish your pipeline configuration.
