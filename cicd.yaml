@@ -1,0 +1,125 @@
+eim: 11092881
+appname: chaos-armor-frontend-ui
+application_version: '0.1.0'
+
+log_trace:
+  enabled: false
+
+build_metadata:
+  enabled: true
+
+parameters:
+  - name: package_name
+    type: string
+    default: 'chaos-armor-frontend-ui'
+    description: 'Frontend artifact name'
+
+  - name: package_version
+    type: string
+    default: '0.1.0-demo.7'
+    description: 'Unique artifact version; increment for each published build'
+
+  # Deployment additions. Fill all REPLACE values before enabling deployment.
+  - name: deploy_to_dev
+    type: booleanParam
+    default: false
+    description: 'Deploy the published frontend ZIP to DEV using AAP'
+
+  - name: target_server
+    type: string
+    default: 'REPLACE_WITH_DEV_INVENTORY_HOST'
+    description: 'Exact approved host name in the frontend AAP inventory'
+
+  - name: nexus_artifact_url
+    type: string
+    default: ''
+    description: 'Exact Nexus download URL for this package_name and package_version; required for DEV deployment'
+
+tools:
+  nodejs: '/usr/lib/nodejs/24.18.0'
+
+build:
+  enabled: true
+  override_build_order: true
+
+  npm:
+    authentication: auth
+    registry: 'https://npm.systems.uk.hsbc:8081/nexus/repository/npm-group/'
+
+    nexus:
+      jenkins_credential_id: 'ChaosArmorNexusSecret'
+
+    steps:
+      - package_json_path: 'package.json'
+        enabled: true
+        command:
+          - 'npm ci --include=dev'
+          - 'npm run build'
+
+  zip:
+    nexus:
+      jenkins_credential_id: 'ChaosArmorNexusSecret'
+      repository: 'raw-alm-dev_n3p'
+
+    artifacts:
+      - artifact_path: 'com/hsbc/chaosarmor'
+        artifact_name: '${params.package_name}'
+        artifact_version: '${params.package_version}'
+        source_path: './dist'
+        include:
+          - '**'
+
+controls:
+  enabled: true
+
+  sonarqube:
+    enabled: true
+    jenkins_credential_id: 'ChaosArmorSonarQubeSecret'
+
+  sonatype_iq:
+    enabled: true
+    jenkins_credential_id: 'ChaosArmorSonatypeIQSecret'
+    organization_name: 'Unclaimed IQ Application'
+    iq_application_name: '11092881_chaos-arm-dev-ui'
+
+  cyberflows:
+    jenkins_credential_id: 'ChaosArmorCyberFlowsSecret'
+    timeout: 120
+
+    sast:
+      enabled: true
+
+    dast:
+      enabled: false
+
+    cont:
+      enabled: false
+
+cr_minion:
+  enabled: false
+
+# Follows the attached AAP deployment structure. See DEPLOYMENT-SETUP.md.
+# Confirm with the shared-library owner that aap.packages can be omitted for
+# a raw ZIP job driven by extra_vars; package_from_pom is not applicable.
+deploy:
+  enabled: true
+  aap:
+    enabled: true
+    # From the reference: confirm this controller is approved for ChaosArmor DEV.
+    aap_non_prod_host: 'https://alm-aapuat.sdc.hc.cloud.uk.hsbc'
+    jenkins_credential_id: 'REPLACE_WITH_FRONTEND_AAP_DEV_CREDENTIAL_ID'
+    deployments:
+      non_prod:
+        - phase: 'DEV'
+          enabled: ${params.deploy_to_dev}
+          job_type: 'job_template'
+          template_id: 'REPLACE_WITH_FRONTEND_DEV_TEMPLATE_ID'
+          # These variables define the required frontend playbook contract.
+          # nexus_artifact_Id preserves the reference's case-sensitive spelling.
+          extra_vars:
+            target_hosts: '${params.target_server}'
+            nexus_artifact_Id: '${params.package_name}'
+            nexus_artifact_version: '${params.package_version}'
+            nexus_repository: 'raw-alm-dev_n3p'
+            nexus_artifact_path: 'com/hsbc/chaosarmor'
+            nexus_artifact_url: '${params.nexus_artifact_url}'
