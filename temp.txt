@@ -1,73 +1,51 @@
-eim: 11092881
-appname: 'chaos-arm-ui'
-application_version: '0.1.0'
+We have a working ChaosArmor frontend Jenkins pipeline that builds the React/Vite application and publishes its ZIP to Nexus.
 
-log_trace:
-  enabled: false
+We need to add DEV deployment through AAP, keeping the existing build and publish configuration unchanged.
 
-build_metadata:
-  enabled: true
+Please help confirm the following:
 
-tools:
-  nodejs: '/usr/lib/nodejs/24.18.0'
+1. Deployment server
+   - Which DEV server should host the frontend?
+   - What is its hostname and OS?
+   - Which web server should serve it: IIS, Nginx, Apache, or another?
+   - What are the deployment directory and application URL?
 
-build:
-  enabled: true
-  override_build_order: true
+2. AAP configuration
+   - Which non-production AAP controller should we use?
+   - Is there an existing job template/playbook for deploying a frontend ZIP?
+   - If yes, what are its template ID, playbook repository, and required extra_vars?
+   - Which AAP inventory contains our DEV server?
+   - Who can help create or update the template if required?
 
-  npm:
-    steps:
-      - package_json_path: 'client/package.json'
-        command:
-          - 'pwd'
-          - 'node --version'
-          - 'npm ci --include=dev'
-          - 'npm run lint'
+3. Credentials and permissions
+   - Which Jenkins credential should authenticate to AAP?
+   - What credential type does our shared library require?
+   - Does that account have permission to launch and monitor the job template?
+   - Are the target-server and Nexus download credentials already configured in AAP?
 
-          # Build without loading local HTTPS certificates.
-          - >-
-            node -e "const fs = require('node:fs');
-            fs.writeFileSync('vite.ci.config.mjs',
-            'import path from \"node:path\";\n'
-            + 'import { defineConfig } from \"vite\";\n'
-            + 'import react from \"@vitejs/plugin-react\";\n'
-            + 'export default defineConfig({\n'
-            + '  plugins: [react()],\n'
-            + '  resolve: { alias: { \"@\": path.resolve(process.cwd(), \"src\") } },\n'
-            + '  build: { outDir: \"build\" }\n'
-            + '});\n');"
+4. Jenkins shared-library support
+   - The reference pipeline uses package_from_pom. What is the supported configuration for our raw ZIP artifact?
+   - Can deploy.aap.packages be omitted when artifact details are passed through extra_vars?
+   - Are production connection settings optional for a DEV-only deployment?
+   - Does Jenkins wait for the AAP job to complete and fail if deployment fails?
 
-          - 'npm run build -- --config vite.ci.config.mjs'
+5. Nexus artifact
+   - What is the exact download URL/naming pattern for our published ZIP?
+   - Repository: raw-alm-dev_n3p
+   - Artifact path: com/hsbc/chaosarmor
+   - Artifact name: chaos-armor-frontend-ui
+   - Does the ZIP contain index.html at its root or inside a dist folder?
 
-          # Verify the frontend build output.
-          - >-
-            node -e "require('node:fs').accessSync('build/index.html');"
+6. Application configuration
+   - Does the frontend require a backend API URL or other environment settings?
+   - Must those values be supplied during the build or through runtime configuration?
+   - Will the application be hosted at the domain root or under a subpath?
+   - Who will configure HTTPS and SPA route fallback?
 
-          - >-
-            node -e "require('node:fs').unlinkSync('vite.ci.config.mjs');"
-
-        enabled: true
-
-      - package_json_path: 'server/package.json'
-        command:
-          - 'pwd'
-          - 'node --version'
-          - 'npm install --omit=dev'
-          - 'node --check server.js'
-
-        enabled: true
-
-    # Nexus authentication for downloading npm dependencies.
-    authentication: auth
-    nexus:
-      id: nexus303
-      jenkins_credential_id: ChaosArmorNexusSecret
-
-controls:
-  enabled: true
-
-cr_minion:
-  enabled: false
-
-deploy:
-  enabled: false
+7. Connectivity and validation
+   - Can Jenkins reach AAP?
+   - Can AAP reach the target server?
+   - Can the machine downloading the artifact access Nexus?
+   - What health-check URL should deployment verify?
+   - What is the rollback procedure if deployment fails?
+   - Can we test the AAP template with an existing ZIP on DEV before triggering the complete pipeline?
