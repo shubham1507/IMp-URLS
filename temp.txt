@@ -51,28 +51,8 @@ Please help confirm the following:
    - Can we test the AAP template with an existing ZIP on DEV before triggering the complete pipeline?
 
 
-$folders = @(
-    "playbooks"
-    "roles/frontend/tasks"
-    "collections"
-)
-
-$files = @(
-    "README.md"
-    ".gitignore"
-    "playbooks/deploy-frontend.yml"
-    "roles/frontend/tasks/main.yml"
-    "collections/requirements.yml"
-)
-
-foreach ($folder in $folders) {
-    New-Item -ItemType Directory -Path $folder -Force | Out-Null
-}
-
-foreach ($file in $files) {
-    if (-not (Test-Path -LiteralPath $file)) {
-        New-Item -ItemType File -Path $file | Out-Null
-    }
-}
-
-tree /F
+DEV server hostname:
+Operating system: Windows / Linux
+Web server: IIS / Nginx / Apache / Not configured
+Deployment directory:
+Application URL (if assigned):
