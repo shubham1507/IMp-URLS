@@ -1,58 +1,32 @@
-We have a working ChaosArmor frontend Jenkins pipeline that builds the React/Vite application and publishes its ZIP to Nexus.
+# ChaosArmor Deployment
 
-We need to add DEV deployment through AAP, keeping the existing build and publish configuration unchanged.
+Ansible automation for deploying ChaosArmor applications through AAP.
 
-Please help confirm the following:
+## Frontend
+- Artifact: chaos-armor-frontend-ui
+- Nexus repository: raw-alm-dev_n3p
+- ZIP contents: index.html, assets/, favicon.ico
+- Deployment playbook: playbooks/deploy-frontend.yml
 
-1. Deployment server
-   - Which DEV server should host the frontend?
-   - What is its hostname and OS?
-   - Which web server should serve it: IIS, Nginx, Apache, or another?
-   - What are the deployment directory and application URL?
+## Status
+Scaffolding only. Deployment tasks are not implemented.
+Awaiting DEV server hostname, OS, web server, and deployment directory.
 
-2. AAP configuration
-   - Which non-production AAP controller should we use?
-   - Is there an existing job template/playbook for deploying a frontend ZIP?
-   - If yes, what are its template ID, playbook repository, and required extra_vars?
-   - Which AAP inventory contains our DEV server?
-   - Who can help create or update the template if required?
+Credentials must be managed through AAP and must not be committed.
 
-3. Credentials and permissions
-   - Which Jenkins credential should authenticate to AAP?
-   - What credential type does our shared library require?
-   - Does that account have permission to launch and monitor the job template?
-   - Are the target-server and Nexus download credentials already configured in AAP?
+.vscode/
+.idea/
+*.retry
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pem
+*.key
 
-4. Jenkins shared-library support
-   - The reference pipeline uses package_from_pom. What is the supported configuration for our raw ZIP artifact?
-   - Can deploy.aap.packages be omitted when artifact details are passed through extra_vars?
-   - Are production connection settings optional for a DEV-only deployment?
-   - Does Jenkins wait for the AAP job to complete and fail if deployment fails?
+git status
+git add README.md .gitignore playbooks roles collections
+git commit -m "Initialize ChaosArmor deployment repository"
+git push
 
-5. Nexus artifact
-   - What is the exact download URL/naming pattern for our published ZIP?
-   - Repository: raw-alm-dev_n3p
-   - Artifact path: com/hsbc/chaosarmor
-   - Artifact name: chaos-armor-frontend-ui
-   - Does the ZIP contain index.html at its root or inside a dist folder?
-
-6. Application configuration
-   - Does the frontend require a backend API URL or other environment settings?
-   - Must those values be supplied during the build or through runtime configuration?
-   - Will the application be hosted at the domain root or under a subpath?
-   - Who will configure HTTPS and SPA route fallback?
-
-7. Connectivity and validation
-   - Can Jenkins reach AAP?
-   - Can AAP reach the target server?
-   - Can the machine downloading the artifact access Nexus?
-   - What health-check URL should deployment verify?
-   - What is the rollback procedure if deployment fails?
-   - Can we test the AAP template with an existing ZIP on DEV before triggering the complete pipeline?
-
-
-DEV server hostname:
-Operating system: Windows / Linux
-Web server: IIS / Nginx / Apache / Not configured
-Deployment directory:
-Application URL (if assigned):
+git push -u origin HEAD
