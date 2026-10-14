@@ -1,1 +1,3 @@
+git -c credential.helper= ls-remote "https://GB-Chaos-Armor@alm-github.systems.uk.hsbc/ChaosArmor/chaos-armor-deployment.git" refs/heads/main
 
+$LASTEXITCODE
