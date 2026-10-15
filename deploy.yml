@@ -1,0 +1,122 @@
+playbooks/deploy-frontend.yml
+
+---
+- name: Validate ChaosArmor frontend deployment prerequisites
+  hosts: chaosarmor_frontend
+  gather_facts: false
+  become: false
+
+  vars:
+    application_directory: /opt/charm/charm-core/code/app
+    application_start_script: /opt/charm/charm-core/code/app/server/startChaosArmorAppServer.sh
+    application_stop_script: /opt/charm/charm-core/code/app/server/stopChaosArmorAppServer.sh
+
+  tasks:
+    - name: Run frontend prerequisite checks
+      ansible.builtin.include_role:
+        name: frontend
+
+
+   roles/frontend/tasks/main.yml
+
+   ---
+- name: Check Ansible connectivity and Python availability
+  ansible.builtin.ping:
+
+- name: Identify the connected account
+  ansible.builtin.command: id -un
+  register: connected_account
+  changed_when: false
+
+- name: Check application directory
+  ansible.builtin.stat:
+    path: "{{ application_directory }}"
+  register: application_path
+
+- name: Validate application directory exists
+  ansible.builtin.assert:
+    that:
+      - application_path.stat.exists
+      - application_path.stat.isdir | default(false)
+    fail_msg: "Application directory is missing: {{ application_directory }}"
+
+- name: Check application scripts
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ application_start_script }}"
+    - "{{ application_stop_script }}"
+  register: application_scripts
+
+- name: Validate application scripts exist
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.isreg | default(false)
+    fail_msg: "Application script is missing: {{ item.item }}"
+  loop: "{{ application_scripts.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Report validation results
+  ansible.builtin.debug:
+    msg:
+      - "Host: {{ inventory_hostname }}"
+      - "Connected account: {{ connected_account.stdout }}"
+      - "Application directory: {{ application_directory }}"
+      - "Start and stop scripts exist."
+      - "Validation only: no files deployed and no application restart performed." 
+
+3. Create ansible.cfg at the repository root
+
+This makes the role under the root roles/ directory discoverable.
+
+[defaults]
+roles_path = ./roles
+
+#collections/requirements.yml
+
+---
+collections: []
+
+.gitignore
+
+*.retry
+*.log
+.env
+.venv/
+__pycache__/
+*.pem
+*.key
+
+
+readme
+
+# ChaosArmor Deployment
+
+Ansible automation for ChaosArmor frontend deployment.
+
+## Current status
+
+Read-only prerequisite validation:
+- SSH connectivity and Python availability
+- Connected operating-system account
+- Application directory
+- Application start and stop scripts
+
+No artifact installation or application restart is implemented yet.
+
+## AAP configuration
+
+- Inventory group: chaosarmor_frontend
+- Project branch: main
+- Playbook: playbooks/deploy-frontend.yml
+- Credential: approved Machine credential for the DEV server
+
+Store credentials in AAP, never in this repository.
+
+
+   
+   
+
+            
